@@ -1,0 +1,16 @@
+.partners {
+  padding: 120px 80px;
+  background: var(--bg-section);
+  text-align: center;
+}
+
+.partner-list {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+}
+
+.partner img {
+  width: 90px;
+}

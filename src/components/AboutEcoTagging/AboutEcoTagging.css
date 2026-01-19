@@ -1,0 +1,33 @@
+.about {
+  padding: 140px 80px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 90px;
+  background: var(--bg-section);
+}
+
+.about-text h2 {
+  font-size: 34px;
+  margin-bottom: 18px;
+}
+
+.about-text p {
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.about button {
+  margin-top: 36px;
+  padding: 12px 34px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #0f1f16;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.about img {
+  width: 100%;
+  border-radius: 24px;
+}
