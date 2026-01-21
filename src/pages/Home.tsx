@@ -8,7 +8,7 @@ import Partners from "../components/Partners/Partners";
 const Home = () => {
   return (
     <>
-      <Navbar />
+      <Navbar variant="home" />
       <Hero />
       <AboutEcoTagging />
       <WhyEcoTagging />

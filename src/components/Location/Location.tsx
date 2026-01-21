@@ -1,14 +1,14 @@
 import React from "react";
-import "./Location.css";
+import styles from "./Location.module.css";
 import campusImg from "../../assets/nddu-campus.jpg"; // adjust path if needed
 
 const Location: React.FC = () => {
   return (
-    <section className="location">
-      <div className="location-container">
+    <section className={styles.location}>
+      <div className={styles.locationContainer}>
         
         {/* LEFT: IMAGE */}
-        <div className="location-image">
+        <div className={styles.locationImage}>
           <img
             src={campusImg}
             alt="Notre Dame of Dadiangas University"
@@ -17,7 +17,7 @@ const Location: React.FC = () => {
         </div>
 
         {/* RIGHT: TEXT */}
-        <div className="location-content">
+        <div className={styles.locationContent}>
           <h2>Where We Conduct Eco-Tagging</h2>
 
           <p>

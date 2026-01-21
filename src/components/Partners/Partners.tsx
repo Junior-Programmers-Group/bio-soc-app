@@ -1,18 +1,18 @@
-import "./Partners.css";
+import styles from "./Partners.module.css";
 
 const Partners = () => {
   return (
-    <section className="partners">
+    <section className={styles.partners}>
       <h2>Our Partners</h2>
 
-      <div className="partner-list">
-        <div className="partner">
-          <img src="/images/jpg.png" />
+      <div className={styles.partnerList}>
+        <div className={styles.partner}>
+          <img src="/Group 9.png" alt="Junior Programmers Group logo" />
           <p>Junior Programmers Group</p>
         </div>
 
-        <div className="partner">
-          <img src="/images/biosoc.png" />
+        <div className={styles.partner}>
+          <img src="/Logo (1).png" alt="BioSociety logo" />
           <p>BioSociety</p>
         </div>
       </div>

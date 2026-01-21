@@ -1,0 +1,85 @@
+.location {
+  background: #102417;
+  padding: 80px;
+  color: #eef6e7;
+}
+
+/* CONTAINER */
+.locationContainer {
+  display: flex;
+  gap: 60px;
+  align-items: flex-start;
+  flex-wrap: wrap; /* ensures mobile wraps nicely */
+}
+
+/* LEFT SIDE: IMAGE */
+.locationImage {
+  flex: 1;
+  text-align: left;
+}
+
+.locationImage img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.locationImage h3 {
+  margin-top: 16px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* RIGHT SIDE: CONTENT */
+.locationContent {
+  flex: 1.2;
+}
+
+.locationContent h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.locationContent p {
+  line-height: 1.7;
+  margin-bottom: 16px;
+  color: #dce8d3;
+}
+
+/* ========================= */
+/* 📱 TABLET */
+@media (max-width: 1024px) {
+  .locationContainer {
+    gap: 40px;
+  }
+
+  .locationContent h2 {
+    font-size: 1.75rem;
+  }
+
+  .locationImage h3 {
+    font-size: 1.3rem;
+  }
+}
+
+/* ========================= */
+/* 📱 MOBILE */
+@media (max-width: 640px) {
+  .locationContainer {
+    flex-direction: column;
+  }
+
+  .locationImage,
+  .locationContent {
+    text-align: center;
+    flex: unset;
+  }
+
+  .locationContent h2 {
+    font-size: 1.5rem;
+  }
+
+  .locationImage h3 {
+    font-size: 1.2rem;
+  }
+}
