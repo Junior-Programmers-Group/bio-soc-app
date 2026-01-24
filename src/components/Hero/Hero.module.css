@@ -1,55 +1,103 @@
+/* ===================================================== */
+/* 🌿 HERO — IMAGE FADES INTO DARK GREEN (PIC #2 MATCH) */
+/* ===================================================== */
+
 .hero {
   height: 100vh;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(15, 36, 24, 0.6),
-      rgba(15, 36, 24, 0.6)
-    ),
-    url("../../assets/nddu-campus.jpg") center / cover no-repeat;
+  position: relative;
+
+  /* BASE IMAGE */
+  background: url("../../assets/nddu-campus.jpg") center / cover no-repeat;
+
   display: flex;
   justify-content: center;
   align-items: center;
+
+  overflow: hidden;
 }
 
+/* 🔥 OVERLAY LAYER (DOES THE FADE) */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 36, 24, 0.25) 0%,
+    rgba(15, 36, 24, 0.45) 45%,
+    rgba(15, 36, 24, 0.75) 70%,
+    var(--bg-section) 100%
+  );
+
+  z-index: 1;
+}
+
+/* ===================================================== */
+/* CONTENT */
+/* ===================================================== */
+
 .heroContent {
+  position: relative;
+  z-index: 2;
+
   text-align: center;
   max-width: 720px;
+
   padding-top: 72px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .heroContent h1 {
   font-size: 52px;
   margin: 0;
+  color: #ffffff;
 }
 
 .heroContent p {
   margin-top: 14px;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.85);
 }
+
+/* ===================================================== */
+/* SEARCH BAR */
+/* ===================================================== */
 
 .heroInput {
   margin-top: 36px;
   width: 100%;
   padding: 16px 26px;
+
   border-radius: 999px;
   border: none;
+
   font-size: 14px;
+  font-family: "Inter", sans-serif;
+
+  background: #ffffff;
+  color: #000000;
+
+  outline: none;
 }
 
-/* ========================= */
+/* ===================================================== */
 /* 📱 TABLET */
+/* ===================================================== */
+
 @media (max-width: 1024px) {
   .heroContent h1 {
     font-size: 42px;
   }
 }
 
-/* ========================= */
+/* ===================================================== */
 /* 📱 MOBILE */
+/* ===================================================== */
+
 @media (max-width: 640px) {
   .heroContent {
-    padding-top: 48px;
+    padding-top: 96px; /* clears mobile navbar */
   }
 
   .heroContent h1 {
