@@ -50,14 +50,14 @@
 }
 
 .heroContent h1 {
-  font-size: 52px;
+  font-size: 45px;
   margin: 0;
-  color: #ffffff;
+  color: #E2EECA;
 }
 
 .heroContent p {
   margin-top: 14px;
-  color: rgba(255, 255, 255, 0.85);
+  color: #E2EECA;
 }
 
 /* ===================================================== */

@@ -1,48 +1,12 @@
 .about {
-  padding: 140px 80px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 90px;
-  background: var(--bg-section);
-  align-items: center;
-}
-
-.aboutText h2 {
-  font-size: 34px;
-  margin-bottom: 18px;
-}
-
-.aboutText p {
-  color: var(--text-muted);
-  line-height: 1.7;
-}
-
-.aboutButton {
-  margin-top: 36px;
-  padding: 12px 34px;
-  border-radius: 999px;
-  border: none;
-  background: var(--accent);
-  color: #0f1f16;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.imageWrapper img {
-  width: 100%;
-  max-width: 500px;
-  border-radius: 24px;
-}/* ===================================================== */
-/* 🌿 FADE FROM HERO INTO ABOUT (MATCH IMAGE #2) */
-/* ===================================================== */
-
-.about {
   position: relative;
   padding: 140px 80px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 90px;
-  align-items: center;
+
+  /* 🔑 KEY CHANGE */
+  align-items: flex-start;
 
   background: var(--bg-section);
   z-index: 1;
@@ -73,4 +37,75 @@
 .about > * {
   position: relative;
   z-index: 1;
+}
+
+.aboutText h2 {
+  font-size: 47px;
+  margin-bottom: 18px;
+}
+
+.aboutText p {
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.aboutButton {
+  margin-top: 1rem;
+  padding: 12px 34px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #0f1f16;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.imageWrapper {
+  align-self: flex-start;
+}
+
+.imageWrapper img {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 24px;
+  display: block;
+}
+
+.readMoreContent {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+
+  transition:
+    max-height 0.7s ease,
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.expanded {
+  max-height: 1000px; /* scalable for more content */
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .about {
+    grid-template-columns: 1fr;
+    padding: 100px 24px;
+    gap: 48px;
+  }
+
+  .imageWrapper {
+    order: -1; /* image goes to the top */
+  }
+
+  .aboutText h2 {
+    font-size: 28px;
+  }
+
+  .aboutButton {
+    margin-top: 28px;
+  }
 }
