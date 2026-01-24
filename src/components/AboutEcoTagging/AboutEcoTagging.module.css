@@ -32,4 +32,45 @@
   width: 100%;
   max-width: 500px;
   border-radius: 24px;
+}/* ===================================================== */
+/* 🌿 FADE FROM HERO INTO ABOUT (MATCH IMAGE #2) */
+/* ===================================================== */
+
+.about {
+  position: relative;
+  padding: 140px 80px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 90px;
+  align-items: center;
+
+  background: var(--bg-section);
+  z-index: 1;
+}
+
+/* 🔥 FADE OVERLAY */
+.about::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 140px;
+
+  /* fade FROM transparent hero INTO section color */
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 36, 24, 0),
+    var(--bg-section)
+  );
+
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* keep content above fade */
+.about > * {
+  position: relative;
+  z-index: 1;
 }
