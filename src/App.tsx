@@ -1,16 +1,17 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
-import "./styles/global.css";
+import DiscoverPlants from "./pages/DiscoverPlants/DiscoverPlants";
+import PlantDetail from "./pages/DiscoverPlants/PlantDetail/PlantDetail";
 
-function App() {
+export default function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        {/* Homepage */}
         <Route path="/" element={<Home />} />
+        <Route path="/discover" element={<DiscoverPlants />} />
+        <Route path="/discover/:id" element={<PlantDetail />} />
+        <Route path="*" element={<Navigate to="/discover" replace />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
-
-export default App;

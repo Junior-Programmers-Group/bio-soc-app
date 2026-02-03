@@ -1,0 +1,23 @@
+.searchWrapper {
+  background: #e5e5e5;
+  padding: 10px 20px;
+  border-radius: 30px;
+}
+
+.searchWrapper input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+}
+@media (max-width: 700px) {
+  .searchWrapper {
+    padding: 10px 16px;
+    border-radius: 24px;
+  }
+
+  .searchWrapper input {
+    font-size: 13px;
+  }
+}
