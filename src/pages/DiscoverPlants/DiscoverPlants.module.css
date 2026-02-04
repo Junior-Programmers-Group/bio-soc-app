@@ -1,0 +1,61 @@
+.discoverPage {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0f2d1f, #06160f);
+}
+
+.container {
+  max-width: 1300px;
+  margin: auto;
+  padding: 110px 20px 30px; /* 👈 TOP PADDING IS THE FIX */
+}
+
+
+/* RESULTS + ACTIONS ROW */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0 25px;
+}
+
+.results {
+  color: #cfd8c3;
+  font-size: 14px;
+}
+
+/* RIGHT SIDE */
+.actions {
+  display: flex;
+  gap: 15px;
+}
+
+.filterBtn {
+  background: transparent;
+  border: none;
+  color: #cfd8c3;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sortSelect {
+  background: transparent;
+  border: none;
+  color: #cfd8c3;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.content {
+  display: grid;
+  gap: 25px;
+}
+
+/* when filters are shown */
+.withFilters {
+  grid-template-columns: 260px 1fr;
+}
+
+/* when filters are hidden */
+.noFilters {
+  grid-template-columns: 1fr;
+}

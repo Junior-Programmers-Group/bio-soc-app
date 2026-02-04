@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { NavLink } from "react-router-dom";
 import styles from "./Navbar.module.css";
 import { Link } from "react-router-dom";
 
-const Navbar = ({ variant = "default" }) => {
+interface Props {
+  variant?: "default" | "home";
+}
+
+const Navbar = ({ variant = "default" }: Props) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -15,10 +20,33 @@ const Navbar = ({ variant = "default" }) => {
 
       {/* DESKTOP LINKS */}
       <nav className={styles.navbarLinks}>
+<<<<<<< HEAD
         <a href="/">Home</a>
         <a href="#plants">Discover Plants</a>
         <a href="#learn">Learn</a>
         <Link to ="/Scan">Scan Plant</Link>
+=======
+        <NavLink
+          to="/"
+          className={({ isActive }) => (isActive ? styles.active : "")}
+        >
+          Home
+        </NavLink>
+
+        <NavLink
+          to="/discover-plants"
+          className={({ isActive }) => (isActive ? styles.active : "")}
+        >
+          Discover Plants
+        </NavLink>
+
+        <NavLink
+          to="/learn"
+          className={({ isActive }) => (isActive ? styles.active : "")}
+        >
+          Learn
+        </NavLink>
+>>>>>>> 48dfac9bc968066f7a5bda0a0e5fa8ef358e4af2
       </nav>
 
       {/* MOBILE HAMBURGER */}
@@ -32,14 +60,20 @@ const Navbar = ({ variant = "default" }) => {
         <span />
       </button>
 
-      {/* MOBILE DROPDOWN */}
+      {/* MOBILE MENU */}
       {open && (
         <div className={styles.mobileMenu}>
-          <a href="#directory">Plant Species Directory</a>
-          <a href="#education">Educational Content</a>
-          <a href="#news">News & Updates</a>
-          <a href="#community">Community Engagement</a>
-          <a href="#stories">Student Engagement Stories</a>
+          <NavLink to="/" onClick={() => setOpen(false)}>
+            Home
+          </NavLink>
+
+          <NavLink to="/discover-plants" onClick={() => setOpen(false)}>
+            Discover Plants
+          </NavLink>
+
+          <NavLink to="/learn" onClick={() => setOpen(false)}>
+            Learn
+          </NavLink>
         </div>
       )}
     </header>

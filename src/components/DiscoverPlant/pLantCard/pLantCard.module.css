@@ -1,0 +1,39 @@
+.plantCard {
+  background: #e7f0cf; /* light green like ref */
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.plantCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+/* IMAGE */
+.plantCard img {
+  width: 100%;
+  height: 190px; /* 👈 matches reference */
+  object-fit: cover;
+  display: block;
+}
+
+/* TEXT AREA */
+.plantInfo {
+  padding: 14px 16px;
+}
+
+.plantInfo h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2d1f;
+}
+
+.plantInfo p {
+  margin-top: 4px;
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(31, 45, 31, 0.7);
+}
