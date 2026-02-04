@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import styles from "./Navbar.module.css";
-import { Link } from "react-router-dom";
 
 interface Props {
   variant?: "default" | "home";
@@ -20,12 +19,6 @@ const Navbar = ({ variant = "default" }: Props) => {
 
       {/* DESKTOP LINKS */}
       <nav className={styles.navbarLinks}>
-<<<<<<< HEAD
-        <a href="/">Home</a>
-        <a href="#plants">Discover Plants</a>
-        <a href="#learn">Learn</a>
-        <Link to ="/Scan">Scan Plant</Link>
-=======
         <NavLink
           to="/"
           className={({ isActive }) => (isActive ? styles.active : "")}
@@ -34,19 +27,18 @@ const Navbar = ({ variant = "default" }: Props) => {
         </NavLink>
 
         <NavLink
-          to="/discover-plants"
+          to="/discover"
           className={({ isActive }) => (isActive ? styles.active : "")}
         >
           Discover Plants
         </NavLink>
 
         <NavLink
-          to="/learn"
+          to="/scan"
           className={({ isActive }) => (isActive ? styles.active : "")}
         >
-          Learn
+          Scan Plant
         </NavLink>
->>>>>>> 48dfac9bc968066f7a5bda0a0e5fa8ef358e4af2
       </nav>
 
       {/* MOBILE HAMBURGER */}
@@ -67,12 +59,12 @@ const Navbar = ({ variant = "default" }: Props) => {
             Home
           </NavLink>
 
-          <NavLink to="/discover-plants" onClick={() => setOpen(false)}>
+          <NavLink to="/discover" onClick={() => setOpen(false)}>
             Discover Plants
           </NavLink>
 
-          <NavLink to="/learn" onClick={() => setOpen(false)}>
-            Learn
+          <NavLink to="/scan" onClick={() => setOpen(false)}>
+            Scan Plant
           </NavLink>
         </div>
       )}
