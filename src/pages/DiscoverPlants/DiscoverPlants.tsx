@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Navbar from "../../components/Navbar/Navbar";
+import Navbar from "../../components/Home/Navbar/Navbar";
 import SearchBar from "../../components/DiscoverPlant/SearchBar/SearchBar";
 import PlantsGrid from "../../components/DiscoverPlant/pLantsGrid/pLants.Grid";
 import type { Plant } from "../../types/plant";

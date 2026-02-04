@@ -6,11 +6,11 @@
 .container {
   max-width: 1300px;
   margin: auto;
-  padding: 110px 20px 30px; /* 👈 TOP PADDING IS THE FIX */
+  padding: 110px 20px 30px; 
 }
 
 
-/* RESULTS + ACTIONS ROW */
+
 .controls {
   display: flex;
   justify-content: space-between;
@@ -23,7 +23,7 @@
   font-size: 14px;
 }
 
-/* RIGHT SIDE */
+
 .actions {
   display: flex;
   gap: 15px;
@@ -50,12 +50,12 @@
   gap: 25px;
 }
 
-/* when filters are shown */
+
 .withFilters {
   grid-template-columns: 260px 1fr;
 }
 
-/* when filters are hidden */
+
 .noFilters {
   grid-template-columns: 1fr;
 }

@@ -1,6 +1,5 @@
 import React from "react";
 import styles from "./Location.module.css";
-import campusImg from "../../assets/nddu-campus.jpg"; // adjust path if needed
 
 const Location: React.FC = () => {
   return (
@@ -10,7 +9,7 @@ const Location: React.FC = () => {
         {/* LEFT: IMAGE */}
         <div className={styles.locationImage}>
           <img
-            src={campusImg}
+            src="/assets/nddu-campus.jpg" // direct path from public folder
             alt="Notre Dame of Dadiangas University"
           />
           <h3>Notre Dame of Dadiangas University</h3>

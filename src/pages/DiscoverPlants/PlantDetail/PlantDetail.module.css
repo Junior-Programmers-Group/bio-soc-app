@@ -121,7 +121,7 @@
     margin-bottom: 16px;
   }
 
-  /* Tabs like reference (scrollable) */
+
   .tabs {
     gap: 20px;
     font-size: 13px;
@@ -134,7 +134,7 @@
     display: none;
   }
 
-  /* Taxonomy becomes single column */
+  
   .taxonomy {
     grid-template-columns: 1fr;
     row-gap: 10px;

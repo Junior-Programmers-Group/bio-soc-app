@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Navbar from "../components/Navbar/Navbar";
+import Navbar from "../components/Home/Navbar/Navbar";
 import pb from "../back-end/db";
 
 type Plant = {

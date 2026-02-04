@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import Navbar from "../../../components/Navbar/Navbar";
+import Navbar from "../../../components/Home/Navbar/Navbar";
 import type { Plant } from "../../../types/plant";
 import styles from "./PlantDetail.module.css";
 

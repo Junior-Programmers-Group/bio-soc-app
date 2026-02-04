@@ -21,7 +21,7 @@ export default function PlantsCRUD() {
   // 🔹 FETCH
   const fetchClasses = async () => {
   try {
-    setLoading(true);
+    setLoading(true)
     setError("");
 
     const records = await pb.collection("class").getFullList<PlantClass>();
