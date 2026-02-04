@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./Navbar.module.css";
+import { Link } from "react-router-dom";
 
 const Navbar = ({ variant = "default" }) => {
   const [open, setOpen] = useState(false);
@@ -17,6 +18,7 @@ const Navbar = ({ variant = "default" }) => {
         <a href="/">Home</a>
         <a href="#plants">Discover Plants</a>
         <a href="#learn">Learn</a>
+        <Link to ="/Scan">Scan Plant</Link>
       </nav>
 
       {/* MOBILE HAMBURGER */}
