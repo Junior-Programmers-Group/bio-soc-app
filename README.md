@@ -1,73 +1,43 @@
-# React + TypeScript + Vite
+# Respecia — Local auth demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project contains a simple frontend and a minimal Node.js backend demonstrating authentication backed by PostgreSQL.
 
-Currently, two official plugins are available:
+Quick start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Copy `.env.example` to `.env` and update the `DATABASE_URL` value.
 
-## React Compiler
+2. Install dependencies:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. Initialize the database (run the SQL in `db/init.sql`). Example using psql:
+
+```bash
+psql $DATABASE_URL -f db/init.sql
+```
+
+4. (Optional) Create a test user. Run this Node snippet to generate a bcrypt hash and insert into `users`:
 
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+// run with `node -e "require('bcrypt').hash('Password123',10).then(h=>console.log(h))"`
 ```
+
+Then insert into DB:
+
+```sql
+INSERT INTO users(email, password_hash) VALUES('demo@example.com','<HASH>');
+```
+
+5. Start the server:
+
+```bash
+npm start
+```
+
+6. Open `login.html` in a browser and point the form to the server (if serving static files differently, ensure the API root is reachable).
+
+Notes
+- The server returns a simple JSON success on login — replace with proper session or JWT handling for production.
+- The reset endpoint creates a token in `password_resets` but does not send email. Implement an email provider to deliver reset links.

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Login — Respecia</title>
+        <link rel="stylesheet" href="login.module.css" />
+    </head>
+    <body>
+        <main class="page">
+            <section class="card">
+                <h1 class="brand">Respecia</h1>
+                <p class="subtitle">Sign in to your account</p>
+
+                <form id="loginForm" class="form" novalidate>
+                    <label class="field">
+                        <span class="label-text">Email</span>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            inputmode="email"
+                            required
+                            placeholder="you@example.com"
+                        />
+                        <span class="error" id="emailError" aria-live="polite"></span>
+                    </label>
+
+                    <label class="field">
+                        <span class="label-text">Password</span>
+                        <div class="password-row">
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                minlength="6"
+                                placeholder="Enter your password"
+                            />
+                            <button
+                                type="button"
+                                id="togglePwd"
+                                class="btn-icon"
+                                aria-label="Show password"
+                            >
+                                👁️
+                            </button>
+                        </div>
+                        <span class="error" id="passwordError" aria-live="polite"></span>
+                    </label>
+
+                    <label class="checkbox">
+                        <input id="remember" name="remember" type="checkbox" />
+                        <span>Remember me</span>
+                    </label>
+
+                    <div class="actions">
+                        <button type="submit" class="btn primary">Sign in</button>
+                        <button type="button" id="forgotBtn" class="link">Forgot password?</button>
+                    </div>
+                </form>
+
+                <div class="divider">Or</div>
+
+                <div class="social">
+                    <button class="btn alt">Continue with Google</button>
+                    <button class="btn alt">Continue with GitHub</button>
+                </div>
+
+                <p class="small">
+                    Don't have an account? <button id="signupBtn" class="link">Sign up</button>
+                </p>
+            </section>
+        </main>
+
+        <!-- Forgot Password Modal -->
+        <div id="modal" class="modal" aria-hidden="true">
+            <div
+                class="modal-panel"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modalTitle"
+            >
+                <h2 id="modalTitle">Reset password</h2>
+                <p class="small">
+                    Enter your account email and we'll send reset instructions.
+                </p>
+
+                <form id="resetForm" class="form" novalidate>
+                    <label class="field">
+                        <span class="label-text">Email</span>
+                        <input
+                            id="resetEmail"
+                            name="resetEmail"
+                            type="email"
+                            required
+                            placeholder="you@example.com"
+                        />
+                        <span
+                            class="error"
+                            id="resetEmailError"
+                            aria-live="polite"
+                        ></span>
+                    </label>
+
+                    <div class="actions">
+                        <button type="submit" class="btn primary">Send reset link</button>
+                        <button type="button" id="closeModal" class="btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Signup Modal -->
+        <div id="signupModal" class="modal" aria-hidden="true">
+            <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="signupTitle">
+                <h2 id="signupTitle">Create account</h2>
+                <p class="small">Create an account with your email.</p>
+
+                <form id="signupForm" class="form" novalidate>
+                    <label class="field">
+                        <span class="label-text">Email</span>
+                        <input id="signupEmail" name="signupEmail" type="email" required placeholder="you@example.com" />
+                        <span class="error" id="signupEmailError" aria-live="polite"></span>
+                    </label>
+
+                    <label class="field">
+                        <span class="label-text">Password</span>
+                        <input id="signupPassword" name="signupPassword" type="password" required minlength="6" placeholder="Choose a password" />
+                        <span class="error" id="signupPasswordError" aria-live="polite"></span>
+                    </label>
+
+                    <div class="actions">
+                        <button type="submit" class="btn primary">Create account</button>
+                        <button type="button" id="closeSignup" class="btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="login.js" defer></script>
+    </body>
+</html>
