@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Scan from "./pages/Scan";
-import PlantsCRUD from "./back-end/PlantsCRUD";
+import PlantsCRUD from "./back-end/components/PlantsCRUD";
 import DiscoverPlants from "./pages/DiscoverPlants/DiscoverPlants";
 import PlantDetail from "./pages/DiscoverPlants/PlantDetail/PlantDetail";
 import "./styles/global.css";
