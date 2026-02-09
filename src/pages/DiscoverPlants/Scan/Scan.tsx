@@ -17,7 +17,6 @@ const Scan = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 700);
 
-  const [qr, setQr] = useState("");
   const [plant, setPlant] = useState<Plant | null>(null);
   const [error, setError] = useState("");
 
@@ -45,8 +44,6 @@ const Scan = () => {
           if (hasScannedRef.current) return;
 
           hasScannedRef.current = true;
-          setQr(decodedText);
-
           await fetchPlant(decodedText);
 
           setTimeout(() => {
@@ -80,7 +77,6 @@ const Scan = () => {
       
       const decodedText = await scanner.scanFile(file, true);
       
-      setQr(decodedText);
       await fetchPlant(decodedText);
     } catch (err) {
       setError("❌ No QR code found in the image");
