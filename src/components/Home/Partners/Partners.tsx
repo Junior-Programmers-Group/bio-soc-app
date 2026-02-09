@@ -7,12 +7,12 @@ const Partners = () => {
 
       <div className={styles.partnerList}>
         <div className={styles.partner}>
-          <img src="/Group 9.png" alt="Junior Programmers Group logo" />
+          <img src="/LOGO-Final-WHITE.png" alt="Junior Programmers Group logo" />
           <p>Junior Programmers Group</p>
         </div>
 
         <div className={styles.partner}>
-          <img src="/Logo (1).png" alt="BioSociety logo" />
+          <img src="/BIOSOCIETY.png" alt="BioSociety logo" />
           <p>BioSociety</p>
         </div>
       </div>
