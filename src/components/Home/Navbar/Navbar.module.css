@@ -45,6 +45,9 @@
 
 .navbarLogo img {
   width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 /* ===================================================== */
@@ -233,6 +236,9 @@
 
   .navbarLogo img {
     width: 46px;
+    height: 46px;
+    object-fit: cover;
+    border-radius: 50%;
   }
 
   .navbarLogo span {
