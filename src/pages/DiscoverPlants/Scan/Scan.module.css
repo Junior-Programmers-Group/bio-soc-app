@@ -1,0 +1,223 @@
+.scanContainer {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* QR Camera box */
+.qrBox {
+  width: 100%;
+  max-width: 320px;
+  height: 320px;          /* ✅ REQUIRED */
+  margin: 1rem auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+
+/* Input field */
+.input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+/* File input - hidden */
+.fileInput {
+  display: none;
+}
+
+/* Upload button */
+.uploadButton {
+  width: 100%;
+  padding: 12px;
+  margin-top: 1rem;
+  background-color: #2e7d32;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.uploadButton:hover {
+  background-color: #256628;
+}
+
+/* Error message */
+.error {
+  margin-top: 1rem;
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+/* Plant result card */
+.plantCard {
+  margin-top: 1.5rem;
+  background: #f4f9f4;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.plantCard img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.plantCard h2 {
+  margin: 0.25rem 0;
+}
+
+.plantCard i {
+  color: #4b6f4b;
+  font-size: 0.9rem;
+}
+
+/* Mobile polish */
+@media (max-width: 700px) {
+  .scanContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #000;
+    overflow-y: auto;
+  }
+
+  h1 {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    margin: 0;
+    z-index: 10;
+    font-size: 1.2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  }
+
+  .qrBox {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    z-index: 1;
+    border: none;
+  }
+
+  .input {
+    position: fixed;
+    bottom: 120px;
+    left: 20px;
+    right: 20px;
+    width: calc(100% - 40px);
+    padding: 12px;
+    margin: 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    z-index: 20;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .uploadButton {
+    position: fixed;
+    bottom: 60px;
+    left: 20px;
+    right: 20px;
+    width: calc(100% - 40px);
+    padding: 12px;
+    margin: 0;
+    background-color: #2e7d32;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 20;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .uploadButton:hover {
+    background-color: #256628;
+  }
+
+  .error {
+    position: fixed;
+    bottom: 30px;
+    left: 20px;
+    right: 20px;
+    width: calc(100% - 40px);
+    margin: 0;
+    color: #ff6b6b;
+    font-weight: 500;
+    text-align: center;
+    z-index: 20;
+  }
+
+  .plantCard {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 50vh;
+    overflow-y: auto;
+    background: #f4f9f4;
+    padding: 1rem 1rem 2rem 1rem;
+    border-radius: 24px 24px 0 0;
+    text-align: left;
+    z-index: 30;
+    margin-top: 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .plantCard img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+  }
+}
+.qrBox video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Mobile QR scanning frame overlay */
+@media (max-width: 700px) {
+  .scanContainer::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    height: 320px;
+    border: 4px solid #2e7d32;
+    border-radius: 12px;
+    z-index: 15;
+    pointer-events: none;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+  }
+}

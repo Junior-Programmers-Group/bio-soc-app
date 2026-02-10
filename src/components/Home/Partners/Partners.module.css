@@ -20,18 +20,22 @@
 }
 
 /* ITEM */
-.partner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 180px;
-}
-
-/* LOGO */
 .partner img {
-  width: 120px;
-  height: auto;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
+
+  /* aesthetics */
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.partner img:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
 }
 
 /* TEXT */
