@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import Navbar from "../../../components/Home/Navbar/Navbar";
 import pb from "../../../back-end/db";
-import styles from "./scan.module.css";
+import styles from "./Scan.module.css";
 
 type Plant = {
   name: string;
