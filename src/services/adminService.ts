@@ -7,9 +7,9 @@ export interface PlantRecord extends RecordModel {
   scientificName?: string;
   commonNames?: string;
   description?: string;
-  imageUrl?: string;
+  image?: string;
   
-  // Taxonomy
+  // Taxonomy - flat structure for now
   kingdom?: string;
   order?: string;
   family?: string;
@@ -24,10 +24,6 @@ export interface PlantRecord extends RecordModel {
   
   // References
   phylum_id?: number;
-  
-  // Legacy fields (for backward compatibility)
-  commonName?: string;
-  image?: string;
 }
 
 export interface UserRecord extends RecordModel {
@@ -46,9 +42,38 @@ export async function getPlants(): Promise<PlantRecord[]> {
   }
 }
 
-export async function createPlant(data: Partial<PlantRecord>): Promise<PlantRecord> {
+export async function createPlant(
+  data: Partial<PlantRecord>,
+  imageFile?: File
+): Promise<PlantRecord> {
   try {
-    return await pb.collection("class").create<PlantRecord>(data);
+    // Prepare the form data
+    const formData = new FormData();
+    
+    // Add all text fields
+    formData.append("name", data.name || "");
+    formData.append("scientificName", data.scientificName || "");
+    formData.append("commonNames", data.commonNames || "");
+    formData.append("description", data.description || data.name || "");
+    formData.append("kingdom", data.kingdom || "");
+    formData.append("order", data.order || "");
+    formData.append("family", data.family || "");
+    formData.append("subfamily", data.subfamily || "");
+    formData.append("species", data.species || "");
+    formData.append("morphology", data.morphology || "");
+    formData.append("ecology", data.ecology || "");
+    formData.append("distribution", data.distribution || "");
+    formData.append("uses", data.uses || "");
+    formData.append("phylum_id", String(data.phylum_id || 1));
+    
+    // Add image file if provided
+    if (imageFile) {
+      formData.append("image", imageFile, imageFile.name);
+    }
+
+    const record = await pb.collection("class").create<PlantRecord>(formData);
+    console.log("✓ Plant created successfully:", record);
+    return record;
   } catch (error) {
     console.error("Error creating plant:", error);
     throw error;
@@ -57,10 +82,56 @@ export async function createPlant(data: Partial<PlantRecord>): Promise<PlantReco
 
 export async function updatePlant(
   id: string,
-  data: Partial<PlantRecord>
+  data: Partial<PlantRecord>,
+  imageFile?: File
 ): Promise<PlantRecord> {
   try {
-    return await pb.collection("class").update<PlantRecord>(id, data);
+    // If there's an image file, use FormData
+    if (imageFile) {
+      const formData = new FormData();
+      
+      formData.append("name", data.name || "");
+      formData.append("scientificName", data.scientificName || "");
+      formData.append("commonNames", data.commonNames || "");
+      formData.append("description", data.description || data.name || "");
+      formData.append("kingdom", data.kingdom || "");
+      formData.append("order", data.order || "");
+      formData.append("family", data.family || "");
+      formData.append("subfamily", data.subfamily || "");
+      formData.append("species", data.species || "");
+      formData.append("morphology", data.morphology || "");
+      formData.append("ecology", data.ecology || "");
+      formData.append("distribution", data.distribution || "");
+      formData.append("uses", data.uses || "");
+      formData.append("phylum_id", String(data.phylum_id || 1));
+      formData.append("image", imageFile, imageFile.name);
+      
+      const record = await pb.collection("class").update<PlantRecord>(id, formData);
+      console.log("✓ Plant updated successfully:", record);
+      return record;
+    } else {
+      // No image file, use JSON
+      const payload = {
+        name: data.name || "",
+        scientificName: data.scientificName || "",
+        commonNames: data.commonNames || "",
+        description: data.description || data.name || "",
+        kingdom: data.kingdom || "",
+        order: data.order || "",
+        family: data.family || "",
+        subfamily: data.subfamily || "",
+        species: data.species || "",
+        morphology: data.morphology || "",
+        ecology: data.ecology || "",
+        distribution: data.distribution || "",
+        uses: data.uses || "",
+        phylum_id: Number(data.phylum_id) || 1,
+      };
+
+      const record = await pb.collection("class").update<PlantRecord>(id, payload);
+      console.log("✓ Plant updated successfully:", record);
+      return record;
+    }
   } catch (error) {
     console.error("Error updating plant:", error);
     throw error;
@@ -70,6 +141,7 @@ export async function updatePlant(
 export async function deletePlant(id: string): Promise<void> {
   try {
     await pb.collection("class").delete(id);
+    console.log("✓ Plant deleted successfully");
   } catch (error) {
     console.error("Error deleting plant:", error);
     throw error;
@@ -128,22 +200,22 @@ export async function getAnalyticsData() {
 export async function uploadPlantImage(
   file: File,
   recordId?: string
-): Promise<string> {
+): Promise<File> {
   try {
-    const formData = new FormData();
-    formData.append("image", file);
-    
-    if (recordId) {
-      // Upload to existing record
-      const record = await pb.collection("class").update<PlantRecord>(recordId, formData);
-      return pb.getFileUrl(record, file.name);
-    } else {
-      // For new records: just return the file name, to be used in plant creation
-      // The file will be uploaded together with plant data
-      return file.name;
+    // Validate file
+    if (!file.type.startsWith("image/")) {
+      throw new Error("File must be an image");
     }
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error("File size must be less than 5MB");
+    }
+    
+    console.log("✓ Image file validated and ready for upload");
+    return file;
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error("Error validating image:", error);
     throw error;
   }
 }
+
+
