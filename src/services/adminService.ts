@@ -198,8 +198,7 @@ export async function getAnalyticsData() {
 
 // 📸 FILE UPLOAD
 export async function uploadPlantImage(
-  file: File,
-  recordId?: string
+  file: File
 ): Promise<File> {
   try {
     // Validate file

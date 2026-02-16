@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import styles from "./Navbar.module.css";
 
@@ -8,9 +8,27 @@ interface Props {
 
 const Navbar = ({ variant = "default" }: Props) => {
   const [open, setOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className={`${styles.navbar} ${styles[variant]}`}>
+    <header
+      className={`${styles.navbar} ${styles[variant]} ${
+        isScrolled && variant === "home" ? styles.scrolled : ""
+      }`}
+    >
       {/* LOGO */}
       <div className={styles.navbarLogo}>
         <img src="/Logo.png" alt="BioSoc Eco-Tagging" />

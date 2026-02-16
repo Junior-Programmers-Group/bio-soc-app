@@ -8,6 +8,7 @@
 
   /* BASE IMAGE */
   background: url("../../assets/nddu-campus.jpg") center / cover no-repeat;
+  background-attachment: fixed;
 
   display: flex;
   justify-content: center;
@@ -50,13 +51,24 @@
 }
 
 .heroContent h1 {
-  font-size: 45px;
+  font-size: clamp(28px, 7vw, 45px);
   margin: 0;
   color: #E2EECA;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
 }
 
 .heroContent p {
   margin-top: 14px;
+  color: #E2EECA;
+  font-size: clamp(14px, 4vw, 16px);
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.plantCount {
+  font-weight: 500;
   color: #E2EECA;
 }
 
@@ -67,45 +79,176 @@
 .heroInput {
   margin-top: 36px;
   width: 100%;
+  max-width: 600px;
   padding: 16px 26px;
 
   border-radius: 999px;
   border: none;
 
-  font-size: 14px;
+  font-size: clamp(13px, 3.5vw, 14px);
   font-family: "Inter", sans-serif;
 
   background: #ffffff;
   color: #000000;
 
   outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.heroInput:focus {
+  box-shadow: 0 8px 30px rgba(45, 122, 61, 0.25);
+  transform: translateY(-2px);
+}
+
+/* ===================================================== */
+/* 📱 LARGE TABLET / SMALL DESKTOP */
+/* ===================================================== */
+
+@media (max-width: 1024px) {
+  .heroContent h1 {
+    font-size: clamp(28px, 6vw, 42px);
+  }
+
+  .heroInput {
+    padding: 14px 22px;
+  }
 }
 
 /* ===================================================== */
 /* 📱 TABLET */
 /* ===================================================== */
 
-@media (max-width: 1024px) {
-  .heroContent h1 {
-    font-size: 42px;
+@media (max-width: 768px) {
+  .hero {
+    height: 90vh;
   }
-}
 
-/* ===================================================== */
-/* 📱 MOBILE */
-/* ===================================================== */
-
-@media (max-width: 640px) {
   .heroContent {
-    padding-top: 96px; /* clears mobile navbar */
+    padding-top: 48px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
   .heroContent h1 {
-    font-size: 32px;
+    font-size: clamp(24px, 5.5vw, 38px);
+  }
+
+  .heroContent p {
+    margin-top: 12px;
+    font-size: clamp(13px, 3.5vw, 15px);
   }
 
   .heroInput {
+    margin-top: 28px;
     padding: 12px 20px;
+    font-size: clamp(13px, 3vw, 14px);
+  }
+}
+
+/* ===================================================== */
+/* 📱 SMALL MOBILE */
+/* ===================================================== */
+
+@media (max-width: 640px) {
+  .hero {
+    background-attachment: scroll;
+    height: 100vh;
+  }
+
+  .heroContent {
+    padding-top: 100px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 20px;
+  }
+
+  .heroContent h1 {
+    font-size: clamp(22px, 5vw, 32px);
+    margin-bottom: 8px;
+  }
+
+  .heroContent p {
+    margin-top: 10px;
+    font-size: clamp(12px, 3.2vw, 14px);
+  }
+
+  .heroInput {
+    margin-top: 24px;
+    padding: 12px 16px;
     font-size: 13px;
   }
 }
+
+/* ===================================================== */
+/* 📱 EXTRA SMALL MOBILE (< 480px) */
+/* ===================================================== */
+
+@media (max-width: 480px) {
+  .hero {
+    background-attachment: scroll;
+    height: 100vh;
+  }
+
+  .hero::after {
+    background: linear-gradient(
+      to bottom,
+      rgba(15, 36, 24, 0.35) 0%,
+      rgba(15, 36, 24, 0.55) 40%,
+      rgba(15, 36, 24, 0.8) 65%,
+      var(--bg-section) 100%
+    );
+  }
+
+  .heroContent {
+    padding-top: 90px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: 16px;
+  }
+
+  .heroContent h1 {
+    font-size: clamp(20px, 4.5vw, 28px);
+    margin-bottom: 6px;
+  }
+
+  .heroContent p {
+    margin-top: 8px;
+    font-size: clamp(11px, 3vw, 13px);
+  }
+
+  .heroInput {
+    margin-top: 20px;
+    padding: 11px 14px;
+    font-size: 12px;
+  }
+}
+
+/* ===================================================== */
+/* 📱 ULTRA SMALL MOBILE (< 360px) */
+/* ===================================================== */
+
+@media (max-width: 360px) {
+  .heroContent {
+    padding-top: 80px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: 12px;
+  }
+
+  .heroContent h1 {
+    font-size: clamp(18px, 4vw, 24px);
+  }
+
+  .heroContent p {
+    margin-top: 6px;
+    font-size: clamp(10px, 2.8vw, 12px);
+  }
+
+  .heroInput {
+    margin-top: 16px;
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+}
+

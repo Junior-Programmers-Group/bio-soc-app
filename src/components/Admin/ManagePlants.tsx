@@ -147,6 +147,11 @@ export default function ManagePlants() {
       const data = await getPlants();
       setPlants(data);
     } catch (err: any) {
+      // Ignore auto-cancellation errors
+      if (err?.message?.includes("cancelled") || err?.isAbort) {
+        return;
+      }
+      console.error("Error fetching plants:", err);
       setError(err.message || "Failed to fetch plants");
     } finally {
       setLoading(false);
@@ -180,6 +185,10 @@ export default function ManagePlants() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent multiple simultaneous submissions
+    if (uploading) return;
+    
     setError("");
     setSuccess("");
     setUploading(true);
@@ -207,7 +216,9 @@ export default function ManagePlants() {
         fetchPlants();
       }, 1000);
     } catch (err: any) {
-      setError(err.message || "Failed to save plant");
+      if (!err?.message?.includes("cancelled")) {
+        setError(err.message || "Failed to save plant");
+      }
     } finally {
       setUploading(false);
     }
@@ -220,7 +231,9 @@ export default function ManagePlants() {
       await deletePlant(id);
       fetchPlants();
     } catch (err: any) {
-      setError(err.message || "Failed to delete plant");
+      if (!err?.message?.includes("cancelled")) {
+        setError(err.message || "Failed to delete plant");
+      }
     }
   };
 
@@ -349,16 +362,29 @@ export default function ManagePlants() {
             )}
 
             <div className={styles.formActions}>
-              <button type="button" onClick={goToPreviousStep} disabled={currentStep === "basic"}>
-                Previous
+              <button 
+                type="button" 
+                onClick={goToPreviousStep} 
+                disabled={currentStep === "basic"}
+                className={styles.prevBtn}
+              >
+                ← Previous
               </button>
               {currentStep !== "media" ? (
-                <button type="button" onClick={goToNextStep}>
-                  Next
+                <button 
+                  type="button" 
+                  onClick={goToNextStep}
+                  className={styles.nextBtn}
+                >
+                  Next →
                 </button>
               ) : (
-                <button type="submit" disabled={uploading}>
-                  {uploading ? "Uploading..." : "Create Plant"}
+                <button 
+                  type="submit" 
+                  disabled={uploading}
+                  className={styles.submitBtn}
+                >
+                  {uploading ? "Uploading..." : "✓ Create Plant"}
                 </button>
               )}
             </div>
@@ -414,11 +440,19 @@ export default function ManagePlants() {
                   setFormData={setFormData}
                 />
                 <div className={styles.editFormActions}>
-                  <button type="button" onClick={resetForm}>
+                  <button 
+                    type="button" 
+                    onClick={resetForm}
+                    className={styles.cancelBtn}
+                  >
                     Cancel
                   </button>
-                  <button type="submit" disabled={uploading}>
-                    {uploading ? "Uploading..." : "Save Changes"}
+                  <button 
+                    type="submit" 
+                    disabled={uploading}
+                    className={styles.saveBtn}
+                  >
+                    {uploading ? "Uploading..." : "✓ Save Changes"}
                   </button>
                 </div>
               </form>

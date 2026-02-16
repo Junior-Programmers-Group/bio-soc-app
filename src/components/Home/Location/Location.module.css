@@ -43,6 +43,7 @@
 .locationContent p {
   line-height: 1.7;
   margin-bottom: 16px;
+  text-align: justify;
   color: #dce8d3;
 }
 

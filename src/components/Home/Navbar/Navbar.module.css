@@ -18,6 +18,7 @@
   backdrop-filter: blur(10px);
 
   z-index: 100;
+  transition: all 0.3s ease;
 }
 
 /* ========================= */
@@ -30,6 +31,14 @@
 .home {
   background: transparent;
   backdrop-filter: none;
+  transition: all 0.3s ease;
+}
+
+/* HOME VARIANT - SCROLLED STATE */
+.home.scrolled {
+  background: rgba(10, 30, 20, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 /* ===================================================== */
@@ -63,11 +72,42 @@
   font-size: 14px;
   color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  font-weight: 500;
+  padding-bottom: 4px;
 }
 
 .navbarLinks a:hover {
   color: var(--text-main);
+}
+
+.navbarLinks a.active {
+  color: #eec701;
+  font-weight: 600;
+}
+
+.navbarLinks a.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #e1d500 0%, #bdba02 100%);
+  border-radius: 1px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
+    left: 50%;
+  }
+  to {
+    width: 100%;
+    left: 0;
+  }
 }
 
 /* ===================================================== */
@@ -179,12 +219,20 @@
   font-size: 14px;
   font-weight: 400;
 
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .mobileMenu a:hover {
   background: rgba(231, 200, 115, 0.12);
   color: var(--text-main);
+}
+
+.mobileMenu a.active {
+  background: rgba(45, 122, 61, 0.15);
+  color: #2d7a3d;
+  font-weight: 600;
+  border-left: 3px solid #2d7a3d;
+  padding-left: 11px;
 }
 
 /* ===================================================== */

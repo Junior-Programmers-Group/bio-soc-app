@@ -292,6 +292,42 @@ textarea {
   transform: translateY(-2px);
 }
 
+/* Button-specific classes for clarity */
+.prevBtn {
+  background: #f0f5f0;
+  color: #1f2f1f;
+  border: 2px solid #e0e8e0;
+}
+
+.prevBtn:hover:not(:disabled) {
+  background: #e0e8e0;
+  border-color: #c0d8c0;
+}
+
+.nextBtn {
+  background: linear-gradient(135deg, #2d7a3d 0%, #3d9d53 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(45, 122, 61, 0.25);
+}
+
+.nextBtn:hover:not(:disabled) {
+  box-shadow: 0 8px 20px rgba(45, 122, 61, 0.35);
+  transform: translateY(-2px);
+}
+
+.submitBtn {
+  background: linear-gradient(135deg, #2d7a3d 0%, #3d9d53 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(45, 122, 61, 0.25);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(45, 122, 61, 0.4);
+  transform: translateY(-2px);
+}
+
 /* =======================
    Plants Grid
 ======================= */
@@ -581,6 +617,31 @@ textarea {
 .editFormActions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Edit form button-specific classes */
+.cancelBtn {
+  background: #f0f5f0;
+  color: #1f2f1f;
+  border: 2px solid #e0e8e0;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: #e0e8e0;
+  border-color: #c0d8c0;
+}
+
+.saveBtn {
+  background: linear-gradient(135deg, #2d7a3d 0%, #3d9d53 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(45, 122, 61, 0.25);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.saveBtn:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(45, 122, 61, 0.4);
+  transform: translateY(-2px);
 }
 
 /* =======================
