@@ -15,76 +15,106 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   return (
     <div className={styles.dashboard}>
-      <div className={styles.sidebar}>
+      
+      {/* SIDEBAR */}
+      <aside className={styles.sidebar}>
         <div className={styles.sidebarBrand}>
-          <h2>Admin</h2>
+          <h2>
+            <i className="bi bi-flower1"></i> BioSoc Admin
+          </h2>
         </div>
-        
+
         <nav className={styles.nav}>
           <button
             className={`${styles.navItem} ${activeTab === "overview" ? styles.active : ""}`}
             onClick={() => setActiveTab("overview")}
           >
+            <i className="bi bi-speedometer2"></i>
             Overview
           </button>
+
           <button
             className={`${styles.navItem} ${activeTab === "plants" ? styles.active : ""}`}
             onClick={() => setActiveTab("plants")}
           >
+            <i className="bi bi-tree"></i>
             Plants
           </button>
+
           <button
             className={`${styles.navItem} ${activeTab === "users" ? styles.active : ""}`}
             onClick={() => setActiveTab("users")}
           >
+            <i className="bi bi-people"></i>
             Users
           </button>
+
           <button
             className={`${styles.navItem} ${activeTab === "analytics" ? styles.active : ""}`}
             onClick={() => setActiveTab("analytics")}
           >
+            <i className="bi bi-bar-chart-line"></i>
             Analytics
           </button>
         </nav>
 
         {onLogout && (
           <button className={styles.logoutBtn} onClick={onLogout}>
+            <i className="bi bi-box-arrow-right"></i>
             Logout
           </button>
         )}
-      </div>
+      </aside>
 
-      <div className={styles.mainContent}>
+
+      {/* MAIN */}
+      <main className={styles.mainContent}>
         <div className={styles.header}>
           <h1>Admin Dashboard</h1>
         </div>
 
         <div className={styles.content}>
+          
+          {/* OVERVIEW */}
           {activeTab === "overview" && (
             <div className={styles.section}>
               <h2>Quick Actions</h2>
+
               <div className={styles.cardGrid}>
+
                 <div className={styles.card}>
-                  <h3>🌿 Manage Plants</h3>
+                  <h3>
+                    <i className="bi bi-tree"></i>
+                    Manage Plants
+                  </h3>
                   <p>Add, edit, or remove plant records</p>
                   <button onClick={() => setActiveTab("plants")}>
                     Go to Plants
                   </button>
                 </div>
+
                 <div className={styles.card}>
-                  <h3>👥 Manage Users</h3>
+                  <h3>
+                    <i className="bi bi-people"></i>
+                    Manage Users
+                  </h3>
                   <p>View and manage user accounts</p>
                   <button onClick={() => setActiveTab("users")}>
                     Go to Users
                   </button>
                 </div>
+
                 <div className={styles.card}>
-                  <h3>📊 Analytics</h3>
+                  <h3>
+                    <i className="bi bi-bar-chart"></i>
+                    Analytics
+                  </h3>
                   <p>View app statistics and reports</p>
                   <button onClick={() => setActiveTab("analytics")}>
                     View Analytics
                   </button>
                 </div>
+
               </div>
             </div>
           )}
@@ -93,7 +123,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           {activeTab === "users" && <ManageUsers />}
           {activeTab === "analytics" && <Analytics />}
         </div>
-      </div>
+      </main>
+
     </div>
   );
 }
