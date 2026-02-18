@@ -443,7 +443,7 @@ export default function ManagePlants() {
                 className={styles.editImageInput}
               />
               <label htmlFor="editImageInput" className={styles.changeImageBtn}>
-                📷 Change Image
+                 Change Image
               </label>
             </div>
 
@@ -504,14 +504,14 @@ export default function ManagePlants() {
                     disabled={downloadingQR || !editingId}
                     className={styles.downloadQRBtn}
                   >
-                    {downloadingQR ? "Downloading..." : "⬇ Download QR"}
+                    {downloadingQR ? "Downloading..." : " Download QR"}
                   </button>
                   <button 
                     type="submit" 
                     disabled={uploading}
                     className={styles.saveBtn}
                   >
-                    {uploading ? "Uploading..." : "✓ Save Changes"}
+                    {uploading ? "Uploading..." : " Save Changes"}
                   </button>
                 </div>
               </form>
