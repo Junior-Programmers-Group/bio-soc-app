@@ -376,8 +376,16 @@ textarea {
   flex: 1;
 }
 
+.cardActions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.25rem 1.25rem;
+  flex-wrap: wrap;
+}
+
 .plantCard button {
-  margin: 0 1.25rem 0.75rem;
+  flex: 1;
+  min-width: 60px;
   padding: 0.65rem 1rem;
   font-size: 0.85rem;
   border-radius: 8px;
@@ -385,6 +393,10 @@ textarea {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
+}
+
+.plantCard button:hover {
+  transform: translateY(-2px);
 }
 
 .plantCard button:first-of-type {
@@ -397,14 +409,29 @@ textarea {
   background: rgba(45, 122, 61, 0.08);
 }
 
-.plantCard button:last-of-type {
-  color: #dc2626;
-  border-color: #dc2626;
-  background: transparent;
+.qrBtn {
+  color: #0066cc !important;
+  border-color: #0066cc !important;
+  background: transparent !important;
 }
 
-.plantCard button:last-of-type:hover {
-  background: rgba(220, 38, 38, 0.08);
+.qrBtn:hover:not(:disabled) {
+  background: rgba(0, 102, 204, 0.08) !important;
+}
+
+.qrBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.deleteBtn {
+  color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  background: transparent !important;
+}
+
+.deleteBtn:hover {
+  background: rgba(220, 38, 38, 0.08) !important;
 }
 
 /* =======================
@@ -617,6 +644,54 @@ textarea {
 .editFormActions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* QR Code Section */
+.qrCodeSection {
+  margin-top: 2.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f0f5f0 0%, #e8f1e8 100%);
+  border-radius: 12px;
+  border: 2px solid #d4e8d4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.qrCodeSection h3 {
+  margin: 0;
+  color: #1f2f1f;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.qrCodePreview {
+  width: 250px;
+  height: 250px;
+  border: 3px solid #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(45, 122, 61, 0.15);
+  background: white;
+  padding: 8px;
+}
+
+.downloadQRBtn {
+  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25) !important;
+  font-weight: 700 !important;
+}
+
+.downloadQRBtn:hover:not(:disabled) {
+  box-shadow: 0 8px 20px rgba(0, 102, 204, 0.35) !important;
+  transform: translateY(-2px) !important;
+}
+
+.downloadQRBtn:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
 }
 
 /* Edit form button-specific classes */

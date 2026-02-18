@@ -15,6 +15,7 @@ export default function App() {
         <Route path="/scan" element={<Scan />} />
         <Route path="/plants" element={<PlantsCRUD />} />
         <Route path="/discover" element={<DiscoverPlants />} />
+        <Route path="/discover/plants/:id" element={<PlantDetail />} />
         <Route path="/discover/:id" element={<PlantDetail />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" replace />} />

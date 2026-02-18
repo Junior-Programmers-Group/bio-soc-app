@@ -6,6 +6,7 @@ import {
   deletePlant,
 } from "../../services/adminService";
 import type { PlantRecord } from "../../services/adminService";
+import { downloadPlantQRCode, generatePlantQRCode } from "../../services/qrCodeService";
 import styles from "./ManagePlants.module.css";
 
 const PLACEHOLDER_IMAGE =
@@ -117,6 +118,8 @@ export default function ManagePlants() {
   const [currentStep, setCurrentStep] = useState<FormStep>("basic");
   const [editTab, setEditTab] = useState<EditTab>("taxonomy");
   const [uploading, setUploading] = useState(false);
+  const [qrCodePreview, setQrCodePreview] = useState<string>("");
+  const [downloadingQR, setDownloadingQR] = useState(false);
 
   const [formData, setFormData] = useState<PlantFormData>({
     name: "",
@@ -155,6 +158,21 @@ export default function ManagePlants() {
       setError(err.message || "Failed to fetch plants");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadQR = async (plantId: string, plantName: string) => {
+    try {
+      setDownloadingQR(true);
+      setError("");
+      await downloadPlantQRCode(plantId, plantName);
+      setSuccess("✓ QR Code downloaded successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      console.error("Error downloading QR code:", err);
+      setError(err.message || "Failed to download QR code");
+    } finally {
+      setDownloadingQR(false);
     }
   };
 
@@ -261,6 +279,19 @@ export default function ManagePlants() {
     setShowForm(true);
     setCurrentStep("basic");
     setEditTab("taxonomy");
+    
+    // Generate QR code preview
+    generatePlantQRCode({
+      plantId: plant.id,
+      width: 250,
+    })
+      .then((qrUrl) => {
+        setQrCodePreview(qrUrl);
+      })
+      .catch((err) => {
+        console.error("Error generating QR preview:", err);
+        setQrCodePreview("");
+      });
   };
 
   const resetForm = () => {
@@ -287,6 +318,7 @@ export default function ManagePlants() {
     setEditTab("taxonomy");
     setError("");
     setSuccess("");
+    setQrCodePreview("");
   };
 
   const goToStep = (step: FormStep) => setCurrentStep(step);
@@ -439,6 +471,25 @@ export default function ManagePlants() {
                   formData={formData}
                   setFormData={setFormData}
                 />
+                
+                {/* QR Code Preview and Download */}
+                {qrCodePreview && (
+                  <div className={styles.qrCodeSection}>
+                    <h3>QR Code</h3>
+                    <img 
+                      src={qrCodePreview} 
+                      alt="Plant QR Code" 
+                      className={styles.qrCodePreview}
+                    />
+                    <p style={{ fontSize: "12px", color: "#666" }}>
+                      Works with: Android Camera, iOS Camera & All QR Scanners
+                    </p>
+                    <p style={{ fontSize: "11px", color: "#999", wordBreak: "break-all" }}>
+                      <strong>URL:</strong> http://jpg-services.nddu.edu.ph:10001/discover/plants/{editingId}
+                    </p>
+                  </div>
+                )}
+                
                 <div className={styles.editFormActions}>
                   <button 
                     type="button" 
@@ -446,6 +497,14 @@ export default function ManagePlants() {
                     className={styles.cancelBtn}
                   >
                     Cancel
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => editingId && handleDownloadQR(editingId, formData.name)}
+                    disabled={downloadingQR || !editingId}
+                    className={styles.downloadQRBtn}
+                  >
+                    {downloadingQR ? "Downloading..." : "⬇ Download QR"}
                   </button>
                   <button 
                     type="submit" 
@@ -476,8 +535,22 @@ export default function ManagePlants() {
             />
             <h3>{plant.name}</h3>
             <p>{plant.description || ""}</p>
-            <button onClick={() => handleEdit(plant)}>Edit</button>
-            <button onClick={() => handleDelete(plant.id)}>Delete</button>
+            <div className={styles.cardActions}>
+              <button onClick={() => handleEdit(plant)}>Edit</button>
+              <button 
+                onClick={() => handleDownloadQR(plant.id, plant.name)}
+                disabled={downloadingQR}
+                className={styles.qrBtn}
+              >
+                ⬇ QR
+              </button>
+              <button 
+                onClick={() => handleDelete(plant.id)}
+                className={styles.deleteBtn}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>

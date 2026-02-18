@@ -1,5 +1,6 @@
 import pb from "../back-end/db";
 import type { RecordModel } from "pocketbase";
+import { generateQRCodeBlob } from "./qrCodeService";
 
 export interface PlantRecord extends RecordModel {
   // Basic Information
@@ -8,6 +9,9 @@ export interface PlantRecord extends RecordModel {
   commonNames?: string;
   description?: string;
   image?: string;
+  
+  // QR Code
+  qr_code?: string;
   
   // Taxonomy - flat structure for now
   kingdom?: string;
@@ -51,7 +55,7 @@ export async function createPlant(
   imageFile?: File
 ): Promise<PlantRecord> {
   try {
-    // Prepare the form data
+    // First create the plant without QR code to get the ID
     const formData = new FormData();
     
     // Add all text fields
@@ -77,7 +81,31 @@ export async function createPlant(
 
     const record = await pb.collection("class").create<PlantRecord>(formData);
     console.log("✓ Plant created successfully:", record);
-    return record;
+    
+    // Now generate and upload QR code
+    try {
+      const qrCodeBlob = await generateQRCodeBlob({
+        plantId: record.id,
+        width: 400,
+        margin: 2,
+      });
+      
+      const qrFormData = new FormData();
+      qrFormData.append(
+        "qr_code",
+        qrCodeBlob,
+        `${record.id}_qr.png`
+      );
+      
+      const updatedRecord = await pb
+        .collection("class")
+        .update<PlantRecord>(record.id, qrFormData);
+      console.log("✓ QR code generated and saved:", updatedRecord);
+      return updatedRecord;
+    } catch (qrError) {
+      console.warn("Warning: QR code generation failed, but plant was created:", qrError);
+      return record; // Return plant even if QR code fails
+    }
   } catch (error) {
     console.error("Error creating plant:", error);
     throw error;
@@ -112,7 +140,26 @@ export async function updatePlant(
       
       const record = await pb.collection("class").update<PlantRecord>(id, formData);
       console.log("✓ Plant updated successfully:", record);
-      return record;
+      
+      // Regenerate QR code
+      try {
+        const qrCodeBlob = await generateQRCodeBlob({
+          plantId: record.id,
+          width: 400,
+          margin: 2,
+        });
+        
+        const qrFormData = new FormData();
+        qrFormData.append("qr_code", qrCodeBlob, `${record.id}_qr.png`);
+        
+        const updatedWithQR = await pb
+          .collection("class")
+          .update<PlantRecord>(record.id, qrFormData);
+        return updatedWithQR;
+      } catch (qrError) {
+        console.warn("Warning: QR code regeneration failed:", qrError);
+        return record;
+      }
     } else {
       // No image file, use JSON
       const payload = {
@@ -134,7 +181,26 @@ export async function updatePlant(
 
       const record = await pb.collection("class").update<PlantRecord>(id, payload);
       console.log("✓ Plant updated successfully:", record);
-      return record;
+      
+      // Regenerate QR code
+      try {
+        const qrCodeBlob = await generateQRCodeBlob({
+          plantId: record.id,
+          width: 400,
+          margin: 2,
+        });
+        
+        const qrFormData = new FormData();
+        qrFormData.append("qr_code", qrCodeBlob, `${record.id}_qr.png`);
+        
+        const updatedWithQR = await pb
+          .collection("class")
+          .update<PlantRecord>(record.id, qrFormData);
+        return updatedWithQR;
+      } catch (qrError) {
+        console.warn("Warning: QR code regeneration failed:", qrError);
+        return record;
+      }
     }
   } catch (error) {
     console.error("Error updating plant:", error);
