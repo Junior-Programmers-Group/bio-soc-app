@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 import Navbar from "../../../components/Home/Navbar/Navbar";
 import pb from "../../../back-end/db";
@@ -12,6 +13,7 @@ type Plant = {
 };
 
 const Scan = () => {
+  const navigate = useNavigate();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const hasScannedRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -114,6 +116,15 @@ const Scan = () => {
       {!isMobile && <Navbar />}
 
       <div className={styles.scanContainer}>
+        {isMobile && (
+          <button
+            className={styles.backButton}
+            onClick={() => navigate("/")}
+            aria-label="Go back to home"
+          >
+            ← Back
+          </button>
+        )}
         <h1>Scan Plant QR</h1>
 
         {/* Camera MUST be rendered before scanner starts */}

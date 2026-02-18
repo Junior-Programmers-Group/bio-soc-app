@@ -13,12 +13,29 @@ export default function DiscoverPlants() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadPlants = async () => {
-      const data = await fetchPlants();
-      setPlants(data);
+      try {
+        const data = await fetchPlants();
+        if (isMounted) {
+          setPlants(data);
+        }
+      } catch (error) {
+        if (isMounted && error instanceof Error && !error.message.includes('aborted')) {
+          console.error("Error loading plants:", error);
+        }
+        if (isMounted) {
+          setPlants([]);
+        }
+      }
     };
 
     loadPlants();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const filteredPlants = plants.filter((plant) =>

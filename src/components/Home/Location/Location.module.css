@@ -41,17 +41,23 @@
 }
 
 .locationContent p {
-  line-height: 1.7;
+  line-height: 1.8;
   margin-bottom: 16px;
   text-align: justify;
   color: #dce8d3;
+  font-size: 1.05rem;
+  letter-spacing: 0.3px;
 }
 
 /* ========================= */
 /* 📱 TABLET */
 @media (max-width: 1024px) {
+  .location {
+    padding: 60px 40px;
+  }
+
   .locationContainer {
-    gap: 40px;
+    gap: 30px;
   }
 
   .locationContent h2 {
@@ -61,19 +67,31 @@
   .locationImage h3 {
     font-size: 1.3rem;
   }
+
+  .locationContent p {
+    text-align: justify;
+  }
 }
 
 /* ========================= */
 /* 📱 MOBILE */
 @media (max-width: 640px) {
+  .location {
+    padding: 60px 20px;
+  }
+
   .locationContainer {
     flex-direction: column;
+    gap: 30px;
   }
 
   .locationImage,
   .locationContent {
-    text-align: center;
     flex: unset;
+  }
+
+  .locationContent p {
+    text-align: justify;
   }
 
   .locationContent h2 {

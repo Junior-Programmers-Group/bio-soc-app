@@ -3,7 +3,9 @@ import pb from "../back-end/db";
 
 export const fetchPlants = async (): Promise<Plant[]> => {
   try {
-    const records = await pb.collection("class").getFullList<any>();
+    const records = await pb.collection("class").getFullList<any>({
+      requestKey: null, // Disable auto-cancellation
+    });
     
     return records.map((record: any) => ({
       id: record.id,
@@ -24,14 +26,18 @@ export const fetchPlants = async (): Promise<Plant[]> => {
       description: record.description || "",
     }));
   } catch (error) {
-    console.error("Error fetching plants:", error);
+    if (error instanceof Error && !error.message.includes('aborted')) {
+      console.error("Error fetching plants:", error);
+    }
     return [];
   }
 };
 
 export const fetchPlantById = async (id: string): Promise<Plant | null> => {
   try {
-    const record = await pb.collection("class").getOne<any>(id);
+    const record = await pb.collection("class").getOne<any>(id, {
+      requestKey: null, // Disable auto-cancellation
+    });
     
     return {
       id: record.id,
@@ -52,7 +58,9 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       description: record.description || "",
     };
   } catch (error) {
-    console.error("Error fetching plant:", error);
+    if (error instanceof Error && !error.message.includes('aborted')) {
+      console.error("Error fetching plant:", error);
+    }
     return null;
   }
 };

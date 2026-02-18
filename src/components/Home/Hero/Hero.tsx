@@ -10,19 +10,35 @@ const Hero = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
     const fetchPlantCount = async () => {
       try {
         const plants = await getPlants();
-        setPlantCount(plants.length);
+        if (isMounted) {
+          setPlantCount(plants.length);
+        }
       } catch (error) {
-        console.error("Error fetching plant count:", error);
-        setPlantCount(0);
+        if (isMounted && error instanceof Error && !error.message.includes('aborted')) {
+          console.error("Error fetching plant count:", error);
+        }
+        if (isMounted) {
+          setPlantCount(0);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchPlantCount();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {

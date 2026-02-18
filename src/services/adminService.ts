@@ -35,9 +35,13 @@ export interface UserRecord extends RecordModel {
 // 🌿 PLANTS MANAGEMENT
 export async function getPlants(): Promise<PlantRecord[]> {
   try {
-    return await pb.collection("class").getFullList<PlantRecord>();
+    return await pb.collection("class").getFullList<PlantRecord>({
+      requestKey: null, // Disable auto-cancellation
+    });
   } catch (error) {
-    console.error("Error fetching plants:", error);
+    if (error instanceof Error && !error.message.includes('aborted')) {
+      console.error("Error fetching plants:", error);
+    }
     throw error;
   }
 }

@@ -18,31 +18,45 @@ export default function PlantDetail() {
   const PLACEHOLDER_IMAGE = "https://via.placeholder.com/400x300/2d5016/ffffff?text=Plant";
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadPlant = async () => {
       if (!id) {
-        setError("No plant ID provided");
-        setLoading(false);
+        if (isMounted) {
+          setError("No plant ID provided");
+          setLoading(false);
+        }
         return;
       }
 
       try {
-        setLoading(true);
+        if (isMounted) {
+          setLoading(true);
+        }
         const data = await fetchPlantById(id);
-        if (data) {
+        if (isMounted && data) {
           setPlant(data);
           setError("");
-        } else {
+        } else if (isMounted) {
           setError("Plant not found");
         }
       } catch (err) {
-        console.error("Error loading plant:", err);
-        setError("Failed to load plant details");
+        if (isMounted && err instanceof Error && !err.message.includes('aborted')) {
+          console.error("Error loading plant:", err);
+          setError("Failed to load plant details");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     loadPlant();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (loading) {
