@@ -12,12 +12,27 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleNavClick = () => {
+    setMenuOpen(false);
+  };
 
   return (
     <div className={styles.dashboard}>
+      {/* HAMBURGER MENU BUTTON */}
+      <button 
+        className={`${styles.hamburger} ${menuOpen ? styles.active : ""}`}
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label="Toggle menu"
+      >
+        <span className={styles.hamburgerLine}></span>
+        <span className={styles.hamburgerLine}></span>
+        <span className={styles.hamburgerLine}></span>
+      </button>
       
       {/* SIDEBAR */}
-      <aside className={styles.sidebar}>
+      <aside className={`${styles.sidebar} ${menuOpen ? styles.open : ""}`}>
         <div className={styles.sidebarBrand}>
           <h2>
             <img className={styles.logo} src="/Logo.png" alt="BioSoc Logo" />
@@ -28,7 +43,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         <nav className={styles.nav}>
           <button
             className={`${styles.navItem} ${activeTab === "overview" ? styles.active : ""}`}
-            onClick={() => setActiveTab("overview")}
+            onClick={() => { setActiveTab("overview"); handleNavClick(); }}
           >
             <i className="bi bi-speedometer2"></i>
             Overview
@@ -36,7 +51,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
           <button
             className={`${styles.navItem} ${activeTab === "plants" ? styles.active : ""}`}
-            onClick={() => setActiveTab("plants")}
+            onClick={() => { setActiveTab("plants"); handleNavClick(); }}
           >
             <i className="bi bi-tree"></i>
             Plants
@@ -44,7 +59,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
           <button
             className={`${styles.navItem} ${activeTab === "users" ? styles.active : ""}`}
-            onClick={() => setActiveTab("users")}
+            onClick={() => { setActiveTab("users"); handleNavClick(); }}
           >
             <i className="bi bi-people"></i>
             Users
@@ -52,7 +67,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
           <button
             className={`${styles.navItem} ${activeTab === "analytics" ? styles.active : ""}`}
-            onClick={() => setActiveTab("analytics")}
+            onClick={() => { setActiveTab("analytics"); handleNavClick(); }}
           >
             <i className="bi bi-bar-chart-line"></i>
             Analytics
@@ -60,7 +75,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         </nav>
 
         {onLogout && (
-          <button className={styles.logoutBtn} onClick={onLogout}>
+          <button className={styles.logoutBtn} onClick={() => { onLogout(); handleNavClick(); }}>
             <i className="bi bi-box-arrow-right"></i>
             Logout
           </button>

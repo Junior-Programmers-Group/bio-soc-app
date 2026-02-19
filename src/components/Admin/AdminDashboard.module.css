@@ -208,7 +208,28 @@
 }
 
 
-/* RESPONSIVE */
+/* HAMBURGER MENU */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  background: none;
+  border: none;
+  cursor: pointer;
+  gap: 6px;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
+.hamburgerLine {
+  width: 24px;
+  height: 3px;
+  background: #0f8f4f;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+
+/* RESPONSIVE - TABLET (768px and below) */
 @media (max-width: 768px) {
   .dashboard {
     flex-direction: column;
@@ -220,31 +241,175 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem;
+    gap: 1rem;
+    overflow-x: auto;
   }
 
   .sidebarBrand {
     border: none;
     margin: 0;
     padding: 0;
+    flex-shrink: 0;
+  }
+
+  .sidebarBrand h2 {
+    font-size: 1.1rem;
+    gap: 6px;
+  }
+
+  .logo {
+    width: 45px;
+    height: 45px;
   }
 
   .nav {
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.3rem;
+    overflow-x: auto;
+    flex: 1;
+    padding: 0;
   }
 
   .navItem {
-    flex: 1;
-    justify-content: center;
-    font-size: 0.85rem;
+    flex-shrink: 0;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.75rem;
+    gap: 4px;
+  }
+
+  .navItem i {
+    font-size: 0.95rem;
   }
 
   .logoutBtn {
     margin: 0;
+    flex-shrink: 0;
+    padding: 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .header {
+    padding: 1.2rem 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.3rem;
   }
 
   .content {
-    padding: 1.5rem;
+    padding: 1.25rem;
+  }
+}
+
+/* RESPONSIVE - MOBILE (480px and below) */
+@media (max-width: 480px) {
+  .dashboard {
+    flex-direction: column;
+    position: relative;
+  }
+
+  .hamburger {
+    display: flex;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1001;
+  }
+
+  .hamburger .hamburgerLine:nth-child(1) {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  .hamburger .hamburgerLine:nth-child(2) {
+    opacity: 1;
+  }
+
+  .hamburger .hamburgerLine:nth-child(3) {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  .hamburger.active .hamburgerLine:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+  }
+
+  .hamburger.active .hamburgerLine:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger.active .hamburgerLine:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem;
+    gap: 0.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebarBrand {
+    text-align: center;
+    padding: 3.5rem 0.75rem 0.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .sidebarBrand h2 {
+    font-size: 0.95rem;
+    justify-content: center;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav {
+    flex-direction: column;
+    gap: 0.3rem;
+    width: 100%;
+    flex: 1;
+  }
+
+  .navItem {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    justify-content: flex-start;
+  }
+
+  .logoutBtn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    margin: 1rem 0 0;
+  }
+
+  .header {
+    padding: 1rem 0.75rem;
+    padding-top: 1.5rem;
+  }
+
+  .header h1 {
+    font-size: 1.2rem;
+  }
+
+  .content {
+    padding: 1rem 0.75rem;
   }
 }
