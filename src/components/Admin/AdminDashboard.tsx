@@ -20,7 +20,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       <aside className={styles.sidebar}>
         <div className={styles.sidebarBrand}>
           <h2>
-            <i className="bi bi-flower1"></i> BioSoc Admin
+            <img className={styles.logo} src="/Logo.png" alt="BioSoc Logo" />
+            BioSoc Admin
           </h2>
         </div>
 
