@@ -18,30 +18,30 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     setLoading(true);
 
     try {
-      // Authenticate with PocketBase
       const authData = await pb
         .collection("users")
         .authWithPassword(email, password);
 
-      // Check if user has admin role
-      if (authData.record.role !== "admin") {
-        setError("You do not have admin privileges");
+      // ✅ Check admin flag from your PocketBase schema
+      if (!authData.record.isAdmin) {
+        setError("You do not have admin privileges.");
         pb.authStore.clear();
         setLoading(false);
         return;
       }
 
-      // Login successful
+      // ✅ Login successful
+      setLoading(false);
       onLoginSuccess();
+
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.message || "Invalid email or password");
+      setError(err?.message || "Invalid email or password.");
       setLoading(false);
     }
   };
 
   const handleDemoLogin = () => {
-    // Demo mode for testing without PocketBase access
     localStorage.setItem("adminDemoMode", "true");
     localStorage.setItem("adminEmail", "demo@admin.local");
     localStorage.setItem("adminRole", "admin");
@@ -52,7 +52,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     <div className={styles.loginContainer}>
       <div className={styles.loginBox}>
         <div className={styles.logo}>
-           <img src="/Logo.png" alt="BioSoc Logo" />
+          <img src="/Logo.png" alt="BioSoc Logo" />
         </div>
 
         <h1 className={styles.title}>BioSoc Eco-Tagging</h1>
@@ -61,11 +61,11 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
 
         <form onSubmit={handleLogin} className={styles.form}>
           <div className={styles.formGroup}>
-            <label htmlFor="email">Username</label>
+            <label htmlFor="email">Email</label>
             <input
               id="email"
               type="email"
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -97,7 +97,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
             onClick={handleDemoLogin}
             className={styles.createAccountLink}
           >
-            Create Account?
+            Login as Demo Admin
           </button>
         </div>
       </div>
