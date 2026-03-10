@@ -39,7 +39,7 @@
 
 .image {
   width: 340px;
-  height: auto;
+  height: 340px;
   border-radius: 16px;
   object-fit: cover;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);

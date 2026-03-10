@@ -64,7 +64,7 @@ const Hero = () => {
           plant species on campus.
         </p>
 
-        <form onSubmit={handleSearch}>
+        <form onSubmit={handleSearch} className={styles.searchForm}>
           <input
             type="text"
             placeholder="Search plants by species, name, or taxonomy..."
@@ -72,6 +72,12 @@ const Hero = () => {
             value={searchQuery}
             onChange={handleInputChange}
           />
+          <button type="submit" className={styles.searchBtn} aria-label="Search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
         </form>
       </div>
     </section>
