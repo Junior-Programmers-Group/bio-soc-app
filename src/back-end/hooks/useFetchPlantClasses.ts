@@ -12,10 +12,17 @@ export function useFetchPlantClasses() {
       setLoading(true);
       setError("");
 
-      const records = await pb.collection("class").getFullList<PlantClass>();
+      const records = await pb.collection("class").getFullList<PlantClass>({
+        requestKey: null, // Disable auto-cancellation
+      });
+
       setClasses(records);
-    } catch {
-      setError("❌ Failed to fetch records");
+      console.log("✅ Plants fetched successfully:", records);
+    } catch (err: any) {
+      const errorMessage = err?.response?.message || err?.message || "Failed to fetch plants";
+      setError(`❌ ${errorMessage}`);
+      console.error("Fetch error:", err);
+      setClasses([]);
     } finally {
       setLoading(false);
     }
