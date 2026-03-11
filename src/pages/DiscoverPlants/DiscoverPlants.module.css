@@ -1,6 +1,6 @@
 .discoverPage {
   min-height: 100vh;
-  background: linear-gradient(180deg, #0f2d1f, #06160f);
+  background-color: #e8f1cf;
 }
 
 .container {
@@ -12,14 +12,14 @@
 .container > h1 {
   font-size: 32px;
   font-weight: 700;
-  color: #d6e2b4;
+  color: #1f2f1f;
   margin-bottom: 10px;
   letter-spacing: -0.5px;
 }
 
 .container > p {
   font-size: 15px;
-  color: rgba(238, 246, 231, 0.75);
+  color: #4a5c4a;
   margin-bottom: 32px;
   max-width: 600px;
 }
@@ -34,7 +34,7 @@
 }
 
 .results {
-  color: #cfd8c3;
+  color: #1f2f1f;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.3px;
@@ -47,9 +47,9 @@
 }
 
 .filterBtn {
-  background: transparent;
-  border: 1px solid rgba(207, 216, 195, 0.3);
-  color: #cfd8c3;
+  background: #ffffff;
+  border: 1px solid #d4e8c1;
+  color: #1f2f1f;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -59,14 +59,14 @@
 }
 
 .filterBtn:hover {
-  background: rgba(207, 216, 195, 0.1);
-  border-color: rgba(207, 216, 195, 0.5);
+  background: #f5f9ed;
+  border-color: #c1dfa8;
 }
 
 .sortSelect {
-  background: transparent;
-  border: 1px solid rgba(207, 216, 195, 0.3);
-  color: #cfd8c3;
+  background: #ffffff;
+  border: 1px solid #d4e8c1;
+  color: #1f2f1f;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -76,7 +76,7 @@
 }
 
 .sortSelect:hover {
-  border-color: rgba(207, 216, 195, 0.5);
+  border-color: #c1dfa8;
 }
 
 .content {
