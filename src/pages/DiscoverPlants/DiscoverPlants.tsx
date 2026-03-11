@@ -11,6 +11,7 @@ export default function DiscoverPlants() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState("name-asc");
 
   useEffect(() => {
     let isMounted = true;
@@ -38,11 +39,42 @@ export default function DiscoverPlants() {
     };
   }, []);
 
-  const filteredPlants = plants.filter((plant) =>
-    `${plant.commonName} ${plant.scientificName}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  // Enhanced search: search across multiple fields
+  const searchPlants = (plantsToSearch: Plant[]): Plant[] => {
+    if (!search.trim()) return plantsToSearch;
+
+    const searchLower = search.toLowerCase();
+    return plantsToSearch.filter((plant) => {
+      const searchFields = [
+        plant.commonName || "",
+        plant.scientificName || "",
+        plant.family || "",
+        plant.ecology || "",
+        plant.uses || "",
+        plant.kingdom || "",
+        plant.order || "",
+        plant.description || "",
+      ].join(" ").toLowerCase();
+
+      return searchFields.includes(searchLower);
+    });
+  };
+
+  // Apply sorting
+  const sortPlants = (plantsToSort: Plant[]): Plant[] => {
+    const sorted = [...plantsToSort];
+    
+    switch (sortBy) {
+      case "name-asc":
+        return sorted.sort((a, b) => (a.commonName || "").localeCompare(b.commonName || ""));
+      case "name-desc":
+        return sorted.sort((a, b) => (b.commonName || "").localeCompare(a.commonName || ""));
+      default:
+        return sorted;
+    }
+  };
+
+  const filteredPlants = sortPlants(searchPlants(plants));
 
   return (
     <div className={styles.discoverPage}>

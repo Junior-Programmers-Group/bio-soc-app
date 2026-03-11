@@ -17,6 +17,7 @@ const Scan = () => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const hasScannedRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isScannerRunningRef = useRef(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 700);
 
   const [plant, setPlant] = useState<Plant | null>(null);
@@ -32,39 +33,63 @@ const Scan = () => {
   }, []);
 
  useEffect(() => {
-  if (scannerRef.current) return;
+  let mounted = true;
 
-  const startScanner = () => {
-    const scanner = new Html5Qrcode("qr-reader");
-    scannerRef.current = scanner;
+  const startScanner = async () => {
+    // Wait a bit to ensure the DOM is ready
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-    scanner
-      .start(
+    if (!mounted) return;
+
+    try {
+      const qrReaderElement = document.getElementById("qr-reader");
+      if (!qrReaderElement) {
+        setError("Camera container not found");
+        return;
+      }
+
+      const scanner = new Html5Qrcode("qr-reader");
+      scannerRef.current = scanner;
+
+      await scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText) => {
           if (hasScannedRef.current) return;
 
           hasScannedRef.current = true;
-          await fetchPlant(decodedText);
-
-          setTimeout(() => {
-            scanner.stop().catch(() => {});
-          }, 300);
+          isScannerRunningRef.current = true;
+          await fetchPlantAndNavigate(decodedText);
         },
-        () => {}
-      )
-      .catch(() => {
-        setError("Camera permission denied or unavailable");
-      });
+        () => {
+          // Suppress verbose error logging
+        }
+      );
+      isScannerRunningRef.current = true;
+    } catch (err) {
+      if (mounted) {
+        setError("Camera permission denied or unavailable. Please allow camera access.");
+        console.error("Scanner error:", err);
+      }
+      isScannerRunningRef.current = false;
+    }
   };
 
-
-  requestAnimationFrame(startScanner);
+  startScanner();
 
   return () => {
-    scannerRef.current?.stop().catch(() => {});
-    scannerRef.current = null;
+    mounted = false;
+    isScannerRunningRef.current = false;
+    if (scannerRef.current) {
+      try {
+        scannerRef.current.stop().catch(() => {
+          // Ignore stop errors
+        });
+      } catch (err) {
+        console.error("Error in cleanup:", err);
+      }
+      scannerRef.current = null;
+    }
     hasScannedRef.current = false;
   };
 }, []);
@@ -73,16 +98,40 @@ const Scan = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Prevent multiple uploads
+    if (hasScannedRef.current) return;
+    hasScannedRef.current = true;
+
     try {
       setError("");
-      const scanner = scannerRef.current || new Html5Qrcode("qr-reader");
       
-      const decodedText = await scanner.scanFile(file, true);
+      // Stop and cleanup the camera scanner before file scanning
+      if (isScannerRunningRef.current && scannerRef.current) {
+        try {
+          isScannerRunningRef.current = false;
+          await scannerRef.current.stop();
+          console.log("Camera scanner stopped for file upload");
+        } catch (stopError) {
+          console.error("Error stopping camera scanner:", stopError);
+        }
+      }
+
+      // Create a new scanner instance for file scanning
+      const fileScanner = new Html5Qrcode("qr-reader");
+      const decodedText = await fileScanner.scanFile(file, true);
       
-      await fetchPlant(decodedText);
-    } catch (err) {
-      setError("❌ No QR code found in the image");
+      console.log("QR Code detected from file:", decodedText);
+      
+      // Navigate immediately without delay
+      await fetchPlantAndNavigate(decodedText);
+    } catch (scanError) {
+      console.error("Scan error:", scanError);
+      setError("❌ No QR code found in the image. Please try another image.");
       setPlant(null);
+      hasScannedRef.current = false;
+      
+      // Restart camera scanner on error
+      restartCameraScanner();
     }
 
     // Reset file input
@@ -91,23 +140,96 @@ const Scan = () => {
     }
   };
 
-  const fetchPlant = async (qrCode: string) => {
+  const restartCameraScanner = async () => {
     try {
-      const record = await pb
-        .collection("plants")
-        .getFirstListItem(`qr_code="${qrCode}"`);
+      if (scannerRef.current && !isScannerRunningRef.current) {
+        hasScannedRef.current = false;
+        
+        await scannerRef.current.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          async (decodedText) => {
+            if (hasScannedRef.current) return;
 
-      setPlant({
-        name: record.name,
-        scientific_name: record.scientific_name,
-        description: record.description,
-        image: record.image,
-      });
+            hasScannedRef.current = true;
+            isScannerRunningRef.current = true;
+            await fetchPlantAndNavigate(decodedText);
+          },
+          () => {
+            // Suppress verbose error logging
+          }
+        );
+        isScannerRunningRef.current = true;
+        console.log("Camera scanner restarted");
+      }
+    } catch (err) {
+      console.error("Error restarting camera scanner:", err);
+    }
+  };
 
-      setError("");
-    } catch {
+  const fetchPlantAndNavigate = async (qrCode: string) => {
+    try {
+      console.log("Fetching plant with QR code:", qrCode);
+      
+      // Extract plant ID from URL if QR code is a URL
+      let plantId = qrCode;
+      
+      // Check if it's a URL containing plant ID
+      const urlMatch = qrCode.match(/plants\/([a-zA-Z0-9]+)/);
+      if (urlMatch) {
+        plantId = urlMatch[1];
+        console.log("Extracted plant ID from URL:", plantId);
+      }
+
+      // Try to fetch plant by ID or QR code - use "class" collection
+      let record;
+      try {
+        console.log("Trying to fetch plant by ID from 'class' collection:", plantId);
+        record = await pb.collection("class").getOne(plantId);
+        console.log("Plant found by ID:", record);
+      } catch (idError) {
+        console.log("Plant not found by ID, trying by QR code field:", qrCode);
+        // If not found by ID, try by QR code field in class collection
+        try {
+          record = await pb.collection("class").getFirstListItem(`qr_code="${qrCode}"`);
+          console.log("Plant found by QR code:", record);
+        } catch (qrError) {
+          console.log("Not found in 'class' collection, trying 'plants' collection:", plantId);
+          // Try plants collection as fallback
+          try {
+            record = await pb.collection("plants").getOne(plantId);
+            console.log("Plant found in 'plants' collection:", record);
+          } catch (plantsError) {
+            throw new Error("Plant not found in any collection");
+          }
+        }
+      }
+
+      console.log("Navigating to plant:", record.id);
+      
+      // Stop scanner if it's running (from camera detection, not from file upload)
+      if (isScannerRunningRef.current && scannerRef.current) {
+        try {
+          isScannerRunningRef.current = false;
+          await scannerRef.current.stop().catch(() => {});
+          scannerRef.current = null;
+        } catch (err) {
+          console.error("Error stopping scanner:", err);
+          scannerRef.current = null;
+        }
+      } else {
+        // Already stopped (from file upload), just clear reference
+        scannerRef.current = null;
+        isScannerRunningRef.current = false;
+      }
+      
+      // Navigate immediately
+      navigate(`/discover/plants/${record.id}`);
+    } catch (err) {
+      console.error("Error fetching plant:", err);
       setPlant(null);
-      setError("❌ Plant not found");
+      setError("❌ Plant not found in database. Make sure the QR code is valid.");
+      hasScannedRef.current = false;
     }
   };
 

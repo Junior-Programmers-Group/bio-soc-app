@@ -44,19 +44,30 @@
 /* QR Camera box */
 .qrBox {
   width: 100%;
-  max-width: 320px;
-  height: 320px;
+  max-width: 400px;
+  height: auto;
+  min-height: 400px;
   margin: 1rem auto;
   border-radius: 12px;
   overflow: hidden;
   background: #000;
   border: 2px solid #2e7d32;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .qrBox video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.qrBox img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 10px;
 }
 
 /* File input - hidden */
@@ -67,7 +78,7 @@
 /* Upload button */
 .uploadButton {
   width: 100%;
-  max-width: 320px;
+  max-width: 400px;
   padding: 14px;
   margin-top: 1.5rem;
   background-color: #2e7d32;
