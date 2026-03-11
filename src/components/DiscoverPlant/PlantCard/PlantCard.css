@@ -1,39 +1,57 @@
 .plantCard {
-  background: #e7f0cf; /* light green like ref */
-  border-radius: 18px;
+  background: rgba(18, 38, 26, 0.6);
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid rgba(207, 216, 195, 0.15);
 }
 
 .plantCard:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(207, 216, 195, 0.3);
 }
 
-/* IMAGE */
+/* IMAGE CONTAINER */
 .plantCard img {
   width: 100%;
-  height: 190px; /* 👈 matches reference */
+  height: 220px;
   object-fit: cover;
   display: block;
+  transition: transform 0.4s ease;
+}
+
+.plantCard:hover img {
+  transform: scale(1.08);
 }
 
 /* TEXT AREA */
 .plantInfo {
-  padding: 14px 16px;
+  padding: 18px 16px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .plantInfo h3 {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: #1f2d1f;
+  font-size: 16px;
+  font-weight: 700;
+  color: #d6e2b4;
+  letter-spacing: -0.3px;
+  line-height: 1.3;
 }
 
 .plantInfo p {
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 13px;
   font-style: italic;
-  color: rgba(31, 45, 31, 0.7);
+  color: rgba(207, 216, 195, 0.7);
+  line-height: 1.4;
 }

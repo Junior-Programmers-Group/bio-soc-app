@@ -1,19 +1,48 @@
 .filters {
-  color: #cfd8c3;
+  background: rgba(18, 38, 26, 0.5);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(207, 216, 195, 0.2);
+  height: fit-content;
+  position: sticky;
+  top: 100px;
 }
 
 .group {
-  margin-bottom: 25px;
+  margin-bottom: 24px;
+}
+
+.group:last-child {
+  margin-bottom: 0;
 }
 
 .group h4 {
-  font-size: 14px;
-  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #cfd8c3;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .group label {
-  display: block;
+  display: flex;
+  align-items: center;
   font-size: 13px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   cursor: pointer;
+  color: rgba(207, 216, 195, 0.7);
+  transition: color 0.2s ease;
+  gap: 8px;
+}
+
+.group label:hover {
+  color: #cfd8c3;
+}
+
+.group input[type="radio"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: #cfd8c3;
 }

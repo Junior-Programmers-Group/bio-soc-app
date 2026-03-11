@@ -49,13 +49,16 @@ export default function DiscoverPlants() {
       <Navbar />
 
       <div className={styles.container}>
+        <h1>Discover Plants</h1>
+        <p>Explore our comprehensive collection of plants and learn about their ecological roles</p>
+
         {/* SEARCH */}
         <SearchBar search={search} setSearch={setSearch} />
 
         {/* CONTROL BAR */}
         <div className={styles.controls}>
           <p className={styles.results}>
-            {filteredPlants.length} Results
+            {filteredPlants.length} {filteredPlants.length === 1 ? 'Result' : 'Results'}
           </p>
 
           <div className={styles.actions}>
@@ -63,7 +66,7 @@ export default function DiscoverPlants() {
               className={styles.filterBtn}
               onClick={() => setShowFilters(!showFilters)}
             >
-              Show Filters
+              {showFilters ? '✕ Hide Filters' : '⚙ Show Filters'}
             </button>
 
             <select className={styles.sortSelect}>
