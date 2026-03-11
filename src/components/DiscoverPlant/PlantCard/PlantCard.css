@@ -1,19 +1,4 @@
 .plantCard {
-<<<<<<< HEAD
-  background: #e7f0cf;
-  border-radius: 18px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.plantCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-=======
   background: rgba(18, 38, 26, 0.6);
   border-radius: 16px;
   overflow: hidden;
@@ -30,17 +15,12 @@
   transform: translateY(-8px);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   border-color: rgba(207, 216, 195, 0.3);
->>>>>>> e02111be4c74b3312b0d157e54ec3b6edd13dbb4
 }
 
 /* IMAGE CONTAINER */
 .plantCard img {
   width: 100%;
-<<<<<<< HEAD
-  height: 190px;
-=======
   height: 220px;
->>>>>>> e02111be4c74b3312b0d157e54ec3b6edd13dbb4
   object-fit: cover;
   display: block;
   transition: transform 0.4s ease;
@@ -62,23 +42,6 @@
 .plantInfo h3 {
   margin: 0;
   font-size: 16px;
-<<<<<<< HEAD
-  font-weight: 600;
-  color: #1f2d1f;
-}
-
-/* DESCRIPTION */
-.description {
-  margin-top: 6px;
-  font-size: 13px;
-  color: rgba(31, 45, 31, 0.75);
-  line-height: 1.4;
-
-  display: -webkit-box;
-  -webkit-line-clamp: 2;   /* limits text to 2 lines */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-=======
   font-weight: 700;
   color: #d6e2b4;
   letter-spacing: -0.3px;
@@ -91,5 +54,4 @@
   font-style: italic;
   color: rgba(207, 216, 195, 0.7);
   line-height: 1.4;
->>>>>>> e02111be4c74b3312b0d157e54ec3b6edd13dbb4
 }
