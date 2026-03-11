@@ -1,7 +1,24 @@
 .searchWrapper {
-  background: #e5e5e5;
-  padding: 10px 20px;
-  border-radius: 30px;
+  background: rgba(229, 229, 229, 0.1);
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(207, 216, 195, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  max-width: 500px;
+}
+
+.searchWrapper:focus-within {
+  border-color: rgba(207, 216, 195, 0.5);
+  box-shadow: 0 0 0 3px rgba(207, 216, 195, 0.1);
+}
+
+.searchWrapper::before {
+  content: "🔍";
+  font-size: 16px;
+  opacity: 0.5;
 }
 
 .searchWrapper input {
@@ -10,11 +27,18 @@
   background: transparent;
   outline: none;
   font-size: 14px;
+  color: #d6e2b4;
 }
+
+.searchWrapper input::placeholder {
+  color: rgba(207, 216, 195, 0.6);
+}
+
 @media (max-width: 700px) {
   .searchWrapper {
-    padding: 10px 16px;
-    border-radius: 24px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
   }
 
   .searchWrapper input {
