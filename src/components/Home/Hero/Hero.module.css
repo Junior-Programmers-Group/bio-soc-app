@@ -61,7 +61,6 @@
 
 .heroContent p {
   margin-top: 14px;
-  color: #000000;
   font-size: clamp(14px, 4vw, 16px);
   line-height: 1.6;
   font-weight: 500;
@@ -69,7 +68,6 @@
 
 .plantCount {
   font-weight: 500;
-  color: #000000;
 }
 
 /* ===================================================== */
@@ -102,7 +100,7 @@
 }
 
 .searchForm {
-  margin-top: 36px;
+  margin-top: 10px;
   display: flex;
   justify-content: center;
   align-items: center;

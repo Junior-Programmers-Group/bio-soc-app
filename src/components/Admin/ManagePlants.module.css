@@ -19,7 +19,7 @@
 .header h2 {
   margin: 0;
   color: #1f2f1f;
-  font-size: 2.2rem;
+  font-size: clamp(1.3rem, 5vw, 2.2rem);
   font-weight: 800;
   letter-spacing: -0.5px;
 }
@@ -28,13 +28,17 @@
   background: linear-gradient(135deg, #2d7a3d 0%, #3d9d53 100%);
   color: #fff;
   border: none;
-  padding: 0.85rem 2rem;
+  padding: clamp(0.6rem, 2vw, 1rem) clamp(1.2rem, 3vw, 2rem);
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(45, 122, 61, 0.25);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .addBtn:hover {
@@ -121,8 +125,10 @@
   background: #fff;
   border: 2px solid #e0e8e0;
   color: #64746d;
-  width: 70px;
-  height: 70px;
+  width: clamp(50px, 12vw, 70px);
+  height: clamp(50px, 12vw, 70px);
+  min-width: 50px;
+  min-height: 50px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -149,11 +155,11 @@
 
 .stepNumber {
   font-weight: 800;
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 2vw, 1.5rem);
 }
 
 .stepLabel {
-  font-size: 0.7rem;
+  font-size: clamp(0.55rem, 1.5vw, 0.7rem);
   text-align: center;
   margin-top: 2px;
   text-transform: uppercase;
@@ -245,13 +251,17 @@ textarea {
 }
 
 .formActions button {
-  padding: 0.85rem 2rem;
+  padding: clamp(0.6rem, 2vw, 0.85rem) clamp(1rem, 3vw, 2rem);
   border: none;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .formActions button:disabled {
@@ -385,14 +395,18 @@ textarea {
 
 .plantCard button {
   flex: 1;
-  min-width: 60px;
-  padding: 0.65rem 1rem;
-  font-size: 0.85rem;
+  min-width: 50px;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.5rem, 1.5vw, 1rem);
+  font-size: clamp(0.65rem, 1.5vw, 0.85rem);
   border-radius: 8px;
   border: 2px solid;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .plantCard button:hover {
@@ -475,7 +489,7 @@ textarea {
 .changeImageBtn {
   background: linear-gradient(135deg, #2d7a3d 0%, #3d9d53 100%);
   color: #fff;
-  padding: 0.85rem 1.5rem;
+  padding: clamp(0.6rem, 2vw, 0.85rem) clamp(0.9rem, 2.5vw, 1.5rem);
   border-radius: 10px;
   text-align: center;
   cursor: pointer;
@@ -483,6 +497,11 @@ textarea {
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(45, 122, 61, 0.25);
   display: inline-block;
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .changeImageBtn:hover {
@@ -610,13 +629,17 @@ textarea {
 }
 
 .editFormActions button {
-  padding: 0.85rem 2rem;
+  padding: clamp(0.6rem, 2vw, 0.85rem) clamp(1rem, 3vw, 2rem);
   font-weight: 600;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
-  font-size: 0.95rem;
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .editFormActions button:first-of-type {
@@ -760,7 +783,6 @@ textarea {
 
   .addBtn {
     width: 100%;
-    padding: 0.85rem 1.5rem;
   }
 
   .plantsGrid {
@@ -784,8 +806,7 @@ textarea {
   }
 
   .plantCard button {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
+    min-width: 40px;
   }
 
   .formContainer {
@@ -799,8 +820,7 @@ textarea {
   }
 
   .stepBtn {
-    width: 60px;
-    height: 60px;
+    /* clamp() handles sizing automatically */
   }
 
   .formGroup {
@@ -855,8 +875,7 @@ textarea {
   }
 
   .editFormActions button {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
+    /* clamp() handles sizing automatically */
   }
 
   .qrCodePreview {
@@ -888,9 +907,6 @@ textarea {
 
   .addBtn {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
   }
 
   .error,
@@ -932,9 +948,7 @@ textarea {
   }
 
   .plantCard button {
-    min-width: 50px;
-    padding: 0.5rem 0.5rem;
-    font-size: 0.65rem;
+    min-width: 45px;
   }
 
   .formContainer {
@@ -949,16 +963,7 @@ textarea {
   }
 
   .stepBtn {
-    width: 50px;
-    height: 50px;
-  }
-
-  .stepNumber {
-    font-size: 1.2rem;
-  }
-
-  .stepLabel {
-    font-size: 0.6rem;
+    /* clamp() handles sizing automatically */
   }
 
   .formGroup {
@@ -999,8 +1004,6 @@ textarea {
   }
 
   .formActions button {
-    padding: 0.7rem 1rem;
-    font-size: 0.8rem;
     flex: 1;
     min-width: calc(50% - 0.4rem);
   }
@@ -1027,9 +1030,7 @@ textarea {
   }
 
   .changeImageBtn {
-    padding: 0.75rem 1rem;
-    font-size: 0.85rem;
-    border-radius: 8px;
+    width: 100%;
   }
 
   .editContent {
@@ -1085,8 +1086,6 @@ textarea {
   }
 
   .editFormActions button {
-    padding: 0.7rem 1rem;
-    font-size: 0.8rem;
     flex: 1;
     min-width: calc(50% - 0.3rem);
   }
