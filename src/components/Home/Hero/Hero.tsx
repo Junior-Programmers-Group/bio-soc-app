@@ -1,55 +1,104 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getPlants } from "../../../services/adminService";
+import { useEffect, useState, useRef } from "react";
+import { fetchPlants } from "../../../services/plantService";
+import type { Plant } from "../../../types/plant";
+import SearchDropdown from "./SearchDropdown";
 import styles from "./Hero.module.css";
 
 const Hero = () => {
   const [plantCount, setPlantCount] = useState(0);
+  const [allPlants, setAllPlants] = useState<Plant[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filteredResults, setFilteredResults] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Load all plants on mount
   useEffect(() => {
     let isMounted = true;
-    const controller = new AbortController();
 
-    const fetchPlantCount = async () => {
+    const loadPlants = async () => {
       try {
-        const plants = await getPlants();
+        const plants = await fetchPlants();
         if (isMounted) {
+          setAllPlants(plants);
           setPlantCount(plants.length);
+          setLoading(false);
         }
       } catch (error) {
         if (isMounted && error instanceof Error && !error.message.includes('aborted')) {
-          console.error("Error fetching plant count:", error);
+          console.error("Error fetching plants:", error);
         }
         if (isMounted) {
           setPlantCount(0);
-        }
-      } finally {
-        if (isMounted) {
           setLoading(false);
         }
       }
     };
 
-    fetchPlantCount();
+    loadPlants();
 
     return () => {
       isMounted = false;
-      controller.abort();
     };
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Filter plants based on search query
+  useEffect(() => {
     if (searchQuery.trim()) {
-      navigate(`/discover?search=${encodeURIComponent(searchQuery)}`);
+      const searchLower = searchQuery.toLowerCase();
+      const results = allPlants.filter((plant) => {
+        const searchFields = [
+          plant.commonName || "",
+          plant.name || "",
+          plant.scientificName || "",
+          plant.family || "",
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return searchFields.includes(searchLower);
+      });
+      
+      // Limit results to top 8
+      setFilteredResults(results.slice(0, 8));
+      setShowDropdown(true);
+    } else {
+      setFilteredResults([]);
+      setShowDropdown(false);
     }
-  };
+  }, [searchQuery, allPlants]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        searchInputRef.current &&
+        !searchInputRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [showDropdown]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+  };
+
+  const handleInputFocus = () => {
+    if (searchQuery.trim() && filteredResults.length > 0) {
+      setShowDropdown(true);
+    }
   };
 
   return (
@@ -64,21 +113,34 @@ const Hero = () => {
           plant species on campus.
         </p>
 
-        <form onSubmit={handleSearch} className={styles.searchForm}>
-          <input
-            type="text"
-            placeholder="Search plants by species, name, or taxonomy..."
-            className={styles.heroInput}
-            value={searchQuery}
-            onChange={handleInputChange}
-          />
-          <button type="submit" className={styles.searchBtn} aria-label="Search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-          </button>
-        </form>
+        <div className={styles.searchContainer}>
+          <form className={styles.searchForm}>
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search plants by species, name, or taxonomy..."
+              className={styles.heroInput}
+              value={searchQuery}
+              onChange={handleInputChange}
+              onFocus={handleInputFocus}
+            />
+            <button type="button" className={styles.searchBtn} aria-label="Search">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </button>
+          </form>
+          
+          <div ref={dropdownRef}>
+            <SearchDropdown
+              results={filteredResults}
+              loading={false}
+              query={searchQuery}
+              isOpen={showDropdown}
+            />
+          </div>
+        </div>
       </div>
     </section>
   );

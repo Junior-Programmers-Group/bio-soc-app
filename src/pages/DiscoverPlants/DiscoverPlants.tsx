@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "../../components/Home/Navbar/Navbar";
 import SearchBar from "../../components/DiscoverPlant/SearchBar/SearchBar";
 import PlantsGrid from "../../components/DiscoverPlant/PlantGrid/PlantsGrid";
@@ -11,7 +12,15 @@ export default function DiscoverPlants() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState("name-asc");
+  const [searchParams] = useSearchParams();
+
+  // Initialize search from URL parameters
+  useEffect(() => {
+    const urlSearch = searchParams.get("search");
+    if (urlSearch) {
+      setSearch(urlSearch);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let isMounted = true;
@@ -63,15 +72,7 @@ export default function DiscoverPlants() {
   // Apply sorting
   const sortPlants = (plantsToSort: Plant[]): Plant[] => {
     const sorted = [...plantsToSort];
-    
-    switch (sortBy) {
-      case "name-asc":
-        return sorted.sort((a, b) => (a.commonName || "").localeCompare(b.commonName || ""));
-      case "name-desc":
-        return sorted.sort((a, b) => (b.commonName || "").localeCompare(a.commonName || ""));
-      default:
-        return sorted;
-    }
+    return sorted.sort((a, b) => (a.commonName || "").localeCompare(b.commonName || ""));
   };
 
   const filteredPlants = sortPlants(searchPlants(plants));
