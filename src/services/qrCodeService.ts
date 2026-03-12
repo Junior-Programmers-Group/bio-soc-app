@@ -144,3 +144,167 @@ export const generateQRCodeBlob = async (
       .catch(reject);
   });
 };
+
+/**
+ * Print QR code with plant information
+ * Creates a print-friendly page with QR code, plant name, scientific name, and guide text
+ */
+export const printPlantQRCode = async (
+  plantId: string,
+  plantName: string,
+  scientificName: string
+): Promise<void> => {
+  try {
+    const options: QRCodeOptions = {
+      plantId,
+      width: 400,
+      margin: 2,
+      color: { dark: "#2d5016", light: "#ffffff" },
+    };
+
+    const qrDataUrl = await generatePlantQRCode(options);
+
+    // Create print window
+    const printWindow = window.open("", "", "width=800,height=600");
+    if (!printWindow) {
+      throw new Error("Failed to open print window");
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${plantName} - QR Code</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              background: white;
+              padding: 40px 20px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+            }
+            
+            .container {
+              background: white;
+              border: 2px solid #2d5016;
+              border-radius: 12px;
+              padding: 40px;
+              max-width: 600px;
+              width: 100%;
+              text-align: center;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            
+            .header {
+              margin-bottom: 30px;
+              border-bottom: 2px solid #f0f0f0;
+              padding-bottom: 20px;
+            }
+            
+            .plant-name {
+              font-size: 28px;
+              font-weight: 700;
+              color: #2d5016;
+              margin-bottom: 8px;
+            }
+            
+            .scientific-name {
+              font-size: 16px;
+              font-style: italic;
+              color: #666;
+              margin-bottom: 0;
+            }
+            
+            .qr-section {
+              margin: 30px 0;
+              padding: 20px 0;
+              border-bottom: 2px solid #f0f0f0;
+            }
+            
+            .qr-code-img {
+              width: 320px;
+              height: 320px;
+              border: 3px solid #2d5016;
+              border-radius: 8px;
+              margin: 0 auto;
+              display: block;
+            }
+            
+            .guide-text {
+              margin: 30px 0;
+              padding: 20px;
+              background-color: #f9f9f9;
+              border-left: 6px solid #2d5016;
+              border-radius: 6px;
+              font-size: 14px;
+              color: #555;
+              line-height: 1.6;
+              text-align: center;
+            }
+            
+            .footer {
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 2px solid #f0f0f0;
+              font-size: 12px;
+              color: #999;
+            }
+            
+            @media print {
+              body {
+                padding: 0;
+                background: white;
+              }
+              
+              .container {
+                border: 1px solid #ddd;
+                box-shadow: none;
+                max-width: 100%;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="plant-name">${plantName}</div>
+              <div class="scientific-name">${scientificName || "N/A"}</div>
+            </div>
+            
+            <div class="qr-section">
+              <img src="${qrDataUrl}" alt="Plant QR Code" class="qr-code-img" />
+            </div>
+            
+            <div class="guide-text">
+              Works with: Android Camera, iOS Camera & All QR Scanners
+            </div>
+            
+            <div class="footer">
+              <p>Scan this QR code to view plant details online</p>
+              <p>Powered by Bio-Soc App</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+
+    // Wait for content to load before printing
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+  } catch (error) {
+    console.error("Error printing QR code:", error);
+    throw new Error("Failed to print QR code");
+  }
+};

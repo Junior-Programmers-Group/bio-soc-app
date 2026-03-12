@@ -12,6 +12,7 @@ export default function DiscoverPlants() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [sortOrder, setSortOrder] = useState("az");
   const [searchParams] = useSearchParams();
 
   // Initialize search from URL parameters
@@ -32,7 +33,7 @@ export default function DiscoverPlants() {
           setPlants(data);
         }
       } catch (error) {
-        if (isMounted && error instanceof Error && !error.message.includes('aborted')) {
+        if (isMounted && error instanceof Error && !error.message.includes("aborted")) {
           console.error("Error loading plants:", error);
         }
         if (isMounted) {
@@ -48,11 +49,12 @@ export default function DiscoverPlants() {
     };
   }, []);
 
-  // Enhanced search: search across multiple fields
+  // Enhanced search across multiple fields
   const searchPlants = (plantsToSearch: Plant[]): Plant[] => {
     if (!search.trim()) return plantsToSearch;
 
     const searchLower = search.toLowerCase();
+
     return plantsToSearch.filter((plant) => {
       const searchFields = [
         plant.commonName || "",
@@ -63,16 +65,30 @@ export default function DiscoverPlants() {
         plant.kingdom || "",
         plant.order || "",
         plant.description || "",
-      ].join(" ").toLowerCase();
+      ]
+        .join(" ")
+        .toLowerCase();
 
       return searchFields.includes(searchLower);
     });
   };
 
-  // Apply sorting
+  // Sorting logic
   const sortPlants = (plantsToSort: Plant[]): Plant[] => {
     const sorted = [...plantsToSort];
-    return sorted.sort((a, b) => (a.commonName || "").localeCompare(b.commonName || ""));
+
+    sorted.sort((a, b) => {
+      const nameA = a.commonName || "";
+      const nameB = b.commonName || "";
+
+      if (sortOrder === "az") {
+        return nameA.localeCompare(nameB);
+      } else {
+        return nameB.localeCompare(nameA);
+      }
+    });
+
+    return sorted;
   };
 
   const filteredPlants = sortPlants(searchPlants(plants));
@@ -83,7 +99,10 @@ export default function DiscoverPlants() {
 
       <div className={styles.container}>
         <h1>Discover Plants</h1>
-        <p>Explore our comprehensive collection of plants and learn about their ecological roles</p>
+        <p>
+          Explore our comprehensive collection of plants and learn about their
+          ecological roles
+        </p>
 
         {/* SEARCH */}
         <SearchBar search={search} setSearch={setSearch} />
@@ -91,7 +110,8 @@ export default function DiscoverPlants() {
         {/* CONTROL BAR */}
         <div className={styles.controls}>
           <p className={styles.results}>
-            {filteredPlants.length} {filteredPlants.length === 1 ? 'Result' : 'Results'}
+            {filteredPlants.length}{" "}
+            {filteredPlants.length === 1 ? "Result" : "Results"}
           </p>
 
           <div className={styles.actions}>
@@ -99,13 +119,16 @@ export default function DiscoverPlants() {
               className={styles.filterBtn}
               onClick={() => setShowFilters(!showFilters)}
             >
-              {showFilters ? '✕ Hide Filters' : '⚙ Show Filters'}
+              {showFilters ? "✕ Hide Filters" : "⚙ Show Filters"}
             </button>
 
-            <select className={styles.sortSelect}>
-              <option>Sort By</option>
-              <option>Name (A–Z)</option>
-              <option>Name (Z–A)</option>
+            <select
+              className={styles.sortSelect}
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="az">Name (A–Z)</option>
+              <option value="za">Name (Z–A)</option>
             </select>
           </div>
         </div>

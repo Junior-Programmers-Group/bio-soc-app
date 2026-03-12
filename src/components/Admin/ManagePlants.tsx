@@ -6,7 +6,8 @@ import {
   deletePlant,
 } from "../../services/adminService";
 import type { PlantRecord } from "../../services/adminService";
-import { downloadPlantQRCode, generatePlantQRCode } from "../../services/qrCodeService";
+import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../../services/qrCodeService";
+import QRModal from "./QRModal";
 import styles from "./ManagePlants.module.css";
 
 const PLACEHOLDER_IMAGE =
@@ -119,7 +120,10 @@ export default function ManagePlants() {
   const [editTab, setEditTab] = useState<EditTab>("taxonomy");
   const [uploading, setUploading] = useState(false);
   const [qrCodePreview, setQrCodePreview] = useState<string>("");
-  const [downloadingQR, setDownloadingQR] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [selectedQRPlant, setSelectedQRPlant] = useState<{ id: string; name: string; scientificName: string } | null>(null);
+  const [modalQRDataUrl, setModalQRDataUrl] = useState<string>("");
+  const [isModalLoading, setIsModalLoading] = useState(false);
 
   const [formData, setFormData] = useState<PlantFormData>({
     name: "",
@@ -161,18 +165,68 @@ export default function ManagePlants() {
     }
   };
 
-  const handleDownloadQR = async (plantId: string, plantName: string) => {
+  const handleOpenQRModal = async (plant: PlantRecord) => {
     try {
-      setDownloadingQR(true);
+      setIsModalLoading(true);
       setError("");
-      await downloadPlantQRCode(plantId, plantName);
-      setSuccess("✓ QR Code downloaded successfully!");
+      const qrDataUrl = await generatePlantQRCode({
+        plantId: plant.id,
+        width: 400,
+      });
+      setSelectedQRPlant({
+        id: plant.id,
+        name: plant.name || "",
+        scientificName: plant.scientificName || "",
+      });
+      setModalQRDataUrl(qrDataUrl);
+      setIsQRModalOpen(true);
+    } catch (err: any) {
+      console.error("Error generating QR code for modal:", err);
+      setError(err.message || "Failed to generate QR code");
+    } finally {
+      setIsModalLoading(false);
+    }
+  };
+
+  const handleCloseQRModal = () => {
+    setIsQRModalOpen(false);
+    setSelectedQRPlant(null);
+    setModalQRDataUrl("");
+  };
+
+  const handleModalDownloadQR = async () => {
+    if (!selectedQRPlant) return;
+    try {
+      setIsModalLoading(true);
+      await downloadPlantQRCode(selectedQRPlant.id, selectedQRPlant.name);
+      setSuccess("QR Code downloaded successfully!");
       setTimeout(() => setSuccess(""), 3000);
+      handleCloseQRModal();
     } catch (err: any) {
       console.error("Error downloading QR code:", err);
       setError(err.message || "Failed to download QR code");
     } finally {
-      setDownloadingQR(false);
+      setIsModalLoading(false);
+    }
+  };
+
+  const handleModalPrintQR = async () => {
+    if (!selectedQRPlant) return;
+    try {
+      setIsModalLoading(true);
+      await printPlantQRCode(
+        selectedQRPlant.id,
+        selectedQRPlant.name,
+        selectedQRPlant.scientificName
+      );
+      setSuccess("Print dialog opened!");
+      setTimeout(() => setSuccess(""), 3000);
+      handleCloseQRModal();
+    } catch (err: any) {
+      console.error("Error printing QR code:", err);
+      setError(err.message || "Failed to print QR code");
+    } finally {
+      setIsModalLoading(false);
     }
   };
 
@@ -222,11 +276,11 @@ export default function ManagePlants() {
       if (editingId) {
         // Update existing plant
         await updatePlant(editingId, payload, imageFile || undefined);
-        setSuccess("✓ Plant updated successfully!");
+        setSuccess("Plant updated successfully!");
       } else {
         // Create new plant
         await createPlant(payload, imageFile || undefined);
-        setSuccess("✓ Plant created successfully!");
+        setSuccess("Plant created successfully!");
       }
 
       setTimeout(() => {
@@ -416,7 +470,7 @@ export default function ManagePlants() {
                   disabled={uploading}
                   className={styles.submitBtn}
                 >
-                  {uploading ? "Uploading..." : "✓ Create Plant"}
+                  {uploading ? "Uploading..." : "Create Plant"}
                 </button>
               )}
             </div>
@@ -500,11 +554,11 @@ export default function ManagePlants() {
                   </button>
                   <button 
                     type="button"
-                    onClick={() => editingId && handleDownloadQR(editingId, formData.name)}
-                    disabled={downloadingQR || !editingId}
+                    onClick={() => editingId && handleOpenQRModal({ id: editingId, name: formData.name, scientificName: formData.scientificName } as PlantRecord)}
+                    disabled={isModalLoading || !editingId}
                     className={styles.downloadQRBtn}
                   >
-                    {downloadingQR ? "Downloading..." : " Download QR"}
+                    {isModalLoading ? "Loading..." : "📋 QR Download / Print"}
                   </button>
                   <button 
                     type="submit" 
@@ -538,11 +592,11 @@ export default function ManagePlants() {
             <div className={styles.cardActions}>
               <button onClick={() => handleEdit(plant)}>Edit</button>
               <button 
-                onClick={() => handleDownloadQR(plant.id, plant.name)}
-                disabled={downloadingQR}
+                onClick={() => handleOpenQRModal(plant)}
+                disabled={isModalLoading}
                 className={styles.qrBtn}
               >
-                ⬇ QR
+                QR Download / Print
               </button>
               <button 
                 onClick={() => handleDelete(plant.id)}
@@ -554,6 +608,18 @@ export default function ManagePlants() {
           </div>
         ))}
       </div>
+
+      {/* QR CODE MODAL */}
+      <QRModal
+        isOpen={isQRModalOpen}
+        onClose={handleCloseQRModal}
+        plantName={selectedQRPlant?.name || ""}
+        scientificName={selectedQRPlant?.scientificName || ""}
+        qrCodeDataUrl={modalQRDataUrl}
+        onDownload={handleModalDownloadQR}
+        onPrint={handleModalPrintQR}
+        isLoading={isModalLoading}
+      />
     </div>
   );
 }
