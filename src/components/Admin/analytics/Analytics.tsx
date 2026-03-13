@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAnalyticsData } from "../../services/adminService";
+import { getAnalyticsData } from "../../../services/adminService";
 import styles from "./Analytics.module.css";
 
 interface AnalyticsData {

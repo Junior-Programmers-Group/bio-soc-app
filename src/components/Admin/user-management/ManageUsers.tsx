@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getUsers, updateUserRole, deleteUser } from "../../services/adminService";
-import type { UserRecord } from "../../services/adminService";
+import { getUsers, updateUserRole, deleteUser } from "../../../services/adminService";
+import type { UserRecord } from "../../../services/adminService";
 import styles from "./ManageUsers.module.css";
 
 export default function ManageUsers() {

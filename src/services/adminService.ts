@@ -252,11 +252,11 @@ export async function deleteUser(userId: string): Promise<void> {
 // 📊 ANALYTICS
 export async function getAnalyticsData() {
   try {
-    const totalPlants = await pb.collection("class").getFullList<PlantRecord>();
-    const totalUsers = await pb.collection("users").getFullList<UserRecord>();
+    const totalPlants = (await pb.collection("class").getList(1, 1)).totalItems;
+    const totalUsers = (await pb.collection("users").getFullList()) as UserRecord[];
     
     return {
-      totalPlants: totalPlants.length,
+      totalPlants: totalPlants,
       totalUsers: totalUsers.length,
       verifiedUsers: totalUsers.filter((u) => u.verified).length,
     };

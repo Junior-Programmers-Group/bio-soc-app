@@ -1,10 +1,11 @@
 import { useState } from "react";
-import ManagePlants from "./ManagePlants";
-import ManageUsers from "./ManageUsers";
-import Analytics from "./Analytics";
+import ManagePlants from "./plant-management/ManagePlants";
+import ManageUsers from "./user-management/ManageUsers";
+import Analytics from "./analytics/Analytics";
 import styles from "./AdminDashboard.module.css";
+import Taxonomy from "./taxonomy/Taxonomy";
 
-type Tab = "overview" | "plants" | "users" | "analytics";
+type Tab = "overview" | "plants" | "users" | "analytics" | "taxonomy";
 
 interface AdminDashboardProps {
   onLogout?: () => void;
@@ -72,6 +73,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <i className="bi bi-bar-chart-line"></i>
             Analytics
           </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === "taxonomy" ? styles.active : ""}`}
+            onClick={() => { setActiveTab("taxonomy"); handleNavClick(); }}
+          >
+            <i className="bi bi-tags"></i>
+            Taxonomy
+          </button>
         </nav>
 
         {onLogout && (
@@ -130,7 +139,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     View Analytics
                   </button>
                 </div>
-
+                <div className={styles.card}>
+                  <h3>
+                    <i className="bi bi-tag"></i>
+                    Taxonomy
+                  </h3>
+                  <p>Add and Modify Taxonomy</p>
+                  <button onClick={() => setActiveTab("taxonomy")}>
+                    Taxonomy
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -138,6 +156,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           {activeTab === "plants" && <ManagePlants />}
           {activeTab === "users" && <ManageUsers />}
           {activeTab === "analytics" && <Analytics />}
+          {activeTab === "taxonomy" && <Taxonomy />}
         </div>
       </main>
 

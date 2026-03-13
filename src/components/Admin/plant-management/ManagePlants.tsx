@@ -4,10 +4,10 @@ import {
   createPlant,
   updatePlant,
   deletePlant,
-} from "../../services/adminService";
-import type { PlantRecord } from "../../services/adminService";
-import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../../services/qrCodeService";
-import QRModal from "./QRModal";
+} from "../../../services/adminService";
+import type { PlantRecord } from "../../../services/adminService";
+import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../../../services/qrCodeService";
+import QRModal from "../QRModal";
 import styles from "./ManagePlants.module.css";
 
 const PLACEHOLDER_IMAGE =
