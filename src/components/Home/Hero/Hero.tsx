@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { fetchPlants } from "../../../services/plantService";
 import type { Plant } from "../../../types/plant";
 import SearchDropdown from "./SearchDropdown";
@@ -89,17 +89,29 @@ const Hero = () => {
         document.removeEventListener("mousedown", handleClickOutside);
       };
     }
+    
+    return undefined;
   }, [showDropdown]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-  };
+  }, []);
 
-  const handleInputFocus = () => {
+  const handleInputFocus = useCallback(() => {
     if (searchQuery.trim() && filteredResults.length > 0) {
       setShowDropdown(true);
     }
-  };
+  }, [searchQuery, filteredResults]);
+
+  const handleSearchClick = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+    if (searchQuery.trim() && filteredResults.length > 0) {
+      setShowDropdown(true);
+    }
+  }, [searchQuery, filteredResults]);
 
   return (
     <section className={styles.hero}>
@@ -124,7 +136,7 @@ const Hero = () => {
               onChange={handleInputChange}
               onFocus={handleInputFocus}
             />
-            <button type="button" className={styles.searchBtn} aria-label="Search">
+            <button type="button" className={styles.searchBtn} aria-label="Search" onClick={handleSearchClick}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <path d="m21 21-4.35-4.35"></path>

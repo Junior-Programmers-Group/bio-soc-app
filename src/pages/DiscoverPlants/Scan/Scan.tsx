@@ -6,10 +6,16 @@ import pb from "../../../back-end/db";
 import styles from "./Scan.module.css";
 
 type Plant = {
-  name: string;
-  scientific_name: string;
-  description: string;
+  commonName: string;
+  scientificName: string;
+  description?: string;
   image?: string;
+  id: string;
+  genus?: string;
+  author?: string;
+  year?: number;
+  conservationStatus?: string;
+  notes?: string;
 };
 
 const Scan = () => {
@@ -181,30 +187,30 @@ const Scan = () => {
         console.log("Extracted plant ID from URL:", plantId);
       }
 
-      // Try to fetch plant by ID or QR code - use "class" collection
+      // Try to fetch plant by ID from species collection
       let record;
       try {
-        console.log("Trying to fetch plant by ID from 'class' collection:", plantId);
-        record = await pb.collection("class").getOne(plantId);
+        console.log("Trying to fetch plant by ID from 'species' collection:", plantId);
+        record = await pb.collection("species").getOne(plantId);
         console.log("Plant found by ID:", record);
       } catch (idError) {
         console.log("Plant not found by ID, trying by QR code field:", qrCode);
-        // If not found by ID, try by QR code field in class collection
+        // If not found by ID, try by QR code field in species collection
         try {
-          record = await pb.collection("class").getFirstListItem(`qr_code="${qrCode}"`);
+          record = await pb.collection("species").getFirstListItem(`qr_code="${qrCode}"`);
           console.log("Plant found by QR code:", record);
         } catch (qrError) {
-          console.log("Not found in 'class' collection, trying 'plants' collection:", plantId);
-          // Try plants collection as fallback
-          try {
-            record = await pb.collection("plants").getOne(plantId);
-            console.log("Plant found in 'plants' collection:", record);
-          } catch (plantsError) {
-            throw new Error("Plant not found in any collection");
-          }
+          // QR code validation failed - this means the scanned code doesn't match any plant
+          throw new Error(`❌ Invalid QR code. This code does not correspond to any plant in the database.`);
         }
       }
 
+      // Validate that the extracted plant ID matches the QR code
+      if (!record) {
+        throw new Error("Plant record not found");
+      }
+
+      console.log("Validating QR code for plant:", record.id);
       console.log("Navigating to plant:", record.id);
       
       // Stop scanner if it's running (from camera detection, not from file upload)
@@ -228,7 +234,8 @@ const Scan = () => {
     } catch (err) {
       console.error("Error fetching plant:", err);
       setPlant(null);
-      setError("❌ Plant not found in database. Make sure the QR code is valid.");
+      const errorMessage = err instanceof Error ? err.message : "❌ Plant not found in database. Make sure the QR code is valid.";
+      setError(errorMessage);
       hasScannedRef.current = false;
     }
   };
@@ -272,10 +279,10 @@ const Scan = () => {
         {plant && (
           <div className={styles.plantCard}>
             {plant.image && (
-              <img src={plant.image} alt={plant.name} />
+              <img src={plant.image} alt={plant.commonName} />
             )}
-            <h2>{plant.name}</h2>
-            <i>{plant.scientific_name}</i>
+            <h2>{plant.commonName}</h2>
+            <i>{plant.scientificName}</i>
             <p>{plant.description}</p>
           </div>
         )}
