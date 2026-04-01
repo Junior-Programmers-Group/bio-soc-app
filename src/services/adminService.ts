@@ -3,24 +3,31 @@ import type { RecordModel } from "pocketbase";
 import { generateQRCodeBlob } from "./qrCodeService";
 
 export interface PlantRecord extends RecordModel {
-  // Basic Information
-  name: string;
+  // Basic Information - from species collection
+  commonName: string;
   scientificName?: string;
-  commonNames?: string;
   description?: string;
   image?: string;
+  
+  // Species Metadata
+  genus?: string;
+  author?: string;
+  year?: number;
+  conservationStatus?: string;
+  notes?: string;
+  field?: string;  // Alternative image field
   
   // QR Code
   qr_code?: string;
   
-  // Taxonomy - flat structure for now
+  // Taxonomy - legacy fields
   kingdom?: string;
   order?: string;
   family?: string;
   subfamily?: string;
   species?: string;
   
-  // Plant Details
+  // Plant Details - legacy fields
   morphology?: string;
   ecology?: string;
   distribution?: string;
@@ -39,12 +46,12 @@ export interface UserRecord extends RecordModel {
 // 🌿 PLANTS MANAGEMENT
 export async function getPlants(): Promise<PlantRecord[]> {
   try {
-    return await pb.collection("class").getFullList<PlantRecord>({
+    return await pb.collection("species").getFullList<PlantRecord>({
       requestKey: null, // Disable auto-cancellation
     });
   } catch (error) {
     if (error instanceof Error && !error.message.includes('aborted')) {
-      console.error("Error fetching plants:", error);
+      console.error("Error fetching plants from species:", error);
     }
     throw error;
   }
@@ -58,11 +65,16 @@ export async function createPlant(
     // First create the plant without QR code to get the ID
     const formData = new FormData();
     
-    // Add all text fields
-    formData.append("name", data.name || "");
+    // Add all text fields for species collection
+    formData.append("commonName", data.commonName || "");
     formData.append("scientificName", data.scientificName || "");
-    formData.append("commonNames", data.commonNames || "");
-    formData.append("description", data.description || data.name || "");
+    formData.append("description", data.description || data.commonName || "");
+    formData.append("genus", data.genus || "");
+    formData.append("author", data.author || "");
+    formData.append("year", String(data.year || ""));
+    formData.append("conservationStatus", data.conservationStatus || "");
+    formData.append("notes", data.notes || "");
+    // Legacy fields
     formData.append("kingdom", data.kingdom || "");
     formData.append("order", data.order || "");
     formData.append("family", data.family || "");
@@ -79,8 +91,8 @@ export async function createPlant(
       formData.append("image", imageFile, imageFile.name);
     }
 
-    const record = await pb.collection("class").create<PlantRecord>(formData);
-    console.log("✓ Plant created successfully:", record);
+    const record = await pb.collection("species").create<PlantRecord>(formData);
+    console.log("✓ Plant created successfully in species:", record);
     
     // Now generate and upload QR code
     try {
@@ -98,7 +110,7 @@ export async function createPlant(
       );
       
       const updatedRecord = await pb
-        .collection("class")
+        .collection("species")
         .update<PlantRecord>(record.id, qrFormData);
       console.log("✓ QR code generated and saved:", updatedRecord);
       return updatedRecord;
@@ -122,10 +134,15 @@ export async function updatePlant(
     if (imageFile) {
       const formData = new FormData();
       
-      formData.append("name", data.name || "");
+      formData.append("commonName", data.commonName || "");
       formData.append("scientificName", data.scientificName || "");
-      formData.append("commonNames", data.commonNames || "");
-      formData.append("description", data.description || data.name || "");
+      formData.append("description", data.description || data.commonName || "");
+      formData.append("genus", data.genus || "");
+      formData.append("author", data.author || "");
+      formData.append("year", String(data.year || ""));
+      formData.append("conservationStatus", data.conservationStatus || "");
+      formData.append("notes", data.notes || "");
+      // Legacy fields
       formData.append("kingdom", data.kingdom || "");
       formData.append("order", data.order || "");
       formData.append("family", data.family || "");
@@ -138,8 +155,8 @@ export async function updatePlant(
       formData.append("phylum_id", String(data.phylum_id || 1));
       formData.append("image", imageFile, imageFile.name);
       
-      const record = await pb.collection("class").update<PlantRecord>(id, formData);
-      console.log("✓ Plant updated successfully:", record);
+      const record = await pb.collection("species").update<PlantRecord>(id, formData);
+      console.log("✓ Plant updated successfully in species:", record);
       
       // Regenerate QR code
       try {
@@ -153,7 +170,7 @@ export async function updatePlant(
         qrFormData.append("qr_code", qrCodeBlob, `${record.id}_qr.png`);
         
         const updatedWithQR = await pb
-          .collection("class")
+          .collection("species")
           .update<PlantRecord>(record.id, qrFormData);
         return updatedWithQR;
       } catch (qrError) {
@@ -163,10 +180,15 @@ export async function updatePlant(
     } else {
       // No image file, use JSON
       const payload = {
-        name: data.name || "",
+        commonName: data.commonName || "",
         scientificName: data.scientificName || "",
-        commonNames: data.commonNames || "",
-        description: data.description || data.name || "",
+        description: data.description || data.commonName || "",
+        genus: data.genus || "",
+        author: data.author || "",
+        year: data.year || null,
+        conservationStatus: data.conservationStatus || "",
+        notes: data.notes || "",
+        // Legacy fields
         kingdom: data.kingdom || "",
         order: data.order || "",
         family: data.family || "",
@@ -179,8 +201,8 @@ export async function updatePlant(
         phylum_id: Number(data.phylum_id) || 1,
       };
 
-      const record = await pb.collection("class").update<PlantRecord>(id, payload);
-      console.log("✓ Plant updated successfully:", record);
+      const record = await pb.collection("species").update<PlantRecord>(id, payload);
+      console.log("✓ Plant updated successfully in species:", record);
       
       // Regenerate QR code
       try {
@@ -194,7 +216,7 @@ export async function updatePlant(
         qrFormData.append("qr_code", qrCodeBlob, `${record.id}_qr.png`);
         
         const updatedWithQR = await pb
-          .collection("class")
+          .collection("species")
           .update<PlantRecord>(record.id, qrFormData);
         return updatedWithQR;
       } catch (qrError) {
@@ -210,8 +232,8 @@ export async function updatePlant(
 
 export async function deletePlant(id: string): Promise<void> {
   try {
-    await pb.collection("class").delete(id);
-    console.log("✓ Plant deleted successfully");
+    await pb.collection("species").delete(id);
+    console.log("✓ Plant deleted successfully from species");
   } catch (error) {
     console.error("Error deleting plant:", error);
     throw error;
@@ -252,7 +274,7 @@ export async function deleteUser(userId: string): Promise<void> {
 // 📊 ANALYTICS
 export async function getAnalyticsData() {
   try {
-    const totalPlants = (await pb.collection("class").getList(1, 1)).totalItems;
+    const totalPlants = (await pb.collection("species").getList(1, 1)).totalItems;
     const totalUsers = (await pb.collection("users").getFullList()) as UserRecord[];
     
     return {

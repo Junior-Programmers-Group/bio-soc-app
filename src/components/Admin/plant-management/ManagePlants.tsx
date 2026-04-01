@@ -17,9 +17,13 @@ type FormStep = "basic" | "taxonomy" | "details" | "media";
 type EditTab = "taxonomy" | "morphology" | "ecology" | "distribution" | "uses";
 
 interface PlantFormData {
-  name: string;
+  commonName: string;  // Changed from name to commonName for species collection
   scientificName: string;
-  commonNames: string;
+  genus: string;       // New field for species collection
+  author: string;      // New field for species collection
+  year: string;        // New field for species collection
+  conservationStatus: string;  // New field for species collection
+  notes: string;       // New field for species collection
   imageFile: File | null;
   imagePreview: string;
   kingdom: string;
@@ -37,9 +41,11 @@ interface PlantFormData {
 // STEP FIELD CONFIG
 const STEP_FIELDS: Record<FormStep, Array<{ key: keyof PlantFormData; label: string; type: "text" | "textarea" | "number" }>> = {
   basic: [
-    { key: "name", label: "Plant Name *", type: "text" },
+    { key: "commonName", label: "Common Name *", type: "text" },
     { key: "scientificName", label: "Scientific Name", type: "text" },
-    { key: "commonNames", label: "Common Names", type: "text" },
+    { key: "genus", label: "Genus", type: "text" },
+    { key: "author", label: "Author", type: "text" },
+    { key: "year", label: "Year", type: "number" },
     { key: "phylum_id", label: "Phylum ID", type: "number" },
   ],
   taxonomy: [
@@ -101,7 +107,7 @@ const FormFields = ({
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, [f.key]: e.target.value }))
             }
-            required={f.key === "name"}
+            required={f.key === "commonName"}
           />
         )}
       </div>
@@ -121,14 +127,18 @@ export default function ManagePlants() {
   const [uploading, setUploading] = useState(false);
   const [qrCodePreview, setQrCodePreview] = useState<string>("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-  const [selectedQRPlant, setSelectedQRPlant] = useState<{ id: string; name: string; scientificName: string } | null>(null);
+  const [selectedQRPlant, setSelectedQRPlant] = useState<{ id: string; commonName: string; scientificName: string } | null>(null);
   const [modalQRDataUrl, setModalQRDataUrl] = useState<string>("");
   const [isModalLoading, setIsModalLoading] = useState(false);
 
   const [formData, setFormData] = useState<PlantFormData>({
-    name: "",
+    commonName: "",
     scientificName: "",
-    commonNames: "",
+    genus: "",
+    author: "",
+    year: "",
+    conservationStatus: "",
+    notes: "",
     imageFile: null,
     imagePreview: "",
     kingdom: "",
@@ -175,7 +185,7 @@ export default function ManagePlants() {
       });
       setSelectedQRPlant({
         id: plant.id,
-        name: plant.name || "",
+        commonName: plant.commonName || "",
         scientificName: plant.scientificName || "",
       });
       setModalQRDataUrl(qrDataUrl);
@@ -198,7 +208,7 @@ export default function ManagePlants() {
     if (!selectedQRPlant) return;
     try {
       setIsModalLoading(true);
-      await downloadPlantQRCode(selectedQRPlant.id, selectedQRPlant.name);
+      await downloadPlantQRCode(selectedQRPlant.id, selectedQRPlant.commonName);
       setSuccess("QR Code downloaded successfully!");
       setTimeout(() => setSuccess(""), 3000);
       handleCloseQRModal();
@@ -216,7 +226,7 @@ export default function ManagePlants() {
       setIsModalLoading(true);
       await printPlantQRCode(
         selectedQRPlant.id,
-        selectedQRPlant.name,
+        selectedQRPlant.commonName,
         selectedQRPlant.scientificName
       );
       setSuccess("Print dialog opened!");
@@ -271,6 +281,7 @@ export default function ManagePlants() {
       const payload = {
         ...dataWithoutFile,
         phylum_id: Number(formData.phylum_id) || 1,
+        year: formData.year ? Number(formData.year) : undefined,
       };
 
       if (editingId) {
@@ -310,14 +321,24 @@ export default function ManagePlants() {
   };
 
   const handleEdit = (plant: PlantRecord) => {
+    // Build image preview URL from species collection
+    let imageUrl = "";
+    if (plant.image) {
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
+    } else if (plant.field) {
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
+    }
+
     setFormData({
-      name: plant.name || "",
+      commonName: plant.commonName || "",
       scientificName: plant.scientificName || "",
-      commonNames: plant.commonNames || "",
+      genus: plant.genus || "",
+      author: plant.author || "",
+      year: plant.year?.toString() || "",
+      conservationStatus: plant.conservationStatus || "",
+      notes: plant.notes || "",
       imageFile: null,
-      imagePreview: plant.image
-        ? `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/class/${plant.id}/${plant.image}`
-        : "",
+      imagePreview: imageUrl,
       kingdom: plant.kingdom || "",
       order: plant.order || "",
       family: plant.family || "",
@@ -350,9 +371,13 @@ export default function ManagePlants() {
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      commonName: "",
       scientificName: "",
-      commonNames: "",
+      genus: "",
+      author: "",
+      year: "",
+      conservationStatus: "",
+      notes: "",
       imageFile: null,
       imagePreview: "",
       kingdom: "",
@@ -485,7 +510,7 @@ export default function ManagePlants() {
             <div className={styles.editImageSection}>
               <img
                 src={formData.imagePreview || PLACEHOLDER_IMAGE}
-                alt={formData.name}
+                alt={formData.commonName}
                 className={styles.editImage}
               />
               <input
@@ -502,7 +527,7 @@ export default function ManagePlants() {
             </div>
 
             <div className={styles.editContent}>
-              <h1>{formData.name}</h1>
+              <h1>{formData.commonName}</h1>
               <em>{formData.scientificName || "Scientific name..."}</em>
 
               <div className={styles.editTabs}>
@@ -554,7 +579,7 @@ export default function ManagePlants() {
                   </button>
                   <button 
                     type="button"
-                    onClick={() => editingId && handleOpenQRModal({ id: editingId, name: formData.name, scientificName: formData.scientificName } as PlantRecord)}
+                    onClick={() => editingId && handleOpenQRModal({ id: editingId, commonName: formData.commonName, scientificName: formData.scientificName } as PlantRecord)}
                     disabled={isModalLoading || !editingId}
                     className={styles.downloadQRBtn}
                   >
@@ -577,17 +602,25 @@ export default function ManagePlants() {
       {/* PLANTS GRID */}
       <div className={styles.plantsGrid}>
         {plants.length === 0 && <p>No plants found</p>}
-        {plants.map((plant) => (
+        {plants.map((plant) => {
+          // Build image URL from species collection
+          let imageUrl = PLACEHOLDER_IMAGE;
+          if (plant.image) {
+            imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
+          } else if (plant.field) {
+            imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
+          }
+
+          return (
           <div key={plant.id} className={styles.plantCard}>
             <img
-              src={
-                plant.image
-                  ? `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/class/${plant.id}/${plant.image}`
-                  : PLACEHOLDER_IMAGE
-              }
-              alt={plant.name}
+              src={imageUrl}
+              alt={plant.commonName}
             />
-            <h3>{plant.name}</h3>
+            <div style={{ marginBottom: "10px", paddingTop: "15px", paddingLeft: "15px", paddingRight: "12px" }}>
+              <h3 style={{ margin: "0 0 4px 0", lineHeight: "1.2" }}>{plant.commonName}</h3>
+              <em style={{ fontSize: "12px", color: "#999", display: "block", fontStyle: "italic" }}>{plant.scientificName || ""}</em>
+            </div>
             <p>{plant.description || ""}</p>
             <div className={styles.cardActions}>
               <button onClick={() => handleEdit(plant)}>Edit</button>
@@ -596,7 +629,7 @@ export default function ManagePlants() {
                 disabled={isModalLoading}
                 className={styles.qrBtn}
               >
-                QR Download / Print
+                QR Code
               </button>
               <button 
                 onClick={() => handleDelete(plant.id)}
@@ -606,14 +639,15 @@ export default function ManagePlants() {
               </button>
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
 
       {/* QR CODE MODAL */}
       <QRModal
         isOpen={isQRModalOpen}
         onClose={handleCloseQRModal}
-        plantName={selectedQRPlant?.name || ""}
+        plantName={selectedQRPlant?.commonName || ""}
         scientificName={selectedQRPlant?.scientificName || ""}
         qrCodeDataUrl={modalQRDataUrl}
         onDownload={handleModalDownloadQR}
