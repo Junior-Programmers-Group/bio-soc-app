@@ -9,16 +9,18 @@
   transform: translateX(-50%);
   width: 100%;
   max-width: 600px;
-  max-height: 320px;
-  margin-top: 8px;
+  max-height: 420px;
+  margin-top: 12px;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-  overflow: hidden;
+  z-index: 1000;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   animation: slideDown 0.3s ease;
+  pointer-events: auto;
 }
 
 @keyframes slideDown {
@@ -39,8 +41,25 @@
 .resultsList {
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 6px 0;
+  padding: 8px 0;
   flex: 1;
+}
+
+.resultsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.resultsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.resultsList::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+.resultsList::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 .resultItem {

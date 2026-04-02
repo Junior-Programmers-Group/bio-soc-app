@@ -667,7 +667,7 @@ export default function ManagePlants() {
                     disabled={isModalLoading || !editingId}
                     className={styles.downloadQRBtn}
                   >
-                    {isModalLoading ? "Loading..." : "📋 QR Download / Print"}
+                    {isModalLoading ? "Loading..." : "QR Code"}
                   </button>
                   <button 
                     type="submit" 

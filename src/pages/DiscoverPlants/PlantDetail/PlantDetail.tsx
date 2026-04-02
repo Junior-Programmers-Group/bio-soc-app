@@ -113,7 +113,10 @@ export default function PlantDetail() {
         <div className={styles.container}>
           <p className={styles.error}>{error}</p>
           <button onClick={() => navigate("/discover")} className={styles.backBtn}>
-            ← Back to Plants
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 8 12 15 6"></polyline>
+            </svg>
+            <span>Back to Plants</span>
           </button>
         </div>
       </div>
@@ -130,7 +133,10 @@ export default function PlantDetail() {
 
       <div className={styles.container}>
         <button onClick={() => navigate("/discover")} className={styles.backBtn}>
-          ← Back
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 8 12 15 6"></polyline>
+          </svg>
+          <span>Back</span>
         </button>
 
         <div className={styles.card}>
