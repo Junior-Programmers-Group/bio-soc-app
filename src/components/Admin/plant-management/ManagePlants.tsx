@@ -7,30 +7,47 @@ import {
 } from "../../../services/adminService";
 import type { PlantRecord } from "../../../services/adminService";
 import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../../../services/qrCodeService";
+import { useFetchTaxonomy } from "../../../back-end/hooks/useFetchTaxonomy";
 import QRModal from "../QRModal";
 import styles from "./ManagePlants.module.css";
 
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/300x250/2d5016/ffffff?text=Plant";
 
-type FormStep = "basic" | "taxonomy" | "details" | "media";
-type EditTab = "taxonomy" | "morphology" | "ecology" | "distribution" | "uses";
+// Helper function to build image URL
+const buildImageUrl = (plant: PlantRecord): string => {
+  if (!plant.id) return PLACEHOLDER_IMAGE;
+  
+  // Try field first (primary image field in PocketBase)
+  if (plant.field) {
+    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
+  }
+  // Try image field as fallback
+  if (plant.image) {
+    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
+  }
+  // Try qr_code as another fallback
+  if ((plant as any).qr_code) {
+    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${(plant as any).qr_code}`;
+  }
+  
+  return PLACEHOLDER_IMAGE;
+};
+
+type FormStep = "basic" | "details" | "media";
+type EditTab = "basic" | "morphology" | "ecology" | "distribution" | "uses";
+type FieldType = "text" | "textarea" | "number" | "select";
 
 interface PlantFormData {
-  commonName: string;  // Changed from name to commonName for species collection
+  commonName: string;
   scientificName: string;
-  genus: string;       // New field for species collection
-  author: string;      // New field for species collection
-  year: string;        // New field for species collection
-  conservationStatus: string;  // New field for species collection
-  notes: string;       // New field for species collection
+  genus: string;
+  author: string;
+  year: string;
+  conservationStatus: string;
+  notes: string;
   imageFile: File | null;
   imagePreview: string;
-  kingdom: string;
-  order: string;
-  family: string;
-  subfamily: string;
-  species: string;
   morphology: string;
   ecology: string;
   distribution: string;
@@ -38,54 +55,20 @@ interface PlantFormData {
   phylum_id: string;
 }
 
-// STEP FIELD CONFIG
-const STEP_FIELDS: Record<FormStep, Array<{ key: keyof PlantFormData; label: string; type: "text" | "textarea" | "number" }>> = {
-  basic: [
-    { key: "commonName", label: "Common Name *", type: "text" },
-    { key: "scientificName", label: "Scientific Name", type: "text" },
-    { key: "genus", label: "Genus", type: "text" },
-    { key: "author", label: "Author", type: "text" },
-    { key: "year", label: "Year", type: "number" },
-    { key: "phylum_id", label: "Phylum ID", type: "number" },
-  ],
-  taxonomy: [
-    { key: "kingdom", label: "Kingdom", type: "text" },
-    { key: "order", label: "Order", type: "text" },
-    { key: "family", label: "Family", type: "text" },
-    { key: "subfamily", label: "Subfamily", type: "text" },
-    { key: "species", label: "Species", type: "text" },
-  ],
-  details: [
-    { key: "morphology", label: "Morphology", type: "textarea" },
-    { key: "ecology", label: "Ecology", type: "textarea" },
-    { key: "distribution", label: "Distribution", type: "textarea" },
-    { key: "uses", label: "Uses", type: "textarea" },
-  ],
-  media: [],
-};
+// REUSABLE FORM FIELDS - with support for select fields
+interface FormFieldConfig {
+  key: keyof PlantFormData;
+  label: string;
+  type: FieldType;
+  options?: { value: string; label: string }[];
+}
 
-// EDIT TABS CONFIG
-const EDIT_TABS: Record<EditTab, Array<{ key: keyof PlantFormData; label: string; type: "text" | "textarea" }>> = {
-  taxonomy: [
-    { key: "kingdom", label: "Kingdom", type: "text" },
-    { key: "order", label: "Order", type: "text" },
-    { key: "family", label: "Family", type: "text" },
-    { key: "subfamily", label: "Subfamily", type: "text" },
-    { key: "species", label: "Species", type: "text" },
-  ],
-  morphology: [{ key: "morphology", label: "Morphology", type: "textarea" }],
-  ecology: [{ key: "ecology", label: "Ecology", type: "textarea" }],
-  distribution: [{ key: "distribution", label: "Distribution", type: "textarea" }],
-  uses: [{ key: "uses", label: "Uses", type: "textarea" }],
-};
-
-// REUSABLE FORM FIELDS
 const FormFields = ({
   fields,
   formData,
   setFormData,
 }: {
-  fields: Array<{ key: keyof PlantFormData; label: string; type: "text" | "textarea" | "number" }>;
+  fields: FormFieldConfig[];
   formData: PlantFormData;
   setFormData: React.Dispatch<React.SetStateAction<PlantFormData>>;
 }) => (
@@ -100,6 +83,21 @@ const FormFields = ({
               setFormData((prev) => ({ ...prev, [f.key]: e.target.value }))
             }
           />
+        ) : f.type === "select" ? (
+          <select
+            value={(formData[f.key] as string) || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, [f.key]: e.target.value }))
+            }
+            required={f.key === "commonName"}
+          >
+            <option value="">Select {f.label}</option>
+            {f.options?.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         ) : (
           <input
             type={f.type}
@@ -123,13 +121,16 @@ export default function ManagePlants() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentStep, setCurrentStep] = useState<FormStep>("basic");
-  const [editTab, setEditTab] = useState<EditTab>("taxonomy");
+  const [editTab, setEditTab] = useState<EditTab>("basic");
   const [uploading, setUploading] = useState(false);
   const [qrCodePreview, setQrCodePreview] = useState<string>("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [selectedQRPlant, setSelectedQRPlant] = useState<{ id: string; commonName: string; scientificName: string } | null>(null);
   const [modalQRDataUrl, setModalQRDataUrl] = useState<string>("");
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const [genusOptions, setGenusOptions] = useState<{ value: string; label: string }[]>([]);
+
+  const { fetch: fetchTaxonomy } = useFetchTaxonomy();
 
   const [formData, setFormData] = useState<PlantFormData>({
     commonName: "",
@@ -141,17 +142,87 @@ export default function ManagePlants() {
     notes: "",
     imageFile: null,
     imagePreview: "",
-    kingdom: "",
-    order: "",
-    family: "",
-    subfamily: "",
-    species: "",
     morphology: "",
     ecology: "",
     distribution: "",
     uses: "",
     phylum_id: "1",
   });
+
+  // Load genus options
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadGenusOptions = async () => {
+      try {
+        console.log("Loading genus options...");
+        const taxonomy = await fetchTaxonomy();
+        
+        if (!isMounted) return; // Component unmounted, don't update state
+        
+        if (taxonomy?.genus && Array.isArray(taxonomy.genus)) {
+          const options = taxonomy.genus.map((g: any) => ({
+            value: g.id,
+            label: g.name || g.common_name || g.id,
+          }));
+          console.log("✓ Genus options loaded:", options.length);
+          setGenusOptions(options);
+        } else {
+          console.warn("Invalid genus data received");
+          setGenusOptions([]);
+        }
+      } catch (err: any) {
+        if (isMounted && !err.message?.includes('aborted')) {
+          console.error("Error loading genus options:", err?.message);
+          setGenusOptions([]);
+        }
+      }
+    };
+
+    loadGenusOptions();
+
+    // Cleanup function to prevent memory leaks
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchTaxonomy]);
+
+  // Create STEP_FIELDS dynamically with genus options
+  const STEP_FIELDS: Record<FormStep, FormFieldConfig[]> = {
+    basic: [
+      { key: "commonName", label: "Common Name *", type: "text" },
+      { key: "scientificName", label: "Scientific Name", type: "text" },
+      { key: "author", label: "Author", type: "text" },
+      { key: "year", label: "Year", type: "number" },
+      { key: "genus", label: "Genus", type: "select", options: genusOptions },
+      { key: "conservationStatus", label: "Conservation Status", type: "text" },
+      { key: "notes", label: "Notes", type: "textarea" },
+    ],
+    details: [
+      { key: "morphology", label: "Morphology", type: "textarea" },
+      { key: "ecology", label: "Ecology", type: "textarea" },
+      { key: "distribution", label: "Distribution", type: "textarea" },
+      { key: "uses", label: "Uses", type: "textarea" },
+    ],
+    media: [],
+  };
+
+  // Edit tabs configuration
+  const EDIT_TABS: Record<EditTab, FormFieldConfig[]> = {
+    basic: [
+      { key: "commonName", label: "Common Name *", type: "text" },
+      { key: "scientificName", label: "Scientific Name", type: "text" },
+      { key: "author", label: "Author", type: "text" },
+      { key: "year", label: "Year", type: "number" },
+      { key: "genus", label: "Genus", type: "select", options: genusOptions },
+      { key: "conservationStatus", label: "Conservation Status", type: "text" },
+      { key: "notes", label: "Notes", type: "textarea" },
+    ],
+    morphology: [{ key: "morphology", label: "Morphology", type: "textarea" }],
+    ecology: [{ key: "ecology", label: "Ecology", type: "textarea" }],
+    distribution: [{ key: "distribution", label: "Distribution", type: "textarea" }],
+    uses: [{ key: "uses", label: "Uses", type: "textarea" }],
+  };
 
   useEffect(() => {
     fetchPlants();
@@ -245,22 +316,27 @@ export default function ManagePlants() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setError("Please select a valid image file");
+      setError("❌ Please select a valid image file");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError("Image size must be less than 5MB");
+      setError("❌ Image size must be less than 5MB");
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (ev) => {
+      const previewData = ev.target?.result as string;
       setFormData((prev) => ({
         ...prev,
         imageFile: file,
-        imagePreview: ev.target?.result as string,
+        imagePreview: previewData,
       }));
       setError("");
+      console.log("✓ Image selected and preview loaded:", file.name);
+    };
+    reader.onerror = () => {
+      setError("❌ Failed to read image file");
     };
     reader.readAsDataURL(file);
   };
@@ -270,6 +346,12 @@ export default function ManagePlants() {
     
     // Prevent multiple simultaneous submissions
     if (uploading) return;
+    
+    // Validate that image is uploaded for new plant creation
+    if (!editingId && !formData.imageFile) {
+      setError("❌ Please upload a plant image before creating");
+      return;
+    }
     
     setError("");
     setSuccess("");
@@ -322,12 +404,8 @@ export default function ManagePlants() {
 
   const handleEdit = (plant: PlantRecord) => {
     // Build image preview URL from species collection
-    let imageUrl = "";
-    if (plant.image) {
-      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
-    } else if (plant.field) {
-      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
-    }
+    const imageUrl = buildImageUrl(plant);
+    console.log("✓ Loading plant for edit:", { plantId: plant.id, imageUrl });
 
     setFormData({
       commonName: plant.commonName || "",
@@ -339,11 +417,6 @@ export default function ManagePlants() {
       notes: plant.notes || "",
       imageFile: null,
       imagePreview: imageUrl,
-      kingdom: plant.kingdom || "",
-      order: plant.order || "",
-      family: plant.family || "",
-      subfamily: plant.subfamily || "",
-      species: plant.species || "",
       morphology: plant.morphology || "",
       ecology: plant.ecology || "",
       distribution: plant.distribution || "",
@@ -353,7 +426,7 @@ export default function ManagePlants() {
     setEditingId(plant.id);
     setShowForm(true);
     setCurrentStep("basic");
-    setEditTab("taxonomy");
+    setEditTab("basic");
     
     // Generate QR code preview
     generatePlantQRCode({
@@ -380,11 +453,6 @@ export default function ManagePlants() {
       notes: "",
       imageFile: null,
       imagePreview: "",
-      kingdom: "",
-      order: "",
-      family: "",
-      subfamily: "",
-      species: "",
       morphology: "",
       ecology: "",
       distribution: "",
@@ -394,7 +462,7 @@ export default function ManagePlants() {
     setEditingId(null);
     setShowForm(false);
     setCurrentStep("basic");
-    setEditTab("taxonomy");
+    setEditTab("basic");
     setError("");
     setSuccess("");
     setQrCodePreview("");
@@ -402,12 +470,12 @@ export default function ManagePlants() {
 
   const goToStep = (step: FormStep) => setCurrentStep(step);
   const goToNextStep = () => {
-    const steps: FormStep[] = ["basic", "taxonomy", "details", "media"];
+    const steps: FormStep[] = ["basic", "details", "media"];
     const idx = steps.indexOf(currentStep);
     if (idx < steps.length - 1) setCurrentStep(steps[idx + 1]);
   };
   const goToPreviousStep = () => {
-    const steps: FormStep[] = ["basic", "taxonomy", "details", "media"];
+    const steps: FormStep[] = ["basic", "details", "media"];
     const idx = steps.indexOf(currentStep);
     if (idx > 0) setCurrentStep(steps[idx - 1]);
   };
@@ -430,7 +498,7 @@ export default function ManagePlants() {
       {showForm && !editingId && (
         <div className={styles.formContainer}>
           <div className={styles.formSteps}>
-            {(["basic", "taxonomy", "details", "media"] as FormStep[]).map(
+            {(["basic", "details", "media"] as FormStep[]).map(
               (step, idx) => (
                 <button
                   key={step}
@@ -454,21 +522,30 @@ export default function ManagePlants() {
                 setFormData={setFormData}
               />
             ) : (
-              <div className={styles.formGroup}>
-                <label>Plant Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  disabled={uploading}
-                />
-                {formData.imagePreview && (
-                  <img
-                    src={formData.imagePreview}
-                    alt="preview"
-                    className={styles.imagePreview}
+              <div>
+                <div className={styles.formGroup}>
+                  <label>Plant Image<span style={{color: '#dc2626'}}> *</span> (Required)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    disabled={uploading}
+                    required
                   />
-                )}
+                  <small style={{ color: "#666", marginTop: "0.5rem", display: "block", fontSize: "0.85rem" }}>
+                    Maximum file size: 5MB. Supported formats: JPG, PNG, GIF, WebP
+                  </small>
+                  {formData.imagePreview && (
+                    <div style={{ marginTop: "1rem" }}>
+                      <p style={{color: "#14532d", fontWeight: "600", marginBottom: "0.5rem"}}>✓ Image uploaded</p>
+                      <img
+                        src={formData.imagePreview}
+                        alt="preview"
+                        className={styles.imagePreview}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -492,7 +569,7 @@ export default function ManagePlants() {
               ) : (
                 <button 
                   type="submit" 
-                  disabled={uploading}
+                  disabled={uploading || !formData.imageFile}
                   className={styles.submitBtn}
                 >
                   {uploading ? "Uploading..." : "Create Plant"}
@@ -510,8 +587,12 @@ export default function ManagePlants() {
             <div className={styles.editImageSection}>
               <img
                 src={formData.imagePreview || PLACEHOLDER_IMAGE}
-                alt={formData.commonName}
+                alt={formData.commonName || "Plant"}
                 className={styles.editImage}
+                onError={(e) => {
+                  console.warn("Image failed to load:", formData.imagePreview);
+                  (e.target as HTMLImageElement).src = PLACEHOLDER_IMAGE;
+                }}
               />
               <input
                 type="file"
@@ -524,6 +605,9 @@ export default function ManagePlants() {
               <label htmlFor="editImageInput" className={styles.changeImageBtn}>
                  Change Image
               </label>
+              {formData.imageFile && (
+                <p style={{ fontSize: "12px", color: "#14532d", marginTop: "0.5rem" }}>✓ New image selected</p>
+              )}
             </div>
 
             <div className={styles.editContent}>
@@ -603,13 +687,7 @@ export default function ManagePlants() {
       <div className={styles.plantsGrid}>
         {plants.length === 0 && <p>No plants found</p>}
         {plants.map((plant) => {
-          // Build image URL from species collection
-          let imageUrl = PLACEHOLDER_IMAGE;
-          if (plant.image) {
-            imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
-          } else if (plant.field) {
-            imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
-          }
+          const imageUrl = buildImageUrl(plant);
 
           return (
           <div key={plant.id} className={styles.plantCard}>

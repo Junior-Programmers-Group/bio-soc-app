@@ -186,7 +186,8 @@
 }
 
 .formGroup input,
-.formGroup textarea {
+.formGroup textarea,
+.formGroup select {
   padding: 0.85rem 1.2rem;
   border: 2px solid #e0e8e0;
   border-radius: 10px;
@@ -197,12 +198,14 @@
 }
 
 .formGroup input:hover,
-.formGroup textarea:hover {
+.formGroup textarea:hover,
+.formGroup select:hover {
   border-color: #c0d8c0;
 }
 
 .formGroup input:focus,
-.formGroup textarea:focus {
+.formGroup textarea:focus,
+.formGroup select:focus {
   outline: none;
   border-color: #2d7a3d;
   background: #fff;
@@ -239,6 +242,37 @@ textarea {
   max-height: 280px;
   border-radius: 10px;
   box-shadow: 0 8px 20px rgba(45, 122, 61, 0.15);
+}
+
+/* File Input Styling */
+.formGroup input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  border: 2px dashed #2d7a3d;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f0f5f0 0%, #e8f1e8 100%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  color: #1f2f1f;
+}
+
+.formGroup input[type="file"]:hover {
+  border-color: #156b48;
+  background: linear-gradient(135deg, #e8f1e8 0%, #dcf4e0 100%);
+}
+
+.formGroup input[type="file"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.formGroup small {
+  color: #666;
+  margin-top: 0.5rem;
+  display: block;
+  font-size: 0.85rem;
 }
 
 /* =======================
@@ -594,7 +628,8 @@ textarea {
 }
 
 .editFieldGroup input,
-.editFieldGroup textarea {
+.editFieldGroup textarea,
+.editFieldGroup select {
   padding: 0.85rem 1.2rem;
   border: 2px solid #e0e8e0;
   border-radius: 10px;
@@ -605,12 +640,14 @@ textarea {
 }
 
 .editFieldGroup input:hover,
-.editFieldGroup textarea:hover {
+.editFieldGroup textarea:hover,
+.editFieldGroup select:hover {
   border-color: #c0d8c0;
 }
 
 .editFieldGroup input:focus,
-.editFieldGroup textarea:focus {
+.editFieldGroup textarea:focus,
+.editFieldGroup select:focus {
   outline: none;
   border-color: #2d7a3d;
   background: #fff;
@@ -822,7 +859,8 @@ textarea {
   }
 
   .stepBtn {
-    /* clamp() handles sizing automatically */
+    padding: clamp(0.6rem, 1.5vw, 0.8rem) clamp(0.8rem, 2vw, 1.2rem);
+    font-size: clamp(0.75rem, 1.2vw, 0.9rem);
   }
 
   .formGroup {
@@ -834,7 +872,8 @@ textarea {
   }
 
   .formGroup input,
-  .formGroup textarea {
+  .formGroup textarea,
+  .formGroup select {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
   }
@@ -867,7 +906,8 @@ textarea {
   }
 
   .editFieldGroup input,
-  .editFieldGroup textarea {
+  .editFieldGroup textarea,
+  .editFieldGroup select {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
   }
@@ -877,7 +917,8 @@ textarea {
   }
 
   .editFormActions button {
-    /* clamp() handles sizing automatically */
+    padding: clamp(0.6rem, 1.5vw, 0.8rem) clamp(0.8rem, 2vw, 1.2rem);
+    font-size: clamp(0.75rem, 1.2vw, 0.9rem);
   }
 
   .qrCodePreview {
@@ -965,7 +1006,8 @@ textarea {
   }
 
   .stepBtn {
-    /* clamp() handles sizing automatically */
+    padding: clamp(0.5rem, 1.2vw, 0.7rem) clamp(0.6rem, 1.5vw, 1rem);
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
   }
 
   .formGroup {

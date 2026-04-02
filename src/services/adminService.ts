@@ -7,7 +7,8 @@ export interface PlantRecord extends RecordModel {
   commonName: string;
   scientificName?: string;
   description?: string;
-  image?: string;
+  image?: string;  // May be populated from field
+  field?: string;  // Actual image field in PocketBase
   
   // Species Metadata
   genus?: string;
@@ -15,7 +16,6 @@ export interface PlantRecord extends RecordModel {
   year?: number;
   conservationStatus?: string;
   notes?: string;
-  field?: string;  // Alternative image field
   
   // QR Code
   qr_code?: string;
@@ -88,11 +88,28 @@ export async function createPlant(
     
     // Add image file if provided
     if (imageFile) {
-      formData.append("image", imageFile, imageFile.name);
+      formData.append("field", imageFile, imageFile.name);
+      console.log("📸 Uploading image file:", imageFile.name);
     }
 
     const record = await pb.collection("species").create<PlantRecord>(formData);
     console.log("✓ Plant created successfully in species:", record);
+    
+    // Create details record
+    try {
+      const detailsData = {
+        species: record.id,  // Link to species record
+        morphology: data.morphology || "",
+        ecology: data.ecology || "",
+        distribution: data.distribution || "",
+        uses: data.uses || "",
+      };
+      
+      const detailsRecord = await pb.collection("details").create(detailsData);
+      console.log("✓ Details created successfully:", detailsRecord);
+    } catch (detailsError) {
+      console.warn("Warning: Details creation failed:", detailsError);
+    }
     
     // Now generate and upload QR code
     try {
@@ -153,10 +170,36 @@ export async function updatePlant(
       formData.append("distribution", data.distribution || "");
       formData.append("uses", data.uses || "");
       formData.append("phylum_id", String(data.phylum_id || 1));
-      formData.append("image", imageFile, imageFile.name);
+      formData.append("field", imageFile, imageFile.name);
+      console.log("📸 Uploading image file for update:", imageFile.name);
       
       const record = await pb.collection("species").update<PlantRecord>(id, formData);
       console.log("✓ Plant updated successfully in species:", record);
+      
+      // Update or create details record
+      try {
+        const detailsData = {
+          species: id,  // Link to species record
+          morphology: data.morphology || "",
+          ecology: data.ecology || "",
+          distribution: data.distribution || "",
+          uses: data.uses || "",
+        };
+        
+        // Try to find existing details record
+        try {
+          const existingDetails = await pb.collection("details").getFirstListItem(`species = "${id}"`);
+          // Update existing
+          await pb.collection("details").update(existingDetails.id, detailsData);
+          console.log("✓ Details updated successfully:", existingDetails.id);
+        } catch (notFoundError) {
+          // Create new if doesn't exist
+          const newDetails = await pb.collection("details").create(detailsData);
+          console.log("✓ Details created successfully:", newDetails);
+        }
+      } catch (detailsError) {
+        console.warn("Warning: Details update/create failed:", detailsError);
+      }
       
       // Regenerate QR code
       try {
@@ -203,6 +246,56 @@ export async function updatePlant(
 
       const record = await pb.collection("species").update<PlantRecord>(id, payload);
       console.log("✓ Plant updated successfully in species:", record);
+      
+      // Update or create details record
+      try {
+        const detailsData = {
+          species: id,  // Link to species record
+          morphology: data.morphology || "",
+          ecology: data.ecology || "",
+          distribution: data.distribution || "",
+          uses: data.uses || "",
+        };
+        
+        // Try to find existing details record
+        try {
+          const existingDetails = await pb.collection("details").getFirstListItem(`species = "${id}"`);
+          // Update existing
+          await pb.collection("details").update(existingDetails.id, detailsData);
+          console.log("✓ Details updated successfully:", existingDetails.id);
+        } catch (notFoundError) {
+          // Create new if doesn't exist
+          const newDetails = await pb.collection("details").create(detailsData);
+          console.log("✓ Details created successfully:", newDetails);
+        }
+      } catch (detailsError) {
+        console.warn("Warning: Details update/create failed:", detailsError);
+      }
+      
+      // Update or create details record
+      try {
+        const detailsData = {
+          species: id,  // Link to species record
+          morphology: data.morphology || "",
+          ecology: data.ecology || "",
+          distribution: data.distribution || "",
+          uses: data.uses || "",
+        };
+        
+        // Try to find existing details record
+        try {
+          const existingDetails = await pb.collection("details").getFirstListItem(`species = "${id}"`);
+          // Update existing
+          await pb.collection("details").update(existingDetails.id, detailsData);
+          console.log("✓ Details updated successfully:", existingDetails.id);
+        } catch (notFoundError) {
+          // Create new if doesn't exist
+          const newDetails = await pb.collection("details").create(detailsData);
+          console.log("✓ Details created successfully:", newDetails);
+        }
+      } catch (detailsError) {
+        console.warn("Warning: Details update/create failed:", detailsError);
+      }
       
       // Regenerate QR code
       try {

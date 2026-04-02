@@ -126,6 +126,20 @@
   font-weight: 600;
 }
 
+.metadata {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 12px;
+  column-gap: 48px;
+  font-size: 14px;
+  color: #1f2f1f;
+  margin-bottom: 24px;
+}
+
+.metadata strong {
+  font-weight: 600;
+}
+
 .description {
   font-size: 14px;
   line-height: 1.7;

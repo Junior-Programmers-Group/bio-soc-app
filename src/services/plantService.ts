@@ -8,12 +8,12 @@ export const fetchPlants = async (): Promise<Plant[]> => {
     });
 
     const plants = records.map((record: any) => {
-      // Build image URL - try both "image" and "field" fields
+      // Build image URL - try field first (primary image field), then image as fallback
       let imageUrl = "";
-      if (record.image) {
-        imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
-      } else if (record.field) {
+      if (record.field) {
         imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+      } else if (record.image) {
+        imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
       }
 
       return {
@@ -57,12 +57,12 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       requestKey: null, // Disable auto-cancellation
     });
 
-    // Build image URL - try both "image" and "field" fields
+    // Build image URL - try field first (primary image field), then image as fallback
     let imageUrl = "";
-    if (record.image) {
-      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
-    } else if (record.field) {
+    if (record.field) {
       imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+    } else if (record.image) {
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
     }
 
     const plant = {

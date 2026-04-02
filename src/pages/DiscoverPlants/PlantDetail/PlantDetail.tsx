@@ -3,17 +3,26 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Home/Navbar/Navbar";
 import type { Plant } from "../../../types/plant";
 import { fetchPlantById } from "../../../services/plantService";
+import pb from "../../../back-end/db";
 import styles from "./PlantDetail.module.css";
 
-type DetailTab = "taxonomy" | "morphology" | "ecology" | "distribution" | "uses";
+type DetailTab = "taxonomy" | "overview" | "morphology" | "ecology" | "distribution" | "uses";
+
+interface PlantDetails {
+  morphology?: string;
+  ecology?: string;
+  distribution?: string;
+  uses?: string;
+}
 
 export default function PlantDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [plant, setPlant] = useState<Plant | null>(null);
+  const [details, setDetails] = useState<PlantDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<DetailTab>("taxonomy");
+  const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
   const PLACEHOLDER_IMAGE = "https://via.placeholder.com/400x300/2d5016/ffffff?text=Plant";
 
@@ -33,10 +42,37 @@ export default function PlantDetail() {
         if (isMounted) {
           setLoading(true);
         }
-        const data = await fetchPlantById(id);
-        if (isMounted && data) {
-          setPlant(data);
+        
+        // Fetch plant data
+        const plantData = await fetchPlantById(id);
+        if (isMounted && plantData) {
+          setPlant(plantData);
           setError("");
+          
+          // Fetch details from details collection
+          try {
+            const detailsRecord = await pb.collection("details").getFirstListItem(
+              `species = "${id}"`,
+              { requestKey: null }
+            );
+            if (isMounted) {
+              setDetails({
+                morphology: detailsRecord.morphology || "",
+                ecology: detailsRecord.ecology || "",
+                distribution: detailsRecord.distribution || "",
+                uses: detailsRecord.uses || "",
+              });
+              console.log("✓ Plant details loaded from details collection");
+            }
+          } catch (detailsError) {
+            if (isMounted && (detailsError as any).message?.includes("Failed to find a record")) {
+              // No details record found, that's okay
+              console.log("No details record found for this plant");
+              setDetails(null);
+            } else {
+              console.warn("Error loading details:", detailsError);
+            }
+          }
         } else if (isMounted) {
           setError("Plant not found");
         }
@@ -115,6 +151,12 @@ export default function PlantDetail() {
             {/* TABS */}
             <div className={styles.tabs}>
               <button
+                className={`${styles.tab} ${activeTab === "overview" ? styles.active : ""}`}
+                onClick={() => setActiveTab("overview")}
+              >
+                Overview
+              </button>
+              <button
                 className={`${styles.tab} ${activeTab === "taxonomy" ? styles.active : ""}`}
                 onClick={() => setActiveTab("taxonomy")}
               >
@@ -147,6 +189,18 @@ export default function PlantDetail() {
             </div>
 
             {/* TAB CONTENT */}
+            {activeTab === "overview" && (
+              <div className={styles.tabContent}>
+                <div className={styles.metadata}>
+                  {plant.author && <div><strong>Author:</strong> {plant.author}</div>}
+                  {plant.year && <div><strong>Year:</strong> {plant.year}</div>}
+                  {plant.genus && <div><strong>Genus:</strong> {plant.genus}</div>}
+                  {plant.conservationStatus && <div><strong>Conservation Status:</strong> {plant.conservationStatus}</div>}
+                  {plant.notes && <div><strong>Notes:</strong> {plant.notes}</div>}
+                </div>
+              </div>
+            )}
+
             {activeTab === "taxonomy" && (
               <div className={styles.tabContent}>
                 <div className={styles.taxonomy}>
@@ -162,7 +216,7 @@ export default function PlantDetail() {
             {activeTab === "morphology" && (
               <div className={styles.tabContent}>
                 <p className={styles.description}>
-                  {plant.morphology || "No morphology information available"}
+                  {details?.morphology || "No morphology information available"}
                 </p>
               </div>
             )}
@@ -170,7 +224,7 @@ export default function PlantDetail() {
             {activeTab === "ecology" && (
               <div className={styles.tabContent}>
                 <p className={styles.description}>
-                  {plant.ecology || "No ecology information available"}
+                  {details?.ecology || "No ecology information available"}
                 </p>
               </div>
             )}
@@ -178,7 +232,7 @@ export default function PlantDetail() {
             {activeTab === "distribution" && (
               <div className={styles.tabContent}>
                 <p className={styles.description}>
-                  {plant.distribution || "No distribution information available"}
+                  {details?.distribution || "No distribution information available"}
                 </p>
               </div>
             )}
@@ -186,7 +240,7 @@ export default function PlantDetail() {
             {activeTab === "uses" && (
               <div className={styles.tabContent}>
                 <p className={styles.description}>
-                  {plant.uses || "No uses information available"}
+                  {details?.uses || "No uses information available"}
                 </p>
               </div>
             )}
