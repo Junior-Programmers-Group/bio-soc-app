@@ -371,7 +371,7 @@ export default function ManagePlants() {
     
     setFormData((prev) => ({
       ...prev,
-      genus: genusName,  // Store the name, not the ID
+      genus: genusId,  // Store the ID for dropdown matching
       genusId: genusId,  // Keep ID for reference
     }));
 
@@ -416,8 +416,8 @@ export default function ManagePlants() {
     setUploading(true);
 
     try {
-      // Remove imageFile and imagePreview from payload - handle separately
-      const { imageFile, imagePreview, ...dataWithoutFile } = formData;
+      // Remove imageFile, imagePreview, and genusId from payload
+      const { imageFile, imagePreview, genusId, ...dataWithoutFile } = formData;
       const payload = {
         ...dataWithoutFile,
         phylum_id: Number(formData.phylum_id) || 1,
