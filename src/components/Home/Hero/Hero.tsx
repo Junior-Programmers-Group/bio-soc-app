@@ -53,7 +53,6 @@ const Hero = () => {
           plant.commonName || "",
           plant.name || "",
           plant.scientificName || "",
-          plant.family || "",
         ]
           .join(" ")
           .toLowerCase();

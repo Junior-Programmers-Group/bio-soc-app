@@ -1,6 +1,137 @@
 import type { Plant } from "../types/plant";
 import pb from "../back-end/db";
 
+interface TaxonomyHierarchy {
+  domain?: string;
+  kingdom?: string;
+  phylum?: string;
+  klass?: string;  // Class
+  order?: string;
+  family?: string;
+  subfamily?: string;
+  genus?: string;
+}
+
+export const fetchTaxonomyHierarchy = async (genusIdOrName: string): Promise<TaxonomyHierarchy> => {
+  try {
+    console.log("🔍 fetchTaxonomyHierarchy called with genusIdOrName:", genusIdOrName);
+    
+    if (!genusIdOrName) {
+      console.warn("⚠️  No genusIdOrName provided");
+      return {};
+    }
+
+    const hierarchy: TaxonomyHierarchy = {};
+
+    // Fetch Genus record
+    console.log("📍 Fetching Genus record:", genusIdOrName);
+    
+    let genusRecord = await pb.collection("genus").getOne<any>(genusIdOrName, {
+      requestKey: null,
+    });
+
+    hierarchy.genus = genusRecord.name;
+    console.log("✓ Genus found:", genusRecord.name);
+    console.log("  Genus fields:", Object.keys(genusRecord));
+    console.log("  Genus has 'family' field?:", genusRecord.family);
+
+    // Each level has direct fields for its parent: family, order, class, phylum, kingdom, domain
+    const fieldMapping = {
+      "genus": { fieldName: "family", nextCollection: "family", nextLevelField: "order" },
+      "family": { fieldName: "order", nextCollection: "order", nextLevelField: "class" },
+      "order": { fieldName: "class", nextCollection: "class", nextLevelField: "phylum" },
+      "class": { fieldName: "phylum", nextCollection: "phylum", nextLevelField: "kingdom" },
+      "phylum": { fieldName: "kingdom", nextCollection: "kingdom", nextLevelField: "domain" },
+      "kingdom": { fieldName: "domain", nextCollection: "domain", nextLevelField: null },
+    };
+
+    // Start with Genus and traverse up through direct field references
+    let currentLevel = "genus";
+    let currentRecord = genusRecord;
+    let traversalCount = 0;
+    const maxTraversals = 10;
+
+    while (traversalCount < maxTraversals) {
+      traversalCount++;
+      console.log(`\n↑ STEP ${traversalCount}: Current level="${currentLevel}"`);
+
+      const mapping = fieldMapping[currentLevel as keyof typeof fieldMapping];
+      if (!mapping) {
+        console.log(`  ⚠️ No mapping found for level "${currentLevel}" - stopping traversal`);
+        break;
+      }
+
+      const parentFieldName = mapping.fieldName;
+      const parentId = currentRecord[parentFieldName];
+
+      if (!parentId) {
+        console.log(`  ℹ️ No ${parentFieldName} field or it's empty on ${currentLevel} - reached end of hierarchy`);
+        break;
+      }
+
+      console.log(`  → Found ${parentFieldName} ID: ${parentId}`);
+
+      try {
+        // Fetch parent record
+        const nextCollection = mapping.nextCollection;
+        console.log(`  📍 Fetching ${nextCollection} record...`);
+        
+        const parentRecord = await pb.collection(nextCollection).getOne<any>(parentId, {
+          requestKey: null,
+        });
+
+        const parentName = parentRecord.name;
+        console.log(`  ✓ Found: ${nextCollection}="${parentName}"`);
+
+        // Map to hierarchy based on next collection
+        switch (nextCollection) {
+          case "family":
+            hierarchy.family = parentName;
+            console.log(`      Set hierarchy.family = "${parentName}"`);
+            break;
+          case "order":
+            hierarchy.order = parentName;
+            console.log(`      Set hierarchy.order = "${parentName}"`);
+            break;
+          case "class":
+            hierarchy.klass = parentName;
+            console.log(`      Set hierarchy.klass = "${parentName}"`);
+            break;
+          case "phylum":
+            hierarchy.phylum = parentName;
+            console.log(`      Set hierarchy.phylum = "${parentName}"`);
+            break;
+          case "kingdom":
+            hierarchy.kingdom = parentName;
+            console.log(`      Set hierarchy.kingdom = "${parentName}"`);
+            break;
+          case "domain":
+            hierarchy.domain = parentName;
+            console.log(`      Set hierarchy.domain = "${parentName}"`);
+            break;
+        }
+
+        // Move to next level
+        currentRecord = parentRecord;
+        currentLevel = nextCollection;
+      } catch (err) {
+        console.error(`  ✗ Error fetching ${mapping.nextCollection}:`, err);
+        break;
+      }
+    }
+
+    if (traversalCount >= maxTraversals) {
+      console.warn("⚠️  Reached max traversal limit!");
+    }
+
+    console.log("\n✅ FINAL HIERARCHY:", hierarchy);
+    return hierarchy;
+  } catch (error) {
+    console.error("❌ CRITICAL ERROR in fetchTaxonomyHierarchy:", error);
+    return {};
+  }
+};
+
 export const fetchPlants = async (): Promise<Plant[]> => {
   try {
     const records = await pb.collection("species").getFullList<any>({
@@ -54,6 +185,7 @@ export const fetchPlants = async (): Promise<Plant[]> => {
 export const fetchPlantById = async (id: string): Promise<Plant | null> => {
   try {
     const record = await pb.collection("species").getOne<any>(id, {
+      expand: "genus_id",
       requestKey: null, // Disable auto-cancellation
     });
 
@@ -65,12 +197,29 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
     }
 
+    // Get genus name from expanded relationship or fallback to genus field
+    let genusName = record.genus || "";
+    let genusId = record.genus_id || "";
+    
+    if (record.expand?.genus_id) {
+      // Handle both array and single record responses
+      const genusRecord = Array.isArray(record.expand.genus_id) 
+        ? record.expand.genus_id[0] 
+        : record.expand.genus_id;
+      
+      if (genusRecord) {
+        genusName = genusRecord.name || genusName;
+        genusId = genusRecord.id || genusId;
+      }
+    }
+
     const plant = {
       id: record.id,
       commonName: record.commonName || record.name || "Unknown",
       scientificName: record.scientificName || "",
       image: imageUrl,
-      genus: record.genus || "",
+      genus: genusName,
+      genusId: genusId,
       author: record.author || "",
       year: record.year || null,
       conservationStatus: record.conservationStatus || "",
@@ -79,7 +228,6 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       // Legacy fields (may not exist in species)
       kingdom: record.kingdom || "",
       order: record.order || "",
-      family: record.family || "",
       subfamily: record.subfamily || "",
       species: record.species || "",
       morphology: record.morphology || "",
@@ -89,7 +237,7 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       description: record.description || "",
     };
 
-    console.log("✅ Plant loaded from species:", plant.commonName);
+    console.log("✅ Plant loaded from species:", plant.commonName, "| Genus:", genusName, "| GenusId:", genusId);
     return plant;
   } catch (error) {
     if (error instanceof Error && !error.message.includes("aborted")) {
@@ -121,7 +269,6 @@ export const addPlant = async (plantData: Partial<Plant>): Promise<Plant | null>
       // Legacy fields
       kingdom: plantData.kingdom?.trim() || "",
       order: plantData.order?.trim() || "",
-      family: plantData.family?.trim() || "",
       subfamily: plantData.subfamily?.trim() || "",
       species: plantData.species?.trim() || "",
       morphology: plantData.morphology?.trim() || "",
@@ -145,7 +292,6 @@ export const addPlant = async (plantData: Partial<Plant>): Promise<Plant | null>
       notes: record.notes || "",
       kingdom: record.kingdom || "",
       order: record.order || "",
-      family: record.family || "",
       subfamily: record.subfamily || "",
       species: record.species || "",
       morphology: record.morphology || "",
@@ -183,7 +329,6 @@ export const updatePlant = async (id: string, plantData: Partial<Plant>): Promis
     if (plantData.notes) updateData.notes = plantData.notes.trim();
     if (plantData.kingdom) updateData.kingdom = plantData.kingdom.trim();
     if (plantData.order) updateData.order = plantData.order.trim();
-    if (plantData.family) updateData.family = plantData.family.trim();
     if (plantData.subfamily) updateData.subfamily = plantData.subfamily.trim();
     if (plantData.species) updateData.species = plantData.species.trim();
     if (plantData.morphology) updateData.morphology = plantData.morphology.trim();
@@ -216,7 +361,6 @@ export const updatePlant = async (id: string, plantData: Partial<Plant>): Promis
       notes: record.notes || "",
       kingdom: record.kingdom || "",
       order: record.order || "",
-      family: record.family || "",
       subfamily: record.subfamily || "",
       species: record.species || "",
       morphology: record.morphology || "",

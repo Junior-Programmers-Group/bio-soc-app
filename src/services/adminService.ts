@@ -20,8 +20,10 @@ export interface PlantRecord extends RecordModel {
   // QR Code
   qr_code?: string;
   
-  // Taxonomy - legacy fields
+  // Taxonomy - auto-populated from genus
   kingdom?: string;
+  phylum?: string;
+  klass?: string;  // Class (renamed to avoid keyword)
   order?: string;
   family?: string;
   subfamily?: string;
@@ -74,8 +76,10 @@ export async function createPlant(
     formData.append("year", String(data.year || ""));
     formData.append("conservationStatus", data.conservationStatus || "");
     formData.append("notes", data.notes || "");
-    // Legacy fields
+    // Taxonomy fields - auto-populated from genus
     formData.append("kingdom", data.kingdom || "");
+    formData.append("phylum", (data as any).phylum || "");
+    formData.append("klass", (data as any).klass || "");
     formData.append("order", data.order || "");
     formData.append("family", data.family || "");
     formData.append("subfamily", data.subfamily || "");
@@ -159,8 +163,10 @@ export async function updatePlant(
       formData.append("year", String(data.year || ""));
       formData.append("conservationStatus", data.conservationStatus || "");
       formData.append("notes", data.notes || "");
-      // Legacy fields
+      // Taxonomy fields - auto-populated from genus
       formData.append("kingdom", data.kingdom || "");
+      formData.append("phylum", (data as any).phylum || "");
+      formData.append("klass", (data as any).klass || "");
       formData.append("order", data.order || "");
       formData.append("family", data.family || "");
       formData.append("subfamily", data.subfamily || "");
@@ -231,8 +237,10 @@ export async function updatePlant(
         year: data.year || null,
         conservationStatus: data.conservationStatus || "",
         notes: data.notes || "",
-        // Legacy fields
+        // Taxonomy fields - auto-populated from genus
         kingdom: data.kingdom || "",
+        phylum: (data as any).phylum || "",
+        klass: (data as any).klass || "",
         order: data.order || "",
         family: data.family || "",
         subfamily: data.subfamily || "",

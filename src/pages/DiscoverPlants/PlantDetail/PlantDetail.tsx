@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Home/Navbar/Navbar";
 import type { Plant } from "../../../types/plant";
-import { fetchPlantById } from "../../../services/plantService";
+import { fetchPlantById, fetchTaxonomyHierarchy } from "../../../services/plantService";
 import pb from "../../../back-end/db";
 import styles from "./PlantDetail.module.css";
 
@@ -15,11 +15,23 @@ interface PlantDetails {
   uses?: string;
 }
 
+interface TaxonomyHierarchy {
+  domain?: string;
+  kingdom?: string;
+  phylum?: string;
+  klass?: string;
+  order?: string;
+  family?: string;
+  subfamily?: string;
+  genus?: string;
+}
+
 export default function PlantDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [plant, setPlant] = useState<Plant | null>(null);
   const [details, setDetails] = useState<PlantDetails | null>(null);
+  const [taxonomy, setTaxonomy] = useState<TaxonomyHierarchy | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
@@ -48,6 +60,30 @@ export default function PlantDetail() {
         if (isMounted && plantData) {
           setPlant(plantData);
           setError("");
+          
+          console.log("🌿 Plant data received:", {
+            commonName: plantData.commonName,
+            genus: plantData.genus,
+            genusId: plantData.genusId,
+          });
+          
+          // Fetch taxonomy hierarchy from genus
+          if (plantData.genus || plantData.genusId) {
+            try {
+              // Use genusId if available, otherwise use genus (which may be the ID)
+              const genusIdentifier = (plantData.genusId || plantData.genus) as string;
+              console.log("📚 Fetching taxonomy for genus:", genusIdentifier);
+              const taxonomyData = await fetchTaxonomyHierarchy(genusIdentifier);
+              if (isMounted) {
+                setTaxonomy(taxonomyData);
+                console.log("✓ Taxonomy hierarchy loaded:", taxonomyData);
+              }
+            } catch (taxError) {
+              console.error("❌ Error loading taxonomy hierarchy:", taxError);
+            }
+          } else {
+            console.warn("⚠️ No genus or genusId available for plant:", plantData.commonName);
+          }
           
           // Fetch details from details collection
           try {
@@ -200,21 +236,36 @@ export default function PlantDetail() {
                 <div className={styles.metadata}>
                   {plant.author && <div><strong>Author:</strong> {plant.author}</div>}
                   {plant.year && <div><strong>Year:</strong> {plant.year}</div>}
-                  {plant.genus && <div><strong>Genus:</strong> {plant.genus}</div>}
-                  {plant.conservationStatus && <div><strong>Conservation Status:</strong> {plant.conservationStatus}</div>}
                   {plant.notes && <div><strong>Notes:</strong> {plant.notes}</div>}
+                  {plant.conservationStatus && <div><strong>Conservation Status:</strong> {plant.conservationStatus}</div>}
                 </div>
               </div>
             )}
 
             {activeTab === "taxonomy" && (
               <div className={styles.tabContent}>
-                <div className={styles.taxonomy}>
-                  {plant.kingdom && <div><strong>Kingdom:</strong> {plant.kingdom}</div>}
-                  {plant.order && <div><strong>Order:</strong> {plant.order}</div>}
-                  {plant.family && <div><strong>Family:</strong> {plant.family}</div>}
-                  {plant.subfamily && <div><strong>Subfamily:</strong> {plant.subfamily}</div>}
-                  {plant.species && <div><strong>Species:</strong> {plant.species}</div>}
+                <div className={styles.taxonomyList}>
+                  {taxonomy?.domain && <div className={styles.taxonomyItem}><strong>Domain:</strong> <span>{taxonomy.domain}</span></div>}
+                  {taxonomy?.kingdom && <div className={styles.taxonomyItem}><strong>Kingdom:</strong> <span>{taxonomy.kingdom}</span></div>}
+                  {taxonomy?.phylum && <div className={styles.taxonomyItem}><strong>Division (Phylum):</strong> <span>{taxonomy.phylum}</span></div>}
+                  {taxonomy?.klass && <div className={styles.taxonomyItem}><strong>Class:</strong> <span>{taxonomy.klass}</span></div>}
+                  {taxonomy?.order && <div className={styles.taxonomyItem}><strong>Order:</strong> <span>{taxonomy.order}</span></div>}
+                  {taxonomy?.family && <div className={styles.taxonomyItem}><strong>Family:</strong> <span>{taxonomy.family}</span></div>}
+                  {taxonomy?.subfamily && <div className={styles.taxonomyItem}><strong>Subfamily:</strong> <span>{taxonomy.subfamily}</span></div>}
+                  {taxonomy?.genus && <div className={styles.taxonomyItem}><strong>Genus:</strong> <span>{taxonomy.genus}</span></div>}
+                  {plant.scientificName && <div className={styles.taxonomyItem}><strong>Species:</strong> <span>{plant.scientificName}</span></div>}
+                  {!taxonomy || (
+                    !taxonomy.domain && 
+                    !taxonomy.kingdom && 
+                    !taxonomy.phylum && 
+                    !taxonomy.klass && 
+                    !taxonomy.order && 
+                    !taxonomy.family && 
+                    !taxonomy.subfamily && 
+                    !taxonomy.genus
+                  ) && (
+                    <p className={styles.description}>No taxonomy information available</p>
+                  )}
                 </div>
               </div>
             )}

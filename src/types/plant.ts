@@ -8,17 +8,20 @@ export interface Plant {
   image?: string;  // Image from species collection
   
   // Species Metadata
-  genus?: string;  // Reference to genus
+  genus?: string;  // Reference to genus name or ID
+  genusId?: string;  // Genus record ID (if available separately)
   author?: string;  // Author who named the species
   year?: number;  // Year of scientific description
   conservationStatus?: string;  // Conservation status
   notes?: string;  // Additional notes
   field?: string;  // Alternative image field
   
-  // Taxonomy (Legacy - may not be present in species)
+  // Taxonomy (from relationships)
+  domain?: string;
   kingdom?: string;
+  phylum?: string;
+  klass?: string;  // Class (renamed to avoid keyword)
   order?: string;
-  family?: string;
   subfamily?: string;
   species?: string;
   

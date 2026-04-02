@@ -146,6 +146,33 @@
   font-weight: 600;
 }
 
+.taxonomyList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 14px;
+  color: #1f2f1f;
+  margin-bottom: 24px;
+}
+
+.taxonomyItem {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: baseline;
+}
+
+.taxonomyItem strong {
+  font-weight: 600;
+  color: #2d5016;
+  display: inline;
+}
+
+.taxonomyItem span {
+  color: #3e4f3e;
+  line-height: 1.5;
+}
+
 .metadata {
   display: grid;
   grid-template-columns: 1fr 1fr;

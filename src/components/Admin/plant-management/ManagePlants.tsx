@@ -7,6 +7,7 @@ import {
 } from "../../../services/adminService";
 import type { PlantRecord } from "../../../services/adminService";
 import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../../../services/qrCodeService";
+import { fetchTaxonomyHierarchy } from "../../../services/plantService";
 import { useFetchTaxonomy } from "../../../back-end/hooks/useFetchTaxonomy";
 import QRModal from "../QRModal";
 import styles from "./ManagePlants.module.css";
@@ -42,6 +43,7 @@ interface PlantFormData {
   commonName: string;
   scientificName: string;
   genus: string;
+  genusId: string;  // For relationship fetching
   author: string;
   year: string;
   conservationStatus: string;
@@ -53,6 +55,13 @@ interface PlantFormData {
   distribution: string;
   uses: string;
   phylum_id: string;
+  // Auto-populated taxonomy from genus
+  kingdom?: string;
+  phylum?: string;
+  klass?: string;
+  order?: string;
+  family?: string;
+  subfamily?: string;
 }
 
 // REUSABLE FORM FIELDS - with support for select fields
@@ -67,10 +76,12 @@ const FormFields = ({
   fields,
   formData,
   setFormData,
+  onGenusChange,
 }: {
   fields: FormFieldConfig[];
   formData: PlantFormData;
   setFormData: React.Dispatch<React.SetStateAction<PlantFormData>>;
+  onGenusChange?: (genusId: string) => void;
 }) => (
   <>
     {fields.map((f) => (
@@ -86,9 +97,14 @@ const FormFields = ({
         ) : f.type === "select" ? (
           <select
             value={(formData[f.key] as string) || ""}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, [f.key]: e.target.value }))
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              setFormData((prev) => ({ ...prev, [f.key]: value }));
+              // Special handling for genus field
+              if (f.key === "genus" && onGenusChange) {
+                onGenusChange(value);
+              }
+            }}
             required={f.key === "commonName"}
           >
             <option value="">Select {f.label}</option>
@@ -136,6 +152,7 @@ export default function ManagePlants() {
     commonName: "",
     scientificName: "",
     genus: "",
+    genusId: "",
     author: "",
     year: "",
     conservationStatus: "",
@@ -147,6 +164,12 @@ export default function ManagePlants() {
     distribution: "",
     uses: "",
     phylum_id: "1",
+    kingdom: "",
+    phylum: "",
+    klass: "",
+    order: "",
+    family: "",
+    subfamily: "",
   });
 
   // Load genus options
@@ -341,6 +364,41 @@ export default function ManagePlants() {
     reader.readAsDataURL(file);
   };
 
+  const handleGenusChange = async (genusId: string) => {
+    // Find the genus name from options
+    const selectedOption = genusOptions.find(opt => opt.value === genusId);
+    const genusName = selectedOption?.label || genusId;
+    
+    setFormData((prev) => ({
+      ...prev,
+      genus: genusName,  // Store the name, not the ID
+      genusId: genusId,  // Keep ID for reference
+    }));
+
+    if (!genusId) return;
+
+    try {
+      // Fetch taxonomy hierarchy for the selected genus
+      const hierarchy = await fetchTaxonomyHierarchy(genusId);
+      
+      setFormData((prev) => ({
+        ...prev,
+        kingdom: hierarchy.kingdom || "",
+        phylum: hierarchy.phylum || "",
+        klass: hierarchy.klass || "",
+        order: hierarchy.order || "",
+        family: hierarchy.family || "",
+        subfamily: hierarchy.subfamily || "",
+      }));
+      
+      console.log("✓ Taxonomy auto-populated from genus:", hierarchy);
+      console.log("✓ Genus name:", genusName);
+    } catch (err) {
+      console.error("Error fetching taxonomy for genus:", err);
+      // Don't show error to user - taxonomy population is nice-to-have
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -411,6 +469,7 @@ export default function ManagePlants() {
       commonName: plant.commonName || "",
       scientificName: plant.scientificName || "",
       genus: plant.genus || "",
+      genusId: plant.genus || "",  // For relationship fetching
       author: plant.author || "",
       year: plant.year?.toString() || "",
       conservationStatus: plant.conservationStatus || "",
@@ -422,6 +481,11 @@ export default function ManagePlants() {
       distribution: plant.distribution || "",
       uses: plant.uses || "",
       phylum_id: plant.phylum_id?.toString() || "1",
+      kingdom: plant.kingdom || "",
+      phylum: (plant as any).phylum || "",
+      klass: (plant as any).klass || "",
+      order: plant.order || "",
+      subfamily: plant.subfamily || "",
     });
     setEditingId(plant.id);
     setShowForm(true);
@@ -447,6 +511,7 @@ export default function ManagePlants() {
       commonName: "",
       scientificName: "",
       genus: "",
+      genusId: "",
       author: "",
       year: "",
       conservationStatus: "",
@@ -458,6 +523,12 @@ export default function ManagePlants() {
       distribution: "",
       uses: "",
       phylum_id: "1",
+      kingdom: "",
+      phylum: "",
+      klass: "",
+      order: "",
+      family: "",
+      subfamily: "",
     });
     setEditingId(null);
     setShowForm(false);
@@ -520,6 +591,7 @@ export default function ManagePlants() {
                 fields={STEP_FIELDS[currentStep]}
                 formData={formData}
                 setFormData={setFormData}
+                onGenusChange={handleGenusChange}
               />
             ) : (
               <div>
@@ -633,6 +705,7 @@ export default function ManagePlants() {
                   fields={EDIT_TABS[editTab]}
                   formData={formData}
                   setFormData={setFormData}
+                  onGenusChange={handleGenusChange}
                 />
                 
                 {/* QR Code Preview and Download */}

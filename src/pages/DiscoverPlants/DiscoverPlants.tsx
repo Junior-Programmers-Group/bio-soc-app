@@ -59,7 +59,6 @@ export default function DiscoverPlants() {
       const searchFields = [
         plant.commonName || "",
         plant.scientificName || "",
-        plant.family || "",
         plant.ecology || "",
         plant.uses || "",
         plant.kingdom || "",
