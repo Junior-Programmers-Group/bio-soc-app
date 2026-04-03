@@ -22,6 +22,7 @@ export interface Plant {
   phylum?: string;
   klass?: string;  // Class (renamed to avoid keyword)
   order?: string;
+  family?: string;
   subfamily?: string;
   species?: string;
   

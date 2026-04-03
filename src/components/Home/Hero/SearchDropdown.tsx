@@ -23,6 +23,20 @@ export default function SearchDropdown({
     navigate(`/discover/${plantId}`);
   };
 
+  const getTaxonomyDisplay = (plant: Plant): string => {
+    const taxonomy = [
+      plant.domain,
+      plant.kingdom,
+      plant.phylum,
+      plant.klass,
+      plant.order,
+      plant.family,
+      plant.genus,
+      plant.species,
+    ].filter(Boolean);
+    return taxonomy.join(" • ");
+  };
+
   return (
     <div className={styles.dropdown}>
       {loading ? (
@@ -47,6 +61,19 @@ export default function SearchDropdown({
                 <p className={styles.scientificName}>
                   {plant.scientificName || ""}
                 </p>
+                {/* Only show taxonomy if it contains readable names, not codes */}
+                {getTaxonomyDisplay(plant) && (
+                  <p className={styles.taxonomy}>
+                    {getTaxonomyDisplay(plant)
+                      .split(' • ')
+                      .filter((tax, idx) => {
+                        // Hide any taxonomy part that looks like an ID/code
+                        if (/[a-z0-9]{10,}/.test(tax)) return false;
+                        return true;
+                      })
+                      .join(' • ')}
+                  </p>
+                )}
               </div>
             </button>
           ))}

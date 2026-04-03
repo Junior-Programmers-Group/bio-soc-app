@@ -135,10 +135,15 @@ export const fetchTaxonomyHierarchy = async (genusIdOrName: string): Promise<Tax
 export const fetchPlants = async (): Promise<Plant[]> => {
   try {
     const records = await pb.collection("species").getFullList<any>({
+      expand: "genus_id",
       requestKey: null, // Disable auto-cancellation
     });
 
-    const plants = records.map((record: any) => {
+    console.log("📦 Fetched", records.length, "species records");
+
+    const plants: Plant[] = [];
+
+    for (const record of records) {
       // Build image URL - try field first (primary image field), then image as fallback
       let imageUrl = "";
       if (record.field) {
@@ -147,32 +152,85 @@ export const fetchPlants = async (): Promise<Plant[]> => {
         imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
       }
 
-      return {
+      // Get genus info
+      let genusName = record.genus || "";
+      let genusId = record.genus_id || "";
+      let taxonomy: any = {
+        domain: record.domain || "",
+        kingdom: record.kingdom || "",
+        phylum: record.phylum || "",
+        klass: record.klass || "",
+        order: record.order || "",
+        family: record.family || "",
+      };
+
+      // Try to fetch hierarchy if genus is available
+      if (record.expand?.genus_id && genusId) {
+        const genusRecord = Array.isArray(record.expand.genus_id) 
+          ? record.expand.genus_id[0] 
+          : record.expand.genus_id;
+        
+        if (genusRecord) {
+          genusName = genusRecord.name || genusName;
+          genusId = genusRecord.id || genusId;
+          
+          try {
+            console.log("📍 Fetching taxonomy hierarchy for genus:", genusId);
+            const hierarchy = await fetchTaxonomyHierarchy(genusId);
+            console.log("✓ Hierarchy retrieved:", hierarchy);
+            
+            // Merge with direct fields
+            taxonomy = {
+              domain: hierarchy.domain || record.domain || "",
+              kingdom: hierarchy.kingdom || record.kingdom || "",
+              phylum: hierarchy.phylum || record.phylum || "",
+              klass: hierarchy.klass || record.klass || "",
+              order: hierarchy.order || record.order || "",
+              family: hierarchy.family || record.family || "",
+            };
+          } catch (err) {
+            console.warn("⚠️ Failed to fetch hierarchy for genus", genusName, "- using direct fields only");
+          }
+        }
+      }
+
+      const plant: Plant = {
         id: record.id,
         commonName: record.commonName || record.name || "Unknown",
         scientificName: record.scientificName || "",
         image: imageUrl,
-        genus: record.genus || "",
+        genus: genusName,
+        genusId: genusId,
         author: record.author || "",
         year: record.year || null,
         conservationStatus: record.conservationStatus || "",
         notes: record.notes || "",
         field: record.field || "",
-        // Legacy fields (may not exist in species)
-        kingdom: record.kingdom || "",
-        order: record.order || "",
-        family: record.family || "",
+        // Taxonomy fields
+        domain: taxonomy.domain,
+        kingdom: taxonomy.kingdom,
+        phylum: taxonomy.phylum,
+        klass: taxonomy.klass,
+        order: taxonomy.order,
+        family: taxonomy.family,
         subfamily: record.subfamily || "",
         species: record.species || "",
+        // Legacy fields
         morphology: record.morphology || "",
         ecology: record.ecology || "",
         distribution: record.distribution || "",
         uses: record.uses || "",
         description: record.description || "",
       };
-    });
 
-    console.log("✅ Plants list loaded from species collection:", plants.length, "items");
+      plants.push(plant);
+      console.log("✅ Added plant:", plant.commonName, "| Taxonomy:", { domain: plant.domain, kingdom: plant.kingdom, family: plant.family });
+    }
+
+    console.log("✅ Plants list loaded:", plants.length, "items");
+    if (plants.length > 0) {
+      console.log("🔍 First plant full data:", plants[0]);
+    }
     return plants;
   } catch (error) {
     if (error instanceof Error && !error.message.includes("aborted")) {
@@ -189,6 +247,8 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       requestKey: null, // Disable auto-cancellation
     });
 
+    console.log("📌 Fetching plant:", record.id);
+
     // Build image URL - try field first (primary image field), then image as fallback
     let imageUrl = "";
     if (record.field) {
@@ -197,12 +257,20 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
     }
 
-    // Get genus name from expanded relationship or fallback to genus field
+    // Get genus info
     let genusName = record.genus || "";
     let genusId = record.genus_id || "";
-    
-    if (record.expand?.genus_id) {
-      // Handle both array and single record responses
+    let taxonomy: any = {
+      domain: record.domain || "",
+      kingdom: record.kingdom || "",
+      phylum: record.phylum || "",
+      klass: record.klass || "",
+      order: record.order || "",
+      family: record.family || "",
+    };
+
+    // Try to fetch hierarchy if genus is available
+    if (record.expand?.genus_id && genusId) {
       const genusRecord = Array.isArray(record.expand.genus_id) 
         ? record.expand.genus_id[0] 
         : record.expand.genus_id;
@@ -210,10 +278,28 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       if (genusRecord) {
         genusName = genusRecord.name || genusName;
         genusId = genusRecord.id || genusId;
+        
+        try {
+          console.log("📍 Fetching hierarchy for genus:", genusId);
+          const hierarchy = await fetchTaxonomyHierarchy(genusId);
+          console.log("✓ Hierarchy retrieved:", hierarchy);
+          
+          // Merge with direct fields
+          taxonomy = {
+            domain: hierarchy.domain || record.domain || "",
+            kingdom: hierarchy.kingdom || record.kingdom || "",
+            phylum: hierarchy.phylum || record.phylum || "",
+            klass: hierarchy.klass || record.klass || "",
+            order: hierarchy.order || record.order || "",
+            family: hierarchy.family || record.family || "",
+          };
+        } catch (err) {
+          console.warn("⚠️ Failed to fetch hierarchy for genus", genusName);
+        }
       }
     }
 
-    const plant = {
+    const plant: Plant = {
       id: record.id,
       commonName: record.commonName || record.name || "Unknown",
       scientificName: record.scientificName || "",
@@ -225,11 +311,16 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       conservationStatus: record.conservationStatus || "",
       notes: record.notes || "",
       field: record.field || "",
-      // Legacy fields (may not exist in species)
-      kingdom: record.kingdom || "",
-      order: record.order || "",
+      // Taxonomy fields
+      domain: taxonomy.domain,
+      kingdom: taxonomy.kingdom,
+      phylum: taxonomy.phylum,
+      klass: taxonomy.klass,
+      order: taxonomy.order,
+      family: taxonomy.family,
       subfamily: record.subfamily || "",
       species: record.species || "",
+      // Legacy fields
       morphology: record.morphology || "",
       ecology: record.ecology || "",
       distribution: record.distribution || "",
@@ -237,7 +328,7 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       description: record.description || "",
     };
 
-    console.log("✅ Plant loaded from species:", plant.commonName, "| Genus:", genusName, "| GenusId:", genusId);
+    console.log("✅ Plant loaded:", plant.commonName, "| Taxonomy:", { domain: plant.domain, kingdom: plant.kingdom, family: plant.family });
     return plant;
   } catch (error) {
     if (error instanceof Error && !error.message.includes("aborted")) {

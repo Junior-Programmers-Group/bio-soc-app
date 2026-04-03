@@ -13,6 +13,7 @@ export default function DiscoverPlants() {
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortOrder, setSortOrder] = useState("az");
+  const [taxonomyFilter, setTaxonomyFilter] = useState<{ level: string; value: string } | null>(null);
   const [searchParams] = useSearchParams();
 
   // Initialize search from URL parameters
@@ -61,14 +62,33 @@ export default function DiscoverPlants() {
         plant.scientificName || "",
         plant.ecology || "",
         plant.uses || "",
+        plant.domain || "",
         plant.kingdom || "",
+        plant.phylum || "",
+        plant.klass || "",
         plant.order || "",
+        plant.family || "",
+        plant.subfamily || "",
+        plant.genus || "",
+        plant.species || "",
         plant.description || "",
       ]
         .join(" ")
         .toLowerCase();
 
       return searchFields.includes(searchLower);
+    });
+  };
+
+  // Filter by taxonomy if selected
+  const filterByTaxonomy = (plantsToFilter: Plant[]): Plant[] => {
+    if (!taxonomyFilter) return plantsToFilter;
+
+    const { level, value } = taxonomyFilter;
+    
+    return plantsToFilter.filter((plant) => {
+      const fieldValue = plant[level as keyof Plant];
+      return fieldValue === value || (typeof fieldValue === "string" && fieldValue.toLowerCase() === value.toLowerCase());
     });
   };
 
@@ -90,7 +110,7 @@ export default function DiscoverPlants() {
     return sorted;
   };
 
-  const filteredPlants = sortPlants(searchPlants(plants));
+  const filteredPlants = sortPlants(filterByTaxonomy(searchPlants(plants)));
 
   return (
     <div className={styles.discoverPage}>
@@ -137,7 +157,7 @@ export default function DiscoverPlants() {
             showFilters ? styles.withFilters : styles.noFilters
           }`}
         >
-          {showFilters && <Filters />}
+          {showFilters && <Filters plants={plants} taxonomyFilter={taxonomyFilter} setTaxonomyFilter={setTaxonomyFilter} />}
           <PlantsGrid plants={filteredPlants} />
         </div>
       </div>

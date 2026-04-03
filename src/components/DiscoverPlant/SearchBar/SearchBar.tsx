@@ -52,7 +52,7 @@ export default function SearchBar({ search, setSearch }: Props) {
       <input
         ref={inputRef}
         type="text"
-        placeholder="Search plants by name, species, or family..."
+        placeholder="Search by name, taxonomy (family, genus, species)..."
         value={search}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}

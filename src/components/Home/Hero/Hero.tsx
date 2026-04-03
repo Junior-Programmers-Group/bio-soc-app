@@ -22,6 +22,10 @@ const Hero = () => {
       try {
         const plants = await fetchPlants();
         if (isMounted) {
+          console.log("✅ Hero: Loaded plants:", plants.length);
+          if (plants.length > 0) {
+            console.log("📌 First plant data:", plants[0]);
+          }
           setAllPlants(plants);
           setPlantCount(plants.length);
           setLoading(false);
@@ -48,17 +52,37 @@ const Hero = () => {
   useEffect(() => {
     if (searchQuery.trim()) {
       const searchLower = searchQuery.toLowerCase();
+      console.log("🔍 Searching for:", searchLower);
+      console.log("📊 Total plants:", allPlants.length);
+      
       const results = allPlants.filter((plant) => {
         const searchFields = [
           plant.commonName || "",
           plant.name || "",
           plant.scientificName || "",
-        ]
-          .join(" ")
-          .toLowerCase();
+          plant.domain || "",
+          plant.kingdom || "",
+          plant.phylum || "",
+          plant.klass || "",
+          plant.order || "",
+          plant.family || "",
+          plant.subfamily || "",
+          plant.genus || "",
+          plant.species || "",
+        ];
 
-        return searchFields.includes(searchLower);
+        const combined = searchFields.join(" ").toLowerCase();
+        const isMatch = combined.includes(searchLower);
+        
+        // Log first few for debugging
+        if (allPlants.indexOf(plant) < 2) {
+          console.log("Plant:", plant.commonName, "Fields:", searchFields);
+        }
+        
+        return isMatch;
       });
+      
+      console.log("✓ Found", results.length, "matching plants");
       
       // Limit results to top 8
       setFilteredResults(results.slice(0, 8));
@@ -129,7 +153,7 @@ const Hero = () => {
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search plants by species, name, or taxonomy..."
+              placeholder="Search by name, taxonomy (kingdom, family, genus, species)..."
               className={styles.heroInput}
               value={searchQuery}
               onChange={handleInputChange}
