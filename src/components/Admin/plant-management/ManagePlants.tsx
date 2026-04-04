@@ -69,6 +69,7 @@ interface FormFieldConfig {
   key: keyof PlantFormData;
   label: string;
   type: FieldType;
+  required?: boolean;
   options?: { value: string; label: string }[];
 }
 
@@ -86,13 +87,18 @@ const FormFields = ({
   <>
     {fields.map((f) => (
       <div key={f.key} className={styles.formGroup}>
-        <label>{f.label}</label>
+        <label>
+          {f.label}
+          {f.required && <span style={{color: '#dc2626'}}> *</span>}
+        </label>
         {f.type === "textarea" ? (
           <textarea
             value={(formData[f.key] as string) || ""}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, [f.key]: e.target.value }))
             }
+            required={f.required}
+            placeholder={f.required ? `${f.label} (required)` : f.label}
           />
         ) : f.type === "select" ? (
           <select
@@ -105,14 +111,20 @@ const FormFields = ({
                 onGenusChange(value);
               }
             }}
-            required={f.key === "commonName"}
+            required={f.required}
           >
-            <option value="">Select {f.label}</option>
-            {f.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
+            <option value="">
+              {f.key === "genus" && (!f.options || f.options.length === 0)
+                ? "Loading genus options..."
+                : `Select ${f.label}`}
+            </option>
+            {f.options && f.options.length > 0
+              ? f.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))
+              : null}
           </select>
         ) : (
           <input
@@ -121,7 +133,8 @@ const FormFields = ({
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, [f.key]: e.target.value }))
             }
-            required={f.key === "commonName"}
+            required={f.required}
+            placeholder={f.required ? `${f.label} (required)` : f.label}
           />
         )}
       </div>
@@ -169,7 +182,6 @@ export default function ManagePlants() {
     klass: "",
     order: "",
     family: "",
-    subfamily: "",
   });
 
   // Load genus options
@@ -178,27 +190,45 @@ export default function ManagePlants() {
 
     const loadGenusOptions = async () => {
       try {
-        console.log("Loading genus options...");
+        console.log("📥 Loading genus options...");
         const taxonomy = await fetchTaxonomy();
         
         if (!isMounted) return; // Component unmounted, don't update state
         
+        console.log("📋 Taxonomy data received:", {
+          hasDomain: !!taxonomy?.domain,
+          hasKingdom: !!taxonomy?.kingdom,
+          hasPhylum: !!taxonomy?.phylum,
+          hasClass: !!taxonomy?.class,
+          hasOrder: !!taxonomy?.order,
+          hasFamily: !!taxonomy?.family,
+          hasGenus: !!taxonomy?.genus,
+          genusCount: taxonomy?.genus?.length || 0,
+        });
+
         if (taxonomy?.genus && Array.isArray(taxonomy.genus)) {
           const options = taxonomy.genus.map((g: any) => ({
             value: g.id,
             label: g.name || g.common_name || g.id,
           }));
-          console.log("✓ Genus options loaded:", options.length);
+          console.log("✓ Genus options loaded successfully:", options.length, "options");
+          if (options.length <= 5) {
+            console.log("  Genus options:", options.map(o => `${o.label} (${o.value})`).join(", "));
+          }
           setGenusOptions(options);
         } else {
-          console.warn("Invalid genus data received");
+          console.warn("⚠️  Invalid or missing genus data in taxonomy:", {
+            genusExists: !!taxonomy?.genus,
+            isArray: Array.isArray(taxonomy?.genus),
+            type: typeof taxonomy?.genus,
+          });
           setGenusOptions([]);
         }
       } catch (err: any) {
         if (isMounted && !err.message?.includes('aborted')) {
-          console.error("Error loading genus options:", err?.message);
-          setGenusOptions([]);
+          console.error("❌ Error loading genus options:", err?.message || err);
         }
+        setGenusOptions([]);
       }
     };
 
@@ -213,19 +243,19 @@ export default function ManagePlants() {
   // Create STEP_FIELDS dynamically with genus options
   const STEP_FIELDS: Record<FormStep, FormFieldConfig[]> = {
     basic: [
-      { key: "commonName", label: "Common Name *", type: "text" },
-      { key: "scientificName", label: "Scientific Name", type: "text" },
-      { key: "author", label: "Author", type: "text" },
-      { key: "year", label: "Year", type: "number" },
-      { key: "genus", label: "Genus", type: "select", options: genusOptions },
-      { key: "conservationStatus", label: "Conservation Status", type: "text" },
-      { key: "notes", label: "Notes", type: "textarea" },
+      { key: "commonName", label: "Common Name", type: "text", required: true },
+      { key: "scientificName", label: "Scientific Name", type: "text", required: true },
+      { key: "author", label: "Author", type: "text", required: true },
+      { key: "year", label: "Year", type: "number", required: true },
+      { key: "genus", label: "Genus", type: "select", required: true, options: genusOptions },
+      { key: "conservationStatus", label: "Conservation Status", type: "text", required: true },
+      { key: "notes", label: "Notes", type: "textarea", required: true },
     ],
     details: [
-      { key: "morphology", label: "Morphology", type: "textarea" },
-      { key: "ecology", label: "Ecology", type: "textarea" },
-      { key: "distribution", label: "Distribution", type: "textarea" },
-      { key: "uses", label: "Uses", type: "textarea" },
+      { key: "morphology", label: "Morphology", type: "textarea", required: true },
+      { key: "ecology", label: "Ecology", type: "textarea", required: true },
+      { key: "distribution", label: "Distribution", type: "textarea", required: true },
+      { key: "uses", label: "Uses", type: "textarea", required: true },
     ],
     media: [],
   };
@@ -365,20 +395,35 @@ export default function ManagePlants() {
   };
 
   const handleGenusChange = async (genusId: string) => {
-    // Find the genus name from options
-    const selectedOption = genusOptions.find(opt => opt.value === genusId);
-    const genusName = selectedOption?.label || genusId;
-    
+    // Always update the form data immediately - don't wait for async operations
     setFormData((prev) => ({
       ...prev,
       genus: genusId,  // Store the ID for dropdown matching
       genusId: genusId,  // Keep ID for reference
     }));
 
-    if (!genusId) return;
+    // If genusId is empty, clear everything and return
+    if (!genusId) {
+      setFormData((prev) => ({
+        ...prev,
+        kingdom: "",
+        phylum: "",
+        klass: "",
+        order: "",
+        family: "",
+        subfamily: "",
+      }));
+      console.log("✓ Genus cleared, taxonomy fields reset");
+      return;
+    }
 
+    // Find the genus name from options for logging
+    const selectedOption = genusOptions.find(opt => opt.value === genusId);
+    const genusName = selectedOption?.label || genusId;
+    console.log("✓ Genus changed to:", { genusId, genusName });
+
+    // Try to auto-populate taxonomy hierarchy (optional - don't block user if it fails)
     try {
-      // Fetch taxonomy hierarchy for the selected genus
       const hierarchy = await fetchTaxonomyHierarchy(genusId);
       
       setFormData((prev) => ({
@@ -392,10 +437,9 @@ export default function ManagePlants() {
       }));
       
       console.log("✓ Taxonomy auto-populated from genus:", hierarchy);
-      console.log("✓ Genus name:", genusName);
     } catch (err) {
-      console.error("Error fetching taxonomy for genus:", err);
-      // Don't show error to user - taxonomy population is nice-to-have
+      console.warn("⚠️  Could not auto-populate taxonomy for genus:", genusId, err);
+      // Continue - user can still edit without auto-populated taxonomy
     }
   };
 
@@ -416,6 +460,23 @@ export default function ManagePlants() {
     setUploading(true);
 
     try {
+      // Debug: log the form data before submission
+      console.log("📤 Submitting plant form:", {
+        editingId,
+        commonName: formData.commonName,
+        scientificName: formData.scientificName,
+        genus: formData.genus,
+        genusId: formData.genusId,
+        hasImage: !!formData.imageFile,
+      });
+
+      console.log("📝 Details being saved:", {
+        morphology: formData.morphology,
+        ecology: formData.ecology,
+        distribution: formData.distribution,
+        uses: formData.uses,
+      });
+
       // Remove imageFile, imagePreview, and genusId from payload
       const { imageFile, imagePreview, genusId, ...dataWithoutFile } = formData;
       const payload = {
@@ -424,14 +485,21 @@ export default function ManagePlants() {
         year: formData.year ? Number(formData.year) : undefined,
       };
 
+      console.log("📦 Payload to save:", {
+        ...payload,
+        imageIncluded: !!imageFile,
+      });
+
       if (editingId) {
         // Update existing plant
+        console.log("🔄 Updating plant:", editingId);
         await updatePlant(editingId, payload, imageFile || undefined);
-        setSuccess("Plant updated successfully!");
+        setSuccess("✓ Plant updated successfully!");
       } else {
         // Create new plant
+        console.log("✨ Creating new plant");
         await createPlant(payload, imageFile || undefined);
-        setSuccess("Plant created successfully!");
+        setSuccess("✓ Plant created successfully!");
       }
 
       setTimeout(() => {
@@ -440,6 +508,7 @@ export default function ManagePlants() {
       }, 1000);
     } catch (err: any) {
       if (!err?.message?.includes("cancelled")) {
+        console.error("❌ Error saving plant:", err);
         setError(err.message || "Failed to save plant");
       }
     } finally {
@@ -465,11 +534,48 @@ export default function ManagePlants() {
     const imageUrl = buildImageUrl(plant);
     console.log("✓ Loading plant for edit:", { plantId: plant.id, imageUrl });
 
+    // Debug: log all plant data to see what we have
+    console.log("📋 Plant data loaded:", {
+      commonName: plant.commonName,
+      scientificName: plant.scientificName,
+      genus: plant.genus,
+      morphology: plant.morphology,
+      ecology: plant.ecology,
+      distribution: plant.distribution,
+      uses: plant.uses,
+    });
+
+    // Find the genus ID by matching the stored genus value with available options
+    // Handle both cases: genus stored as ID or as name
+    let genusId = plant.genus || "";
+    
+    if (genusId && genusOptions.length > 0) {
+      // First, try direct ID match
+      const matchByValue = genusOptions.find(opt => opt.value === genusId);
+      if (matchByValue) {
+        genusId = matchByValue.value;
+        console.log("✓ Genus matched by ID:", genusId);
+      } else {
+        // Try matching by label (in case genus is stored as name)
+        const matchByLabel = genusOptions.find(opt => opt.label === genusId);
+        if (matchByLabel) {
+          genusId = matchByLabel.value;
+          console.log("✓ Genus matched by label:", genusId);
+        } else {
+          // No match found - keep the original value, user can still change it via dropdown
+          console.warn("⚠️  Genus not found in options:", plant.genus);
+        }
+      }
+    } else if (genusId && genusOptions.length === 0) {
+      // Genus options haven't loaded yet - keep the value and it will match once options load
+      console.warn("⚠️  Genus options not yet loaded, keeping original value:", genusId);
+    }
+
     setFormData({
       commonName: plant.commonName || "",
       scientificName: plant.scientificName || "",
-      genus: plant.genus || "",
-      genusId: plant.genus || "",  // For relationship fetching
+      genus: genusId,
+      genusId: genusId,  // For relationship fetching
       author: plant.author || "",
       year: plant.year?.toString() || "",
       conservationStatus: plant.conservationStatus || "",
@@ -539,11 +645,36 @@ export default function ManagePlants() {
     setQrCodePreview("");
   };
 
+  // Validate if all required fields in current step are filled
+  const validateCurrentStep = (): boolean => {
+    const fields = STEP_FIELDS[currentStep];
+    
+    for (const field of fields) {
+      if (field.required) {
+        const value = (formData[field.key] as string)?.trim() || "";
+        if (!value) {
+          setError(`❌ ${field.label} is required`);
+          console.warn(`Validation failed: ${field.label} is empty`);
+          return false;
+        }
+      }
+    }
+    setError("");
+    return true;
+  };
+
   const goToStep = (step: FormStep) => setCurrentStep(step);
   const goToNextStep = () => {
+    if (!validateCurrentStep()) {
+      return; // Don't proceed if validation fails
+    }
+    
     const steps: FormStep[] = ["basic", "details", "media"];
     const idx = steps.indexOf(currentStep);
-    if (idx < steps.length - 1) setCurrentStep(steps[idx + 1]);
+    if (idx < steps.length - 1) {
+      setCurrentStep(steps[idx + 1]);
+      setError("");
+    }
   };
   const goToPreviousStep = () => {
     const steps: FormStep[] = ["basic", "details", "media"];

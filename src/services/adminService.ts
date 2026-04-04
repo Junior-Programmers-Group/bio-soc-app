@@ -45,12 +45,103 @@ export interface UserRecord extends RecordModel {
   role?: string;
 }
 
+// Helper function to safely get or create details for a plant
+async function syncPlantDetails(
+  plantId: string,
+  detailsData: {
+    morphology: string;
+    ecology: string;
+    distribution: string;
+    uses: string;
+  }
+): Promise<string> {
+  try {
+    console.log("🔄 Syncing details for plant:", plantId);
+
+    // Try to find existing details record
+    const detailsList = await pb.collection("details").getList(1, 1, {
+      filter: `species = "${plantId}"`,
+      requestKey: null,
+    });
+
+    if (detailsList.items && detailsList.items.length > 0) {
+      // Update existing details
+      const existingDetailsId = detailsList.items[0].id;
+      console.log("📝 Updating existing details record:", existingDetailsId);
+
+      const updatedDetails = await pb
+        .collection("details")
+        .update(existingDetailsId, {
+          ...detailsData,
+          species: plantId, // Ensure species relationship is maintained
+        });
+
+      console.log("✓ Details updated successfully:", existingDetailsId);
+      return existingDetailsId;
+    } else {
+      // Create new details record
+      console.log("✨ Creating new details record for plant:", plantId);
+
+      const newDetails = await pb.collection("details").create({
+        species: plantId,
+        ...detailsData,
+      });
+
+      console.log("✓ Details created successfully:", newDetails.id);
+      return newDetails.id;
+    }
+  } catch (error) {
+    console.warn("⚠️  Error syncing plant details:", error);
+    throw error;
+  }
+}
+
 // 🌿 PLANTS MANAGEMENT
 export async function getPlants(): Promise<PlantRecord[]> {
   try {
-    return await pb.collection("species").getFullList<PlantRecord>({
+    const plants = await pb.collection("species").getFullList<PlantRecord>({
       requestKey: null, // Disable auto-cancellation
     });
+
+    console.log(`📥 Fetched ${plants.length} plants from species collection`);
+
+    // Fetch details for each plant and merge
+    const plantsWithDetails = await Promise.all(
+      plants.map(async (plant) => {
+        try {
+          // Query the details collection for this plant
+          const detailsList = await pb.collection("details").getList(1, 1, {
+            filter: `species = "${plant.id}"`,
+            requestKey: null,
+          });
+
+          if (detailsList.items && detailsList.items.length > 0) {
+            const details = detailsList.items[0] as any;
+            console.log(`✓ Details loaded for plant ${plant.commonName} (${plant.id}):`, {
+              morphology: details.morphology ? `${details.morphology.substring(0, 30)}...` : "empty",
+              ecology: details.ecology ? `${details.ecology.substring(0, 30)}...` : "empty",
+              distribution: details.distribution ? `${details.distribution.substring(0, 30)}...` : "empty",
+              uses: details.uses ? `${details.uses.substring(0, 30)}...` : "empty",
+            });
+            return {
+              ...plant,
+              morphology: details.morphology || "",
+              ecology: details.ecology || "",
+              distribution: details.distribution || "",
+              uses: details.uses || "",
+            };
+          } else {
+            console.log(`ℹ️  No details record found for plant ${plant.commonName} (${plant.id})`);
+            return plant;
+          }
+        } catch (detailsError: any) {
+          console.warn(`⚠️  Error loading details for plant ${plant.id}:`, detailsError?.message);
+          return plant;
+        }
+      })
+    );
+
+    return plantsWithDetails;
   } catch (error) {
     if (error instanceof Error && !error.message.includes('aborted')) {
       console.error("Error fetching plants from species:", error);
@@ -99,20 +190,17 @@ export async function createPlant(
     const record = await pb.collection("species").create<PlantRecord>(formData);
     console.log("✓ Plant created successfully in species:", record);
     
-    // Create details record
+    // Create details record using helper
     try {
-      const detailsData = {
-        species: record.id,  // Link to species record
+      const detailsId = await syncPlantDetails(record.id, {
         morphology: data.morphology || "",
         ecology: data.ecology || "",
         distribution: data.distribution || "",
         uses: data.uses || "",
-      };
-      
-      const detailsRecord = await pb.collection("details").create(detailsData);
-      console.log("✓ Details created successfully:", detailsRecord);
+      });
+      console.log("✓ Plant created with details:", { plantId: record.id, detailsId });
     } catch (detailsError) {
-      console.warn("Warning: Details creation failed:", detailsError);
+      console.warn("⚠️  Details creation failed, but plant was created:", detailsError);
     }
     
     // Now generate and upload QR code
@@ -182,29 +270,16 @@ export async function updatePlant(
       const record = await pb.collection("species").update<PlantRecord>(id, formData);
       console.log("✓ Plant updated successfully in species:", record);
       
-      // Update or create details record
+      // Update or create details record using helper
       try {
-        const detailsData = {
-          species: id,  // Link to species record
+        await syncPlantDetails(id, {
           morphology: data.morphology || "",
           ecology: data.ecology || "",
           distribution: data.distribution || "",
           uses: data.uses || "",
-        };
-        
-        // Try to find existing details record
-        try {
-          const existingDetails = await pb.collection("details").getFirstListItem(`species = "${id}"`);
-          // Update existing
-          await pb.collection("details").update(existingDetails.id, detailsData);
-          console.log("✓ Details updated successfully:", existingDetails.id);
-        } catch (notFoundError) {
-          // Create new if doesn't exist
-          const newDetails = await pb.collection("details").create(detailsData);
-          console.log("✓ Details created successfully:", newDetails);
-        }
+        });
       } catch (detailsError) {
-        console.warn("Warning: Details update/create failed:", detailsError);
+        console.warn("⚠️  Details sync failed:", detailsError);
       }
       
       // Regenerate QR code
@@ -255,54 +330,16 @@ export async function updatePlant(
       const record = await pb.collection("species").update<PlantRecord>(id, payload);
       console.log("✓ Plant updated successfully in species:", record);
       
-      // Update or create details record
+      // Update or create details record using helper
       try {
-        const detailsData = {
-          species: id,  // Link to species record
+        await syncPlantDetails(id, {
           morphology: data.morphology || "",
           ecology: data.ecology || "",
           distribution: data.distribution || "",
           uses: data.uses || "",
-        };
-        
-        // Try to find existing details record
-        try {
-          const existingDetails = await pb.collection("details").getFirstListItem(`species = "${id}"`);
-          // Update existing
-          await pb.collection("details").update(existingDetails.id, detailsData);
-          console.log("✓ Details updated successfully:", existingDetails.id);
-        } catch (notFoundError) {
-          // Create new if doesn't exist
-          const newDetails = await pb.collection("details").create(detailsData);
-          console.log("✓ Details created successfully:", newDetails);
-        }
+        });
       } catch (detailsError) {
-        console.warn("Warning: Details update/create failed:", detailsError);
-      }
-      
-      // Update or create details record
-      try {
-        const detailsData = {
-          species: id,  // Link to species record
-          morphology: data.morphology || "",
-          ecology: data.ecology || "",
-          distribution: data.distribution || "",
-          uses: data.uses || "",
-        };
-        
-        // Try to find existing details record
-        try {
-          const existingDetails = await pb.collection("details").getFirstListItem(`species = "${id}"`);
-          // Update existing
-          await pb.collection("details").update(existingDetails.id, detailsData);
-          console.log("✓ Details updated successfully:", existingDetails.id);
-        } catch (notFoundError) {
-          // Create new if doesn't exist
-          const newDetails = await pb.collection("details").create(detailsData);
-          console.log("✓ Details created successfully:", newDetails);
-        }
-      } catch (detailsError) {
-        console.warn("Warning: Details update/create failed:", detailsError);
+        console.warn("⚠️  Details sync failed:", detailsError);
       }
       
       // Regenerate QR code
