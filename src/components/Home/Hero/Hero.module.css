@@ -75,8 +75,9 @@
 /* ===================================================== */
 
 .heroInput {
-  width: 100%;
+  flex: 1;
   max-width: 600px;
+  min-width: 0;
   padding: 14px 26px;
   padding-left: 56px;
   height: 48px;
@@ -118,6 +119,7 @@
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
+  flex-wrap: nowrap;
 }
 
 .searchContainer {
@@ -141,6 +143,8 @@
   flex-shrink: 0;
   width: 48px;
   height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   transition: all 0.3s ease;
   color: #2d5016;
 }
@@ -170,6 +174,8 @@
   border-radius: 999px;
   width: 44px;
   height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -332,7 +338,7 @@
   }
 
   .heroInput {
-    margin-top: 28px;
+    margin-top: 2px;
     padding: 10px 20px;
     padding-left: 50px;
     height: 42px;
@@ -409,16 +415,23 @@
     font-size: clamp(12px, 3.2vw, 14px);
   }
 
+  .searchForm {
+    gap: 6px;
+  }
+
   .heroInput {
-    margin-top: 24px;
+    margin-top: 2px;
     padding: 12px 16px;
-    padding-left: 55px;
+    padding-left: 50px;
     font-size: 13px;
+    height: 44px;
   }
 
   .searchBtn {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
     left: 6px;
     top: 50%;
     transform: translateY(-50%);
@@ -426,13 +439,15 @@
   }
 
   .filterToggleBtn {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
   }
 
   .filterToggleBtn svg {
-    width: 19px;
-    height: 19px;
+    width: 20px;
+    height: 20px;
   }
 
   .searchTypeFilter {
@@ -497,7 +512,7 @@
   }
 
   .heroInput {
-    margin-top: 20px;
+    margin-top: 2px;
     padding: 11px 14px;
     padding-left: 50px;
     font-size: 12px;
@@ -573,7 +588,7 @@
   }
 
   .heroInput {
-    margin-top: 16px;
+    margin-top: 3px;
     padding: 10px 12px;
     padding-left: 48px;
     font-size: 11px;
