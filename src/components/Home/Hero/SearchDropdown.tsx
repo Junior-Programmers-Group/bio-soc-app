@@ -66,7 +66,7 @@ export default function SearchDropdown({
                   <p className={styles.taxonomy}>
                     {getTaxonomyDisplay(plant)
                       .split(' • ')
-                      .filter((tax, idx) => {
+                      .filter((tax) => {
                         // Hide any taxonomy part that looks like an ID/code
                         if (/[a-z0-9]{10,}/.test(tax)) return false;
                         return true;

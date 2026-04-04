@@ -12,18 +12,72 @@ interface TaxonomyHierarchy {
   genus?: string;
 }
 
-export const fetchTaxonomyHierarchy = async (genusIdOrName: string): Promise<TaxonomyHierarchy> => {
+export const fetchTaxonomyHierarchy = async (genusIdOrName: string, optionalFamilyId?: string): Promise<TaxonomyHierarchy> => {
   try {
-    console.log("🔍 fetchTaxonomyHierarchy called with genusIdOrName:", genusIdOrName);
+    console.log("🔍 fetchTaxonomyHierarchy called with genusIdOrName:", genusIdOrName, "optionalFamilyId:", optionalFamilyId);
     
-    if (!genusIdOrName) {
-      console.warn("⚠️  No genusIdOrName provided");
+    if (!genusIdOrName && !optionalFamilyId) {
+      console.warn("⚠️  No genusIdOrName or familyId provided");
       return {};
     }
 
     const hierarchy: TaxonomyHierarchy = {};
 
-    // Fetch Genus record
+    // If we have a family ID, start from family and traverse up (preferred method)
+    if (optionalFamilyId) {
+      console.log("📍 Using family_id to traverse hierarchy (preferred method)");
+      try {
+        let currentRecord = await pb.collection("family").getOne<any>(optionalFamilyId, {
+          requestKey: null,
+        });
+
+        hierarchy.family = currentRecord.name;
+        console.log("✓ Family found:", currentRecord.name);
+
+        // Traverse up: family → order → class → phylum → kingdom → domain
+        const traversalPath = [
+          { currentLevel: "family", parentField: "parent_id", nextCollection: "order", hierarchyKey: "order" },
+          { currentLevel: "order", parentField: "parent_id", nextCollection: "class", hierarchyKey: "klass" },
+          { currentLevel: "class", parentField: "parent_id", nextCollection: "phylum", hierarchyKey: "phylum" },
+          { currentLevel: "phylum", parentField: "parent_id", nextCollection: "kingdom", hierarchyKey: "kingdom" },
+          { currentLevel: "kingdom", parentField: "parent_id", nextCollection: "domain", hierarchyKey: "domain" },
+        ];
+
+        for (const step of traversalPath) {
+          const parentId = currentRecord[step.parentField];
+          if (!parentId) {
+            console.log(`  ℹ️ No parent_id on ${step.currentLevel}, stopping traversal`);
+            break;
+          }
+
+          console.log(`  → Found parent_id: ${parentId}, fetching ${step.nextCollection}`);
+          currentRecord = await pb.collection(step.nextCollection).getOne<any>(parentId, {
+            requestKey: null,
+          });
+
+          const parentName = currentRecord.name;
+          hierarchy[step.hierarchyKey as keyof TaxonomyHierarchy] = parentName;
+          console.log(`  ✓ ${step.nextCollection}="${parentName}"`);
+        }
+
+        // Now fetch genus separately
+        if (genusIdOrName) {
+          console.log("  📍 Fetching genus separately:", genusIdOrName);
+          const genusRecord = await pb.collection("genus").getOne<any>(genusIdOrName, {
+            requestKey: null,
+          });
+          hierarchy.genus = genusRecord.name;
+          console.log("  ✓ Genus found:", genusRecord.name);
+        }
+
+        console.log("✅ FINAL HIERARCHY (from family):", hierarchy);
+        return hierarchy;
+      } catch (err) {
+        console.error("⚠️ Failed to traverse from family, falling back to genus method:", err);
+      }
+    }
+
+    // Fallback: Fetch Genus record and try to traverse from there
     console.log("📍 Fetching Genus record:", genusIdOrName);
     
     let genusRecord = await pb.collection("genus").getOne<any>(genusIdOrName, {
@@ -132,10 +186,59 @@ export const fetchTaxonomyHierarchy = async (genusIdOrName: string): Promise<Tax
   }
 };
 
+export const fetchTaxonomyOptions = async () => {
+  try {
+    console.log("📚 Fetching all taxonomy options from database...");
+    
+    const [domains, kingdoms, phylums, classes, orders, families, genera] = await Promise.all([
+      pb.collection("domain").getFullList<any>({ requestKey: null }),
+      pb.collection("kingdom").getFullList<any>({ requestKey: null }),
+      pb.collection("phylum").getFullList<any>({ requestKey: null }),
+      pb.collection("class").getFullList<any>({ requestKey: null }),
+      pb.collection("order").getFullList<any>({ requestKey: null }),
+      pb.collection("family").getFullList<any>({ requestKey: null }),
+      pb.collection("genus").getFullList<any>({ requestKey: null }),
+    ]);
+
+    const options = {
+      domain: domains.map(d => d.name).filter(Boolean).sort(),
+      kingdom: kingdoms.map(k => k.name).filter(Boolean).sort(),
+      phylum: phylums.map(p => p.name).filter(Boolean).sort(),
+      klass: classes.map(c => c.name).filter(Boolean).sort(),
+      order: orders.map(o => o.name).filter(Boolean).sort(),
+      family: families.map(f => f.name).filter(Boolean).sort(),
+      genus: genera.map(g => g.name).filter(Boolean).sort(),
+    };
+
+    console.log("✅ Taxonomy options loaded:", {
+      domain: options.domain.length,
+      kingdom: options.kingdom.length,
+      phylum: options.phylum.length,
+      klass: options.klass.length,
+      order: options.order.length,
+      family: options.family.length,
+      genus: options.genus.length,
+    });
+
+    return options;
+  } catch (error) {
+    console.error("❌ Error fetching taxonomy options:", error);
+    return {
+      domain: [],
+      kingdom: [],
+      phylum: [],
+      klass: [],
+      order: [],
+      family: [],
+      genus: [],
+    };
+  }
+};
+
 export const fetchPlants = async (): Promise<Plant[]> => {
   try {
     const records = await pb.collection("species").getFullList<any>({
-      expand: "genus_id",
+      expand: "genus,genus.family,genus.family.order,genus.family.order.class,genus.family.order.class.phylum,genus.family.order.class.phylum.kingdom,genus.family.order.class.phylum.kingdom.domain",
       requestKey: null, // Disable auto-cancellation
     });
 
@@ -144,6 +247,29 @@ export const fetchPlants = async (): Promise<Plant[]> => {
     const plants: Plant[] = [];
 
     for (const record of records) {
+      // Log first record details for debugging
+      if (plants.length === 0) {
+        console.log("🔍 FIRST RECORD DEBUG - Raw Fields:", {
+          id: record.id,
+          genus: record.genus,
+          scientificName: record.scientificName,
+          commonName: record.commonName,
+          author: record.author,
+          year: record.year,
+          conservationStatus: record.conservationStatus,
+          notes: record.notes,
+          allKeys: Object.keys(record).filter(k => !k.startsWith('created') && !k.startsWith('updated') && !k.includes('expand')),
+        });
+        console.log("🔍 Expand structure:", {
+          hasGenus: !!record.expand?.genus,
+          genusName: record.expand?.genus?.name,
+          hasFamily: !!record.expand?.genus?.expand?.family,
+          familyName: record.expand?.genus?.expand?.family?.name,
+          hasOrder: !!record.expand?.genus?.expand?.family?.expand?.order,
+          hasClass: !!record.expand?.genus?.expand?.family?.expand?.order?.expand?.class,
+        });
+      }
+
       // Build image URL - try field first (primary image field), then image as fallback
       let imageUrl = "";
       if (record.field) {
@@ -152,51 +278,77 @@ export const fetchPlants = async (): Promise<Plant[]> => {
         imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
       }
 
-      // Get genus info
-      let genusName = record.genus || "";
-      let genusId = record.genus_id || "";
-      let taxonomy: any = {
-        domain: record.domain || "",
-        kingdom: record.kingdom || "",
-        phylum: record.phylum || "",
-        klass: record.klass || "",
-        order: record.order || "",
-        family: record.family || "",
-      };
+      // Extract taxonomy from nested expand relationships
+      let genusName = "";
+      let genusId = "";
+      let familyName = "";
+      let orderName = "";
+      let className = "";
+      let phylumName = "";
+      let kingdomName = "";
+      let domainName = "";
 
-      // Try to fetch hierarchy if genus is available
-      if (record.expand?.genus_id && genusId) {
-        const genusRecord = Array.isArray(record.expand.genus_id) 
-          ? record.expand.genus_id[0] 
-          : record.expand.genus_id;
-        
-        if (genusRecord) {
-          genusName = genusRecord.name || genusName;
-          genusId = genusRecord.id || genusId;
-          
-          try {
-            console.log("📍 Fetching taxonomy hierarchy for genus:", genusId);
-            const hierarchy = await fetchTaxonomyHierarchy(genusId);
-            console.log("✓ Hierarchy retrieved:", hierarchy);
-            
-            // Merge with direct fields
-            taxonomy = {
-              domain: hierarchy.domain || record.domain || "",
-              kingdom: hierarchy.kingdom || record.kingdom || "",
-              phylum: hierarchy.phylum || record.phylum || "",
-              klass: hierarchy.klass || record.klass || "",
-              order: hierarchy.order || record.order || "",
-              family: hierarchy.family || record.family || "",
-            };
-          } catch (err) {
-            console.warn("⚠️ Failed to fetch hierarchy for genus", genusName, "- using direct fields only");
+      // Navigate through the expand chain: genus → family → order → class → phylum → kingdom → domain
+      if (record.expand?.genus) {
+        const genusRecord = Array.isArray(record.expand.genus) ? record.expand.genus[0] : record.expand.genus;
+        genusName = genusRecord?.name || "";
+        genusId = genusRecord?.id || "";
+        console.log("✓ Found genus:", genusName);
+
+        if (genusRecord?.expand?.family) {
+          const familyRecord = Array.isArray(genusRecord.expand.family) ? genusRecord.expand.family[0] : genusRecord.expand.family;
+          familyName = familyRecord?.name || "";
+          console.log("✓ Found family:", familyName);
+
+          if (familyRecord?.expand?.order) {
+            const orderRecord = Array.isArray(familyRecord.expand.order) ? familyRecord.expand.order[0] : familyRecord.expand.order;
+            orderName = orderRecord?.name || "";
+            console.log("✓ Found order:", orderName);
+
+            if (orderRecord?.expand?.class) {
+              const classRecord = Array.isArray(orderRecord.expand.class) ? orderRecord.expand.class[0] : orderRecord.expand.class;
+              className = classRecord?.name || "";
+              console.log("✓ Found class:", className);
+
+              if (classRecord?.expand?.phylum) {
+                const phylumRecord = Array.isArray(classRecord.expand.phylum) ? classRecord.expand.phylum[0] : classRecord.expand.phylum;
+                phylumName = phylumRecord?.name || "";
+                console.log("✓ Found phylum:", phylumName);
+
+                if (phylumRecord?.expand?.kingdom) {
+                  const kingdomRecord = Array.isArray(phylumRecord.expand.kingdom) ? phylumRecord.expand.kingdom[0] : phylumRecord.expand.kingdom;
+                  kingdomName = kingdomRecord?.name || "";
+                  console.log("✓ Found kingdom:", kingdomName);
+                  console.log("  Kingdom record expand keys:", Object.keys(kingdomRecord?.expand || {}));
+                  console.log("  Kingdom record all fields:", Object.keys(kingdomRecord || {}).filter(k => !k.startsWith('created') && !k.startsWith('updated')));
+
+                  if (kingdomRecord?.expand?.domain) {
+                    const domainRecord = Array.isArray(kingdomRecord.expand.domain) ? kingdomRecord.expand.domain[0] : kingdomRecord.expand.domain;
+                    domainName = domainRecord?.name || "";
+                    console.log("✓ Found domain from expand:", domainName);
+                  } else {
+                    console.warn("⚠️ Domain not in expand. Kingdom has domain field?:", kingdomRecord?.domain);
+                    // Fallback: fetch domain if it's just an ID
+                    if (kingdomRecord?.domain && typeof kingdomRecord.domain === 'string') {
+                      try {
+                        const domainRecord = await pb.collection("domain").getOne(kingdomRecord.domain, { requestKey: null });
+                        domainName = domainRecord.name || "";
+                        console.log("✓ Found domain via fallback fetch:", domainName);
+                      } catch (e) {
+                        console.error("⚠️ Failed to fetch domain:", e);
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
 
       const plant: Plant = {
         id: record.id,
-        commonName: record.commonName || record.name || "Unknown",
+        commonName: record.commonName || "Unknown",
         scientificName: record.scientificName || "",
         image: imageUrl,
         genus: genusName,
@@ -206,13 +358,13 @@ export const fetchPlants = async (): Promise<Plant[]> => {
         conservationStatus: record.conservationStatus || "",
         notes: record.notes || "",
         field: record.field || "",
-        // Taxonomy fields
-        domain: taxonomy.domain,
-        kingdom: taxonomy.kingdom,
-        phylum: taxonomy.phylum,
-        klass: taxonomy.klass,
-        order: taxonomy.order,
-        family: taxonomy.family,
+        // Taxonomy fields - populated from relationships
+        domain: domainName,
+        kingdom: kingdomName,
+        phylum: phylumName,
+        klass: className,
+        order: orderName,
+        family: familyName,
         subfamily: record.subfamily || "",
         species: record.species || "",
         // Legacy fields
@@ -224,12 +376,50 @@ export const fetchPlants = async (): Promise<Plant[]> => {
       };
 
       plants.push(plant);
-      console.log("✅ Added plant:", plant.commonName, "| Taxonomy:", { domain: plant.domain, kingdom: plant.kingdom, family: plant.family });
+      console.log("✅ Added plant:", plant.commonName, "| Taxonomy:", { 
+        domain: plant.domain, 
+        kingdom: plant.kingdom,
+        phylum: plant.phylum,
+        klass: plant.klass,
+        order: plant.order,
+        family: plant.family,
+        genus: plant.genus,
+      });
     }
 
     console.log("✅ Plants list loaded:", plants.length, "items");
     if (plants.length > 0) {
       console.log("🔍 First plant full data:", plants[0]);
+      // Log taxonomy filter options available
+      const taxonomyLevels = ["domain", "kingdom", "phylum", "klass", "order", "family", "genus"];
+      const availableTaxonomy: Record<string, Set<string>> = {};
+      const missingByLevel: Record<string, string[]> = {};
+      
+      taxonomyLevels.forEach(level => {
+        availableTaxonomy[level] = new Set();
+        missingByLevel[level] = [];
+        plants.forEach(plant => {
+          const value = plant[level as keyof Plant];
+          if (value && typeof value === "string" && value.trim()) {
+            availableTaxonomy[level].add(value);
+          } else {
+            // Track which plants are missing this taxonomy level
+            if (missingByLevel[level].length < 3) { // Only track first 3 for brevity
+              missingByLevel[level].push(plant.commonName);
+            }
+          }
+        });
+      });
+      
+      console.log("🔍 Available taxonomy filter options:", Object.fromEntries(
+        Object.entries(availableTaxonomy).map(([level, values]) => [level, Array.from(values).length])
+      ));
+      console.log("📋 Full available options by level:", Object.fromEntries(
+        Object.entries(availableTaxonomy).map(([level, values]) => [level, Array.from(values).sort()])
+      ));
+      console.log("⚠️ Plants missing taxonomy by level:", Object.fromEntries(
+        Object.entries(missingByLevel).map(([level, plants]) => [level, plants.length > 0 ? plants : "None"])
+      ));
     }
     return plants;
   } catch (error) {

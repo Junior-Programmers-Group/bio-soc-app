@@ -8,10 +8,27 @@
   top: 100px;
 }
 
+.activeFilter {
+  background-color: #f0f8e8;
+  border: 1px solid #2d5016;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.activeFilterText {
+  font-size: 12px;
+  color: #2d5016;
+  margin: 8px 0 0 0;
+  padding: 0;
+}
+
 .clearButton {
   width: 100%;
   padding: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   background-color: #ffebee;
   color: #c62828;
   border: 1px solid #ef5350;
@@ -20,6 +37,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .clearButton:hover {
@@ -28,26 +46,77 @@
 }
 
 .group {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .group:last-child {
   margin-bottom: 0;
 }
 
-.group h4 {
-  font-size: 13px;
+.groupHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #f5faf0 0%, #eef5e8 100%);
+  border: 1px solid #d4e8c1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
   font-weight: 700;
-  margin-bottom: 12px;
   color: #1f2f1f;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  gap: 8px;
+}
+
+.groupHeader:hover {
+  background: linear-gradient(135deg, #f0f8e8 0%, #e8f3e0 100%);
+  border-color: #2d5016;
+}
+
+.groupTitle {
+  flex: 1;
+  text-align: left;
+}
+
+.expandIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
+  color: #2d5016;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.expandIcon.rotated {
+  transform: rotate(90deg);
 }
 
 .optionsList {
   display: flex;
   flex-direction: column;
   gap: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  max-height: 0;
+  opacity: 0;
+}
+
+.optionsList.expanded {
+  max-height: 500px;
+  opacity: 1;
+  padding: 8px 0 0 0;
+}
+
+.optionsList.collapsed {
+  max-height: 0;
+  opacity: 0;
 }
 
 .group label {
@@ -65,7 +134,17 @@
   color: #1f2f1f;
 }
 
-.group input[type="radio"] {
+.selectedLabel {
+  color: #2d5016 !important;
+  font-weight: 600;
+}
+
+.selectedLabel:hover {
+  color: #1f2f1f !important;
+}
+
+.group input[type="radio"],
+.group input[type="checkbox"] {
   cursor: pointer;
   width: 16px;
   height: 16px;
@@ -76,4 +155,107 @@
   font-size: 12px;
   color: #999;
   margin: 8px 0;
+}
+
+/* Active Filters Display */
+.activeFiltersTags {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.filterTag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background-color: #f9fbf7;
+  border: 1px solid #c1dfa8;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.filterTagLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2d5016;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filterValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: #e8f3e0;
+  border: 1px solid #2d5016;
+  color: #1f2f1f;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.removeTagBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  margin-left: 4px;
+  background: none;
+  border: none;
+  color: #2d5016;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.removeTagBtn:hover {
+  opacity: 1;
+  color: #c62828;
+}
+
+/* Group Header with Clear Button */
+.groupHeaderWrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.groupHeader {
+  flex: 1;
+}
+
+.groupClearBtn {
+  padding: 6px 8px;
+  background-color: #ffe0e0;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.groupClearBtn:hover {
+  background-color: #ef5350;
+  color: #ffffff;
+  border-color: #c62828;
+}
+
+.selectedCount {
+  color: #2d5016;
+  font-weight: 600;
 }

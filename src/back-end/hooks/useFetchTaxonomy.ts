@@ -1,15 +1,6 @@
 import pb from "../db";
 import type { ClassTaxonomy, Domain, Family, Genus, Kingdom, OrderTaxonomy, Phylum } from "../types/taxonomyClass";
 
-type TaxonomyKey = keyof TaxonomyData
-
-interface Field {
-  name: string
-  collectionName: TaxonomyKey
-  collectionParent: TaxonomyKey | ""
-  fields: string[]
-}
-
 export interface TaxonomyData {
     domain : Domain[],
     kingdom : Kingdom[],

@@ -4,17 +4,18 @@ import Navbar from "../../components/Home/Navbar/Navbar";
 import SearchBar, { type SearchType } from "../../components/DiscoverPlant/SearchBar/SearchBar";
 import PlantsGrid from "../../components/DiscoverPlant/PlantGrid/PlantsGrid";
 import type { Plant } from "../../types/plant";
-import { fetchPlants } from "../../services/plantService";
+import { fetchPlants, fetchTaxonomyOptions } from "../../services/plantService";
 import styles from "./DiscoverPlants.module.css";
 import Filters from "../../components/DiscoverPlant/Filters/Filters";
 
 export default function DiscoverPlants() {
   const [plants, setPlants] = useState<Plant[]>([]);
+  const [taxonomyOptions, setTaxonomyOptions] = useState<Record<string, string[]> | undefined>();
   const [search, setSearch] = useState("");
   const [searchType, setSearchType] = useState<SearchType>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [sortOrder, setSortOrder] = useState("az");
-  const [taxonomyFilter, setTaxonomyFilter] = useState<{ level: string; value: string } | null>(null);
+  const [taxonomyFilters, setTaxonomyFilters] = useState<Record<string, string>>({});
   const [searchParams] = useSearchParams();
 
   // Initialize search from URL parameters
@@ -28,15 +29,21 @@ export default function DiscoverPlants() {
   useEffect(() => {
     let isMounted = true;
 
-    const loadPlants = async () => {
+    const loadData = async () => {
       try {
-        const data = await fetchPlants();
+        // Fetch plants and taxonomy options in parallel
+        const [plantsData, taxonomyData] = await Promise.all([
+          fetchPlants(),
+          fetchTaxonomyOptions(),
+        ]);
+        
         if (isMounted) {
-          setPlants(data);
+          setPlants(plantsData);
+          setTaxonomyOptions(taxonomyData);
         }
       } catch (error) {
         if (isMounted && error instanceof Error && !error.message.includes("aborted")) {
-          console.error("Error loading plants:", error);
+          console.error("Error loading data:", error);
         }
         if (isMounted) {
           setPlants([]);
@@ -44,7 +51,7 @@ export default function DiscoverPlants() {
       }
     };
 
-    loadPlants();
+    loadData();
 
     return () => {
       isMounted = false;
@@ -94,16 +101,25 @@ export default function DiscoverPlants() {
     });
   };
 
-  // Filter by taxonomy if selected
+  // Filter by taxonomy if any filters are selected
   const filterByTaxonomy = (plantsToFilter: Plant[]): Plant[] => {
-    if (!taxonomyFilter) return plantsToFilter;
-
-    const { level, value } = taxonomyFilter;
+    const activeFilters = Object.entries(taxonomyFilters).filter(([, value]) => value);
     
-    return plantsToFilter.filter((plant) => {
-      const fieldValue = plant[level as keyof Plant];
-      return fieldValue === value || (typeof fieldValue === "string" && fieldValue.toLowerCase() === value.toLowerCase());
+    if (activeFilters.length === 0) return plantsToFilter;
+
+    console.log(`🔍 Filtering by ${activeFilters.length} taxonomy level(s)`);
+    
+    const filtered = plantsToFilter.filter((plant) => {
+      // Plant must match ALL active taxonomy level filters
+      return activeFilters.every(([level, value]) => {
+        const fieldValue = plant[level as keyof Plant];
+        const matches = fieldValue === value || (typeof fieldValue === "string" && fieldValue.toLowerCase() === value.toLowerCase());
+        return matches;
+      });
     });
+
+    console.log(`✅ Taxonomy filters applied: ${filtered.length} plants match`);
+    return filtered;
   };
 
   // Sorting logic
@@ -171,7 +187,7 @@ export default function DiscoverPlants() {
             showFilters ? styles.withFilters : styles.noFilters
           }`}
         >
-          {showFilters && <Filters plants={plants} taxonomyFilter={taxonomyFilter} setTaxonomyFilter={setTaxonomyFilter} />}
+          {showFilters && <Filters plants={plants} taxonomyFilters={taxonomyFilters} setTaxonomyFilters={setTaxonomyFilters} taxonomyOptions={taxonomyOptions} />}
           <PlantsGrid plants={filteredPlants} />
         </div>
       </div>
