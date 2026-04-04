@@ -10,6 +10,7 @@ import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../.
 import { fetchTaxonomyHierarchy } from "../../../services/plantService";
 import { useFetchTaxonomy } from "../../../back-end/hooks/useFetchTaxonomy";
 import QRModal from "../QRModal";
+import ConfirmationModal from "../ConfirmationModal";
 import styles from "./ManagePlants.module.css";
 
 const PLACEHOLDER_IMAGE =
@@ -61,7 +62,6 @@ interface PlantFormData {
   klass?: string;
   order?: string;
   family?: string;
-  subfamily?: string;
 }
 
 // REUSABLE FORM FIELDS - with support for select fields
@@ -158,6 +158,10 @@ export default function ManagePlants() {
   const [modalQRDataUrl, setModalQRDataUrl] = useState<string>("");
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [genusOptions, setGenusOptions] = useState<{ value: string; label: string }[]>([]);
+  const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
+  const [deleteConfirmingId, setDeleteConfirmingId] = useState<string | null>(null);
+  const [isEditConfirming, setIsEditConfirming] = useState(false);
+  const [deletePlantName, setDeletePlantName] = useState<string>("");
 
   const { fetch: fetchTaxonomy } = useFetchTaxonomy();
 
@@ -411,7 +415,6 @@ export default function ManagePlants() {
         klass: "",
         order: "",
         family: "",
-        subfamily: "",
       }));
       console.log("✓ Genus cleared, taxonomy fields reset");
       return;
@@ -433,7 +436,6 @@ export default function ManagePlants() {
         klass: hierarchy.klass || "",
         order: hierarchy.order || "",
         family: hierarchy.family || "",
-        subfamily: hierarchy.subfamily || "",
       }));
       
       console.log("✓ Taxonomy auto-populated from genus:", hierarchy);
@@ -457,32 +459,43 @@ export default function ManagePlants() {
     
     setError("");
     setSuccess("");
-    setUploading(true);
 
+    // If editing, show confirmation modal instead of submitting directly
+    if (editingId) {
+      setIsEditConfirming(true);
+      return;
+    }
+
+    // For new plants, proceed with submission
+    await performSubmit(formData);
+  };
+
+  const performSubmit = async (data: PlantFormData) => {
     try {
+      setUploading(true);
       // Debug: log the form data before submission
       console.log("📤 Submitting plant form:", {
         editingId,
-        commonName: formData.commonName,
-        scientificName: formData.scientificName,
-        genus: formData.genus,
-        genusId: formData.genusId,
-        hasImage: !!formData.imageFile,
+        commonName: data.commonName,
+        scientificName: data.scientificName,
+        genus: data.genus,
+        genusId: data.genusId,
+        hasImage: !!data.imageFile,
       });
 
       console.log("📝 Details being saved:", {
-        morphology: formData.morphology,
-        ecology: formData.ecology,
-        distribution: formData.distribution,
-        uses: formData.uses,
+        morphology: data.morphology,
+        ecology: data.ecology,
+        distribution: data.distribution,
+        uses: data.uses,
       });
 
       // Remove imageFile, imagePreview, and genusId from payload
-      const { imageFile, imagePreview, genusId, ...dataWithoutFile } = formData;
+      const { imageFile, imagePreview, genusId, ...dataWithoutFile } = data;
       const payload = {
         ...dataWithoutFile,
-        phylum_id: Number(formData.phylum_id) || 1,
-        year: formData.year ? Number(formData.year) : undefined,
+        phylum_id: Number(data.phylum_id) || 1,
+        year: data.year ? Number(data.year) : undefined,
       };
 
       console.log("📦 Payload to save:", {
@@ -516,16 +529,39 @@ export default function ManagePlants() {
     }
   };
 
+  const handleConfirmEdit = () => {
+    setIsEditConfirming(false);
+    performSubmit(formData);
+  };
+
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this plant?")) return;
+    // Find the plant to get its name for confirmation message
+    const plant = plants.find(p => p.id === id);
+    setDeleteConfirmingId(id);
+    setDeletePlantName(plant?.commonName || "this plant");
+    setIsDeleteConfirming(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmingId) return;
+    
     try {
       setError("");
-      await deletePlant(id);
-      fetchPlants();
+      setUploading(true);
+      await deletePlant(deleteConfirmingId);
+      setSuccess("✓ Plant deleted successfully!");
+      setIsDeleteConfirming(false);
+      setDeleteConfirmingId(null);
+      setDeletePlantName("");
+      setTimeout(() => {
+        fetchPlants();
+      }, 500);
     } catch (err: any) {
       if (!err?.message?.includes("cancelled")) {
         setError(err.message || "Failed to delete plant");
       }
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -591,7 +627,7 @@ export default function ManagePlants() {
       phylum: (plant as any).phylum || "",
       klass: (plant as any).klass || "",
       order: plant.order || "",
-      subfamily: plant.subfamily || "",
+      family: plant.family || "",
     });
     setEditingId(plant.id);
     setShowForm(true);
@@ -634,7 +670,6 @@ export default function ManagePlants() {
       klass: "",
       order: "",
       family: "",
-      subfamily: "",
     });
     setEditingId(null);
     setShowForm(false);
@@ -759,7 +794,7 @@ export default function ManagePlants() {
                 disabled={currentStep === "basic"}
                 className={styles.prevBtn}
               >
-                ← Previous
+                ‹ Back
               </button>
               {currentStep !== "media" ? (
                 <button 
@@ -767,7 +802,7 @@ export default function ManagePlants() {
                   onClick={goToNextStep}
                   className={styles.nextBtn}
                 >
-                  Next →
+                  Next ›
                 </button>
               ) : (
                 <button 
@@ -935,6 +970,36 @@ export default function ManagePlants() {
         onDownload={handleModalDownloadQR}
         onPrint={handleModalPrintQR}
         isLoading={isModalLoading}
+      />
+
+      {/* DELETE CONFIRMATION MODAL */}
+      <ConfirmationModal
+        isOpen={isDeleteConfirming}
+        onClose={() => {
+          setIsDeleteConfirming(false);
+          setDeleteConfirmingId(null);
+          setDeletePlantName("");
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Plant"
+        message={`Are you sure you want to permanently delete "${deletePlantName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={uploading}
+        isDangerous={true}
+      />
+
+      {/* EDIT CONFIRMATION MODAL */}
+      <ConfirmationModal
+        isOpen={isEditConfirming}
+        onClose={() => setIsEditConfirming(false)}
+        onConfirm={handleConfirmEdit}
+        title="Save Changes"
+        message={`Are you sure you want to save all changes to "${formData.commonName}"?`}
+        confirmText="Save Changes"
+        cancelText="Cancel"
+        isLoading={uploading}
+        isDangerous={false}
       />
     </div>
   );

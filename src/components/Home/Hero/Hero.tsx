@@ -74,7 +74,6 @@ const Hero = () => {
             plant.klass || "",
             plant.order || "",
             plant.family || "",
-            plant.subfamily || "",
             plant.genus || "",
             plant.species || "",
           ];

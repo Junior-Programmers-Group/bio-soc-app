@@ -22,7 +22,6 @@ interface TaxonomyHierarchy {
   klass?: string;
   order?: string;
   family?: string;
-  subfamily?: string;
   genus?: string;
 }
 
@@ -251,7 +250,6 @@ export default function PlantDetail() {
                   {taxonomy?.klass && <div className={styles.taxonomyItem}><strong>Class:</strong> <span>{taxonomy.klass}</span></div>}
                   {taxonomy?.order && <div className={styles.taxonomyItem}><strong>Order:</strong> <span>{taxonomy.order}</span></div>}
                   {taxonomy?.family && <div className={styles.taxonomyItem}><strong>Family:</strong> <span>{taxonomy.family}</span></div>}
-                  {taxonomy?.subfamily && <div className={styles.taxonomyItem}><strong>Subfamily:</strong> <span>{taxonomy.subfamily}</span></div>}
                   {taxonomy?.genus && <div className={styles.taxonomyItem}><strong>Genus:</strong> <span>{taxonomy.genus}</span></div>}
                   {plant.scientificName && <div className={styles.taxonomyItem}><strong>Species:</strong> <span>{plant.scientificName}</span></div>}
                   {!taxonomy || (
@@ -261,7 +259,6 @@ export default function PlantDetail() {
                     !taxonomy.klass && 
                     !taxonomy.order && 
                     !taxonomy.family && 
-                    !taxonomy.subfamily && 
                     !taxonomy.genus
                   ) && (
                     <p className={styles.description}>No taxonomy information available</p>

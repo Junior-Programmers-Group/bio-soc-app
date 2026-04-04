@@ -26,7 +26,6 @@ export interface PlantRecord extends RecordModel {
   klass?: string;  // Class (renamed to avoid keyword)
   order?: string;
   family?: string;
-  subfamily?: string;
   species?: string;
   
   // Plant Details - legacy fields
@@ -173,7 +172,6 @@ export async function createPlant(
     formData.append("klass", (data as any).klass || "");
     formData.append("order", data.order || "");
     formData.append("family", data.family || "");
-    formData.append("subfamily", data.subfamily || "");
     formData.append("species", data.species || "");
     formData.append("morphology", data.morphology || "");
     formData.append("ecology", data.ecology || "");
@@ -257,7 +255,6 @@ export async function updatePlant(
       formData.append("klass", (data as any).klass || "");
       formData.append("order", data.order || "");
       formData.append("family", data.family || "");
-      formData.append("subfamily", data.subfamily || "");
       formData.append("species", data.species || "");
       formData.append("morphology", data.morphology || "");
       formData.append("ecology", data.ecology || "");
@@ -318,7 +315,6 @@ export async function updatePlant(
         klass: (data as any).klass || "",
         order: data.order || "",
         family: data.family || "",
-        subfamily: data.subfamily || "",
         species: data.species || "",
         morphology: data.morphology || "",
         ecology: data.ecology || "",
@@ -370,6 +366,20 @@ export async function updatePlant(
 
 export async function deletePlant(id: string): Promise<void> {
   try {
+    // First, find and delete any associated details records
+    const detailsList = await pb.collection("details").getList(1, 50, {
+      filter: `species = "${id}"`,
+      requestKey: null,
+    });
+
+    if (detailsList.items && detailsList.items.length > 0) {
+      for (const detail of detailsList.items) {
+        await pb.collection("details").delete(detail.id);
+        console.log("✓ Plant details deleted:", detail.id);
+      }
+    }
+
+    // Then delete the plant species record
     await pb.collection("species").delete(id);
     console.log("✓ Plant deleted successfully from species");
   } catch (error) {

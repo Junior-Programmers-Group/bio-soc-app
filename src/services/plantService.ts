@@ -8,7 +8,6 @@ interface TaxonomyHierarchy {
   klass?: string;  // Class
   order?: string;
   family?: string;
-  subfamily?: string;
   genus?: string;
 }
 
@@ -365,7 +364,6 @@ export const fetchPlants = async (): Promise<Plant[]> => {
         klass: className,
         order: orderName,
         family: familyName,
-        subfamily: record.subfamily || "",
         species: record.species || "",
         // Legacy fields
         morphology: record.morphology || "",
@@ -508,7 +506,6 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
       klass: taxonomy.klass,
       order: taxonomy.order,
       family: taxonomy.family,
-      subfamily: record.subfamily || "",
       species: record.species || "",
       // Legacy fields
       morphology: record.morphology || "",
@@ -550,7 +547,6 @@ export const addPlant = async (plantData: Partial<Plant>): Promise<Plant | null>
       // Legacy fields
       kingdom: plantData.kingdom?.trim() || "",
       order: plantData.order?.trim() || "",
-      subfamily: plantData.subfamily?.trim() || "",
       species: plantData.species?.trim() || "",
       morphology: plantData.morphology?.trim() || "",
       ecology: plantData.ecology?.trim() || "",
@@ -573,7 +569,6 @@ export const addPlant = async (plantData: Partial<Plant>): Promise<Plant | null>
       notes: record.notes || "",
       kingdom: record.kingdom || "",
       order: record.order || "",
-      subfamily: record.subfamily || "",
       species: record.species || "",
       morphology: record.morphology || "",
       ecology: record.ecology || "",
@@ -610,7 +605,6 @@ export const updatePlant = async (id: string, plantData: Partial<Plant>): Promis
     if (plantData.notes) updateData.notes = plantData.notes.trim();
     if (plantData.kingdom) updateData.kingdom = plantData.kingdom.trim();
     if (plantData.order) updateData.order = plantData.order.trim();
-    if (plantData.subfamily) updateData.subfamily = plantData.subfamily.trim();
     if (plantData.species) updateData.species = plantData.species.trim();
     if (plantData.morphology) updateData.morphology = plantData.morphology.trim();
     if (plantData.ecology) updateData.ecology = plantData.ecology.trim();
@@ -642,7 +636,6 @@ export const updatePlant = async (id: string, plantData: Partial<Plant>): Promis
       notes: record.notes || "",
       kingdom: record.kingdom || "",
       order: record.order || "",
-      subfamily: record.subfamily || "",
       species: record.species || "",
       morphology: record.morphology || "",
       ecology: record.ecology || "",

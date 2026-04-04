@@ -80,7 +80,6 @@ export default function DiscoverPlants() {
           plant.klass || "",
           plant.order || "",
           plant.family || "",
-          plant.subfamily || "",
           plant.genus || "",
           plant.species || "",
           plant.description || "",

@@ -23,7 +23,6 @@ export interface Plant {
   klass?: string;  // Class (renamed to avoid keyword)
   order?: string;
   family?: string;
-  subfamily?: string;
   species?: string;
   
   // Details (Legacy - may not be present in species)
@@ -38,7 +37,6 @@ export interface Plant {
     kingdom: string;
     order: string;
     family: string;
-    subfamily: string;
     genus: string;
     species: string;
   };
