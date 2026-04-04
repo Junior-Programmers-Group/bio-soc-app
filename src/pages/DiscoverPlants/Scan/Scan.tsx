@@ -254,7 +254,6 @@ const Scan = () => {
             ← Back
           </button>
         )}
-        <h1>Scan Plant QR</h1>
 
         {/* Camera MUST be rendered before scanner starts */}
         <div id="qr-reader" className={styles.qrBox} />

@@ -1,3 +1,10 @@
+.searchBarContainer {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+
 .searchWrapper {
   background: #ffffff;
   padding: 10px 12px;
@@ -7,7 +14,7 @@
   align-items: center;
   gap: 8px;
   transition: all 0.3s ease;
-  max-width: 500px;
+  flex: 1;
   height: 44px;
 }
 
@@ -63,7 +70,105 @@
   color: #9aab9a;
 }
 
+/* Filter Toggle Button */
+.filterToggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1.5px solid #d4e8c1;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  transition: all 0.3s ease;
+  color: #2d5016;
+}
+
+.filterToggleBtn:hover {
+  background: #f5f8f4;
+  border-color: #2d5016;
+  color: #1b5e20;
+}
+
+.filterToggleBtn:active {
+  background: #e8f5e9;
+}
+
+.filterToggleBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Search Type Filter Styles */
+.searchTypeFilter {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f5f8f4;
+  border-radius: 8px;
+  border: 1px solid #d4e8c1;
+  animation: slideDown 0.3s ease;
+}
+
+.filterLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d5016;
+  margin-bottom: 10px;
+}
+
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: #4e5c4e;
+  transition: color 0.2s ease;
+}
+
+.radioLabel input[type="radio"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: #2d5016;
+}
+
+.radioLabel:hover {
+  color: #2d5016;
+}
+
+.radioLabel span {
+  white-space: nowrap;
+}
+
+/* Animation for filter expansion */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 700px) {
+  .searchBarContainer {
+    gap: 6px;
+  }
+
   .searchWrapper {
     padding: 10px 14px;
     border-radius: 10px;
@@ -72,5 +177,34 @@
 
   .searchWrapper input {
     font-size: 13px;
+  }
+
+  .filterToggleBtn {
+    width: 40px;
+    height: 44px;
+  }
+
+  .filterToggleBtn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .searchTypeFilter {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .radioGroup {
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .radioLabel {
+    font-size: 12px;
+  }
+
+  .radioLabel input[type="radio"] {
+    width: 14px;
+    height: 14px;
   }
 }

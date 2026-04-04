@@ -238,7 +238,7 @@ export default function ManagePlants() {
     return () => {
       isMounted = false;
     };
-  }, [fetchTaxonomy]);
+  }, []);
 
   // Create STEP_FIELDS dynamically with genus options
   const STEP_FIELDS: Record<FormStep, FormFieldConfig[]> = {

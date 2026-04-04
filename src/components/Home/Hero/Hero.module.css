@@ -112,10 +112,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -126,6 +126,37 @@
   display: flex;
   justify-content: center;
   width: 100%;
+}
+
+/* Filter Toggle Button */
+.filterToggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  transition: all 0.3s ease;
+  color: #2d5016;
+}
+
+.filterToggleBtn:hover {
+  background: #ffffff;
+  transform: scale(1.05);
+}
+
+.filterToggleBtn:active {
+  transform: scale(0.98);
+}
+
+.filterToggleBtn svg {
+  width: 22px;
+  height: 22px;
 }
 
 .searchBtn {
@@ -160,6 +191,75 @@
 }
 
 /* ===================================================== */
+/* SEARCH TYPE FILTER STYLES */
+/* ===================================================== */
+
+.searchTypeFilter {
+  margin-top: 24px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filterLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #E2EECA;
+  margin-bottom: 10px;
+}
+
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: #D4E8C1;
+  transition: color 0.2s ease;
+}
+
+.radioLabel input[type="radio"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: #8BC34A;
+}
+
+.radioLabel:hover {
+  color: #E2EECA;
+}
+
+.radioLabel span {
+  white-space: nowrap;
+}
+
+/* ===================================================== */
 /* 📱 LARGE TABLET / SMALL DESKTOP */
 /* ===================================================== */
 
@@ -181,6 +281,29 @@
     top: 50%;
     transform: translateY(-50%);
     padding: 0;
+  }
+
+  .filterToggleBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .filterToggleBtn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .searchTypeFilter {
+    padding: 10px 16px;
+    margin-top: 20px;
+  }
+
+  .radioGroup {
+    gap: 10px;
+  }
+
+  .radioLabel {
+    font-size: 12px;
   }
 }
 
@@ -223,6 +346,39 @@
     top: 50%;
     transform: translateY(-50%);
     padding: 0;
+  }
+
+  .filterToggleBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .filterToggleBtn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .searchTypeFilter {
+    margin-top: 16px;
+    padding: 10px 14px;
+  }
+
+  .filterLabel {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .radioGroup {
+    gap: 8px;
+  }
+
+  .radioLabel {
+    font-size: 11px;
+  }
+
+  .radioLabel input[type="radio"] {
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -267,6 +423,39 @@
     top: 50%;
     transform: translateY(-50%);
     padding: 0;
+  }
+
+  .filterToggleBtn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .filterToggleBtn svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .searchTypeFilter {
+    margin-top: 14px;
+    padding: 8px 12px;
+  }
+
+  .filterLabel {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .radioGroup {
+    gap: 6px;
+  }
+
+  .radioLabel {
+    font-size: 10px;
+  }
+
+  .radioLabel input[type="radio"] {
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -326,6 +515,39 @@
     top: 50%;
     transform: translateY(-50%);
     padding: 0;
+  }
+
+  .filterToggleBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .filterToggleBtn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .searchTypeFilter {
+    margin-top: 12px;
+    padding: 6px 10px;
+  }
+
+  .filterLabel {
+    font-size: 10px;
+    margin-bottom: 5px;
+  }
+
+  .radioGroup {
+    gap: 5px;
+  }
+
+  .radioLabel {
+    font-size: 9px;
+  }
+
+  .radioLabel input[type="radio"] {
+    width: 12px;
+    height: 12px;
   }
 }
 

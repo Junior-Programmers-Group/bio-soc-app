@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Navbar from "../../components/Home/Navbar/Navbar";
-import SearchBar from "../../components/DiscoverPlant/SearchBar/SearchBar";
+import SearchBar, { type SearchType } from "../../components/DiscoverPlant/SearchBar/SearchBar";
 import PlantsGrid from "../../components/DiscoverPlant/PlantGrid/PlantsGrid";
 import type { Plant } from "../../types/plant";
 import { fetchPlants } from "../../services/plantService";
@@ -11,6 +11,7 @@ import Filters from "../../components/DiscoverPlant/Filters/Filters";
 export default function DiscoverPlants() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [search, setSearch] = useState("");
+  const [searchType, setSearchType] = useState<SearchType>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [sortOrder, setSortOrder] = useState("az");
   const [taxonomyFilter, setTaxonomyFilter] = useState<{ level: string; value: string } | null>(null);
@@ -50,33 +51,46 @@ export default function DiscoverPlants() {
     };
   }, []);
 
-  // Enhanced search across multiple fields
+  // Enhanced search across multiple fields with search type filter
   const searchPlants = (plantsToSearch: Plant[]): Plant[] => {
     if (!search.trim()) return plantsToSearch;
 
     const searchLower = search.toLowerCase();
 
     return plantsToSearch.filter((plant) => {
-      const searchFields = [
-        plant.commonName || "",
-        plant.scientificName || "",
-        plant.ecology || "",
-        plant.uses || "",
-        plant.domain || "",
-        plant.kingdom || "",
-        plant.phylum || "",
-        plant.klass || "",
-        plant.order || "",
-        plant.family || "",
-        plant.subfamily || "",
-        plant.genus || "",
-        plant.species || "",
-        plant.description || "",
-      ]
-        .join(" ")
-        .toLowerCase();
+      // Determine which fields to search based on searchType
+      let searchFields: string[] = [];
 
-      return searchFields.includes(searchLower);
+      if (searchType === "all") {
+        searchFields = [
+          plant.commonName || "",
+          plant.scientificName || "",
+          plant.ecology || "",
+          plant.uses || "",
+          plant.domain || "",
+          plant.kingdom || "",
+          plant.phylum || "",
+          plant.klass || "",
+          plant.order || "",
+          plant.family || "",
+          plant.subfamily || "",
+          plant.genus || "",
+          plant.species || "",
+          plant.description || "",
+        ];
+      } else if (searchType === "name") {
+        searchFields = [plant.commonName || "", plant.name || ""];
+      } else if (searchType === "scientific") {
+        searchFields = [plant.scientificName || ""];
+      }
+
+      // Use first-letter based search
+      return searchFields.some((field) => {
+        const fieldLower = field.toLowerCase();
+        // Split by spaces and check if any word starts with search term
+        const words = fieldLower.split(/\s+/);
+        return words.some((word) => word.startsWith(searchLower));
+      });
     });
   };
 
@@ -124,7 +138,7 @@ export default function DiscoverPlants() {
         </p>
 
         {/* SEARCH */}
-        <SearchBar search={search} setSearch={setSearch} />
+        <SearchBar search={search} setSearch={setSearch} searchType={searchType} setSearchType={setSearchType} />
 
         {/* CONTROL BAR */}
         <div className={styles.controls}>

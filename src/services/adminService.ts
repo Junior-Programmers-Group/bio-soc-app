@@ -69,7 +69,7 @@ async function syncPlantDetails(
       const existingDetailsId = detailsList.items[0].id;
       console.log("📝 Updating existing details record:", existingDetailsId);
 
-      const updatedDetails = await pb
+      await pb
         .collection("details")
         .update(existingDetailsId, {
           ...detailsData,
