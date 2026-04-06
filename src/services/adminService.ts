@@ -145,7 +145,8 @@ export async function getPlants(): Promise<PlantRecord[]> {
     if (error instanceof Error && !error.message.includes('aborted')) {
       console.error("Error fetching plants from species:", error);
     }
-    throw error;
+    // Return empty array instead of throwing to prevent crashes
+    return [];
   }
 }
 
@@ -391,10 +392,15 @@ export async function deletePlant(id: string): Promise<void> {
 // 👥 USERS MANAGEMENT
 export async function getUsers(): Promise<UserRecord[]> {
   try {
-    return await pb.collection("users").getFullList<UserRecord>();
+    // Use getList with pagination instead of getFullList to avoid timeout
+    const result = await pb.collection("users").getList<UserRecord>(1, 500, {
+      requestKey: null, // Don't use auto-cancellation
+    });
+    return result.items;
   } catch (error) {
     console.error("Error fetching users:", error);
-    throw error;
+    // Return empty array instead of throwing to prevent crashes
+    return [];
   }
 }
 
@@ -422,17 +428,34 @@ export async function deleteUser(userId: string): Promise<void> {
 // 📊 ANALYTICS
 export async function getAnalyticsData() {
   try {
-    const totalPlants = (await pb.collection("species").getList(1, 1)).totalItems;
-    const totalUsers = (await pb.collection("users").getFullList()) as UserRecord[];
-    
+    // Get total plants using pagination to avoid timeout
+    const plantsResult = await pb.collection("species").getList(1, 1, {
+      requestKey: null, // Don't use auto-cancellation for analytics
+    });
+    const totalPlants = plantsResult.totalItems;
+
+    // Get total users with pagination
+    const usersResult = await pb.collection("users").getList(1, 500, {
+      requestKey: null, // Don't use auto-cancellation for analytics
+    });
+    const totalUsers = usersResult.totalItems;
+
+    // Count verified users (safely check if field exists)
+    const verifiedUsers = usersResult.items.filter((u: any) => u.verified === true).length;
+
     return {
       totalPlants: totalPlants,
-      totalUsers: totalUsers.length,
-      verifiedUsers: totalUsers.filter((u) => u.verified).length,
+      totalUsers: totalUsers,
+      verifiedUsers: verifiedUsers,
     };
   } catch (error) {
     console.error("Error fetching analytics:", error);
-    throw error;
+    // Return default values if fetch fails instead of crashing
+    return {
+      totalPlants: 0,
+      totalUsers: 0,
+      verifiedUsers: 0,
+    };
   }
 }
 

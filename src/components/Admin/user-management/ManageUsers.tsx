@@ -9,7 +9,34 @@ export default function ManageUsers() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchUsers();
+    const controller = new AbortController();
+
+    const loadUsers = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getUsers();
+        if (!controller.signal.aborted) {
+          setUsers(data);
+        }
+      } catch (err: any) {
+        if (!controller.signal.aborted) {
+          if (err.message && !err.message.includes("aborted")) {
+            setError(err.message || "Failed to fetch users");
+          }
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadUsers();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const fetchUsers = async () => {
@@ -19,7 +46,9 @@ export default function ManageUsers() {
       const data = await getUsers();
       setUsers(data);
     } catch (err: any) {
-      setError(err.message || "Failed to fetch users");
+      if (err.message && !err.message.includes("aborted")) {
+        setError(err.message || "Failed to fetch users");
+      }
     } finally {
       setLoading(false);
     }

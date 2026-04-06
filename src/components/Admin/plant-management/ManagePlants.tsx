@@ -282,7 +282,36 @@ export default function ManagePlants() {
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchPlants = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getPlants();
+        if (!controller.signal.aborted) {
+          setPlants(data);
+        }
+      } catch (err: any) {
+        if (!controller.signal.aborted) {
+          if (err?.message?.includes("cancelled") || err?.isAbort) {
+            return;
+          }
+          console.error("Error fetching plants:", err);
+          setError(err.message || "Failed to fetch plants");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchPlants();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const fetchPlants = async () => {

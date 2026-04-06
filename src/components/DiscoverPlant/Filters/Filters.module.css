@@ -4,7 +4,6 @@
   border-radius: 12px;
   border: 1px solid #d4e8c1;
   height: fit-content;
-  position: sticky;
   top: 100px;
 }
 
@@ -149,6 +148,7 @@
   width: 16px;
   height: 16px;
   accent-color: #2d5016;
+  transition: all 0.2s ease;
 }
 
 .noOptions {
@@ -169,35 +169,36 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
-  background-color: #f9fbf7;
-  border: 1px solid #c1dfa8;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #2d5016 0%, #1f2f1f 100%);
+  border: 1px solid #1f2f1f;
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
 }
 
 .filterTagLabel {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  color: #2d5016;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .filterValue {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
-  background-color: #e8f3e0;
-  border: 1px solid #2d5016;
-  color: #1f2f1f;
-  border-radius: 4px;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  color: #ffffff;
+  border-radius: 0;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   flex: 1;
   justify-content: space-between;
 }
@@ -211,20 +212,20 @@
   padding: 0;
   margin: 0;
   margin-left: 4px;
-  background: none;
+  background-color: rgba(255, 255, 255, 0.25);
   border: none;
-  color: #2d5016;
+  border-radius: 50%;
+  color: #ffffff;
   cursor: pointer;
   font-size: 12px;
   font-weight: bold;
   transition: all 0.2s ease;
-  opacity: 0.7;
   flex-shrink: 0;
 }
 
 .removeTagBtn:hover {
-  opacity: 1;
-  color: #c62828;
+  background-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.15);
 }
 
 /* Group Header with Clear Button */
@@ -258,4 +259,18 @@
 .selectedCount {
   color: #2d5016;
   font-weight: 600;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .filters {
+    top: 80px;
+    z-index: 50;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    margin: 0 -20px;
+    padding: 16px 20px;
+    width: calc(100% + 40px);
+  }
 }

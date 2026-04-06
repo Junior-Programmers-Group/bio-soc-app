@@ -41,13 +41,6 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     }
   };
 
-  const handleDemoLogin = () => {
-    localStorage.setItem("adminDemoMode", "true");
-    localStorage.setItem("adminEmail", "demo@admin.local");
-    localStorage.setItem("adminRole", "admin");
-    onLoginSuccess();
-  };
-
   return (
     <div className={styles.loginContainer}>
       <div className={styles.loginBox}>
@@ -90,16 +83,6 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-
-        <div className={styles.footer}>
-          <button
-            type="button"
-            onClick={handleDemoLogin}
-            className={styles.createAccountLink}
-          >
-            Login as Demo Admin
-          </button>
-        </div>
       </div>
     </div>
   );

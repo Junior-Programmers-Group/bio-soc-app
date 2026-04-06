@@ -21,17 +21,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   return (
     <div className={styles.dashboard}>
-      {/* HAMBURGER MENU BUTTON */}
-      <button 
-        className={`${styles.hamburger} ${menuOpen ? styles.active : ""}`}
-        onClick={() => setMenuOpen(!menuOpen)}
-        aria-label="Toggle menu"
-      >
-        <span className={styles.hamburgerLine}></span>
-        <span className={styles.hamburgerLine}></span>
-        <span className={styles.hamburgerLine}></span>
-      </button>
-      
       {/* SIDEBAR */}
       <aside className={`${styles.sidebar} ${menuOpen ? styles.open : ""}`}>
         <div className={styles.sidebarBrand}>
@@ -96,7 +85,67 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       <main className={styles.mainContent}>
         <div className={styles.header}>
           <h1>Admin Dashboard</h1>
+          {/* HAMBURGER MENU BUTTON */}
+          <button 
+            className={`${styles.hamburger} ${menuOpen ? styles.active : ""}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={styles.hamburgerLine}></span>
+            <span className={styles.hamburgerLine}></span>
+            <span className={styles.hamburgerLine}></span>
+          </button>
         </div>
+
+        {/* MOBILE NAV DROPDOWN */}
+        <nav className={`${styles.nav} ${menuOpen ? styles.open : ""}`}>
+          <button
+            className={`${styles.navItem} ${activeTab === "overview" ? styles.active : ""}`}
+            onClick={() => { setActiveTab("overview"); handleNavClick(); }}
+          >
+            <i className="bi bi-speedometer2"></i>
+            Overview
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === "plants" ? styles.active : ""}`}
+            onClick={() => { setActiveTab("plants"); handleNavClick(); }}
+          >
+            <i className="bi bi-tree"></i>
+            Plants
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === "users" ? styles.active : ""}`}
+            onClick={() => { setActiveTab("users"); handleNavClick(); }}
+          >
+            <i className="bi bi-people"></i>
+            Users
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === "analytics" ? styles.active : ""}`}
+            onClick={() => { setActiveTab("analytics"); handleNavClick(); }}
+          >
+            <i className="bi bi-bar-chart-line"></i>
+            Analytics
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === "taxonomy" ? styles.active : ""}`}
+            onClick={() => { setActiveTab("taxonomy"); handleNavClick(); }}
+          >
+            <i className="bi bi-tags"></i>
+            Taxonomy
+          </button>
+
+          {onLogout && (
+            <button className={styles.navItem} onClick={() => { onLogout(); handleNavClick(); }}>
+              <i className="bi bi-box-arrow-right"></i>
+              Logout
+            </button>
+          )}
+        </nav>
 
         <div className={styles.content}>
           

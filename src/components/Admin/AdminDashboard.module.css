@@ -322,6 +322,112 @@
 }
 
 
+/* RESPONSIVE - DESKTOP (769px and above) */
+@media (min-width: 769px) {
+  .dashboard {
+    flex-direction: row;
+  }
+
+  .sidebar {
+    display: flex !important;
+    width: 280px;
+    flex-direction: column;
+    padding: 2.5rem 0;
+    box-shadow: 8px 0 32px rgba(15, 93, 56, 0.15);
+  }
+
+  .mainContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: auto;
+  }
+
+  .header {
+    background: white !important;
+    padding: 2rem 2.5rem !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    display: block !important;
+  }
+
+  .header h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827 !important;
+    letter-spacing: -0.5px;
+  }
+
+  .hamburger {
+    display: none !important;
+  }
+
+  .sidebar .nav {
+    display: flex !important;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    background: transparent !important;
+    flex-direction: column !important;
+    padding: 0 1.2rem !important;
+    gap: 0.6rem !important;
+    border: none !important;
+    max-height: none !important;
+    z-index: auto !important;
+    flex: 1;
+  }
+
+  .mainContent > .nav {
+    display: none !important;
+  }
+
+  .navItem {
+    padding: 1rem 1.2rem;
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border: none !important;
+    border-radius: 12px;
+    text-align: left;
+    border-left: none !important;
+    font-size: 0.95rem;
+  }
+
+  .navItem:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    transform: translateX(4px);
+  }
+
+  .active {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    border-left: none !important;
+    padding-left: 1.2rem !important;
+  }
+
+  .logoutBtn {
+    display: flex !important;
+    margin: 1.5rem;
+  }
+
+  .content {
+    padding: 2.5rem;
+    overflow-y: auto;
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.8rem;
+  }
+
+  .card {
+    padding: 1.8rem;
+  }
+}
+
 /* RESPONSIVE - TABLET (768px and below) */
 @media (max-width: 768px) {
   .dashboard {
@@ -329,66 +435,99 @@
   }
 
   .sidebar {
+    display: none;
+  }
+
+  .mainContent {
     width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.2rem;
-    gap: 1rem;
-    overflow-x: auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  }
-
-  .sidebarBrand {
-    border: none;
-    margin: 0;
-    padding: 0;
-    flex-shrink: 0;
-  }
-
-  .sidebarBrand h2 {
-    font-size: 1.1rem;
-    gap: 8px;
-  }
-
-  .logo {
-    width: 48px;
-    height: 48px;
-  }
-
-  .nav {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 0.5rem;
-    overflow-x: auto;
-    flex: 1;
-    padding: 0;
-  }
-
-  .navItem {
-    flex-shrink: 0;
-    padding: 0.8rem 1rem;
-    font-size: 0.8rem;
-    gap: 6px;
-  }
-
-  .navItem i {
-    font-size: 1rem;
-  }
-
-  .logoutBtn {
-    margin: 0;
-    flex-shrink: 0;
-    padding: 0.7rem 1rem;
-    font-size: 0.8rem;
   }
 
   .header {
-    padding: 1.5rem 1.5rem;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(180deg, #0f5d38 0%, #1a7a52 100%);
+    border-bottom: 2px solid #0f5d38;
+    box-shadow: 0 2px 8px rgba(15, 93, 56, 0.15);
   }
 
   .header h1 {
     font-size: 1.4rem;
+    margin: 0;
+    color: white;
+  }
+
+  .hamburger {
+    display: flex;
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0.75rem;
+  }
+
+  .hamburgerLine {
+    width: 24px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+  }
+
+  .nav {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    background: white;
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+    border-bottom: 2px solid #0f5d38;
+    display: none;
+    z-index: 1000;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .nav.open {
+    display: flex;
+    max-height: 400px;
+  }
+
+  .navItem {
+    padding: 1rem;
+    background: transparent;
+    color: #0f5d38;
+    border: none;
+    border-radius: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .navItem:hover {
+    background: #f3f4f6;
+    transform: none;
+  }
+
+  .navItem i {
+    margin-right: 0.5rem;
+  }
+
+  .active {
+    background: #f0f9ff;
+    color: #0f5d38;
+    border-left: 4px solid #0f5d38;
+    padding-left: calc(1rem - 4px);
+  }
+
+  .logoutBtn {
+    display: none;
   }
 
   .content {
@@ -396,7 +535,7 @@
   }
 
   .cardGrid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1.2rem;
   }
 

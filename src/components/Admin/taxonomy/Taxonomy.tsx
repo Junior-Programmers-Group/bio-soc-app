@@ -122,13 +122,29 @@ export default function Taxonomy() {
   const { fetch , create} = useFetchTaxonomy();
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
-      await fetchAnalytics();
-      const taxonomyData = await fetch();
-      setTaxonomyData(taxonomyData);
+      try {
+        await fetchAnalytics();
+        const taxonomyData = await fetch();
+        if (!controller.signal.aborted) {
+          setTaxonomyData(taxonomyData);
+        }
+      } catch (err: any) {
+        if (!controller.signal.aborted) {
+          if (!err?.message?.includes("aborted")) {
+            setError(err.message || "Failed to fetch taxonomy data");
+          }
+        }
+      }
     }
 
     fetchData();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const handleChange = (
