@@ -19,7 +19,8 @@
   color: #ffffff;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 62px;
+  margin-top: 0;
+  margin-bottom: 30px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 10px 18px;
   border-radius: 10px;
@@ -27,7 +28,7 @@
   text-decoration: none;
   letter-spacing: 0.3px;
   position: relative;
-  z-index: 101;
+  z-index: 100;
 }
 
 .backBtn:hover {
@@ -237,24 +238,14 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 20px 16px 40px;
+    padding: 90px 16px 40px;
   }
 
   .backBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 28px;
+    margin-top: 0;
+    margin-bottom: 24px;
     font-size: 14px;
     padding: 10px 16px;
-    background: linear-gradient(135deg, #2d5016 0%, #3d6b1f 100%);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(45, 80, 22, 0.25);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .backBtn:hover {
@@ -346,14 +337,14 @@
 
 @media (max-width: 480px) {
   .container {
-    padding: 16px 12px 30px;
+    padding: 100px 12px 30px;
   }
 
   .backBtn {
-    margin-bottom: 24px;
-    font-size: 15px;
-    padding: 8px 10px;
-    margin-left: -10px;
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 13px;
+    padding: 8px 14px;
   }
 
   .title {
