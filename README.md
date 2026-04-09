@@ -1,72 +1,50 @@
-# React + TypeScript + Vite
+# Flora
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to the **Flora** project repository. This initiative bridges the gap between the natural flora of the Notre Dame of Dadiangas University (NDDU) campus and digital accessibility, fostering a deeper connection between the student body and their environment.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🌿 Project Overview
 
-## React Compiler
+**Flora** (formerly the Eco-Tagging Project) is designed to identify and label the diverse plant species found across the NDDU campus. By integrating physical identifiers with a digital platform, we promote environmental literacy and ensure that ecological information is accessible to everyone—students, staff, and visitors alike.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Key Features
+* **Discover Plants:** A centralized database to explore the unique flora of the campus.
+* **Scan & Learn:** Utilize QR codes located on physical tags to instantly access plant data.
+* **Campus Biodiversity:** Browse all **9 primary plant species** currently cataloged on campus.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Why It Matters
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Feature | Description |
+| :--- | :--- |
+| **Accessible** | Quick access to plant information via QR codes found throughout the campus grounds. |
+| **Informative** | Detailed profiles including scientific names, ecological roles, and environmental importance. |
+| **Digitalized** | Modernizes the learning experience through interactive, technology-driven education. |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📍 Location & Conservation
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The project is hosted at **Notre Dame of Dadiangas University (NDDU)**. The campus serves as a vital habitat for various flora, contributing to the local ecological balance.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Integrity of Creation
+In line with NDDU’s core values, **Flora** supports:
+* **Biodiversity Education:** Providing a living laboratory for research and awareness.
+* **Conservation Efforts:** Highlighting specific areas like the **Bula Mangrove Area**, emphasizing the protection of natural resources.
+* **Sustainable Practices:** Promoting a "green" campus culture through tech-integrated nature study.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 🤝 Our Partners
+
+This project is a collaborative effort between tech-forward developers and environmental advocates:
+
+* **Junior Programmers Group**: Responsible for the digital infrastructure, QR integration, and platform development.
+* **BioSociety (BioSoc)**: Responsible for species identification, ecological research, and physical tagging.
+
+---
+
+> [!TIP]
+> Interested in the Bula Mangrove Area? Check out our dedicated conservation documentation to see how NDDU is protecting local coastal ecosystems.
