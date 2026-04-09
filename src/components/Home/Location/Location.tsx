@@ -17,7 +17,7 @@ const Location: React.FC = () => {
 
         {/* RIGHT: TEXT */}
         <div className={styles.locationContent}>
-          <h2>Where We Conduct Eco-Tagging</h2>
+          <h2>Where We Conduct Flora</h2>
 
           <p>
             Notre Dame of Dadiangas University (NDDU) hosts a diverse range of

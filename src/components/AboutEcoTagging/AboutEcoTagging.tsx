@@ -7,14 +7,14 @@ const AboutEcoTagging = () => {
   return (
     <section className={styles.about}>
       <div className={styles.aboutText}>
-        <h2>What Is the Campus Eco-Tagging Project?</h2>
+        <h2>What Is the Campus Flora Project?</h2>
 
         <p>
-          The Eco-Tagging Project aims to identify and label plant species found
+          The Flora Project aims to identify and label plant species found
           on the NDDU campus to promote environmental literacy and awareness.
           The campus hosts a diverse range of flora; however, information about
           these plant species is not widely accessible to students, staff, and
-          visitors. Through eco-tagging, each plant will be properly identified and 
+          visitors. Through the Flora Project, each plant will be properly identified and 
           linked to a digital platform that provides relevant ecological information.
         </p>
 
@@ -33,7 +33,7 @@ const AboutEcoTagging = () => {
 
       <br /><br />
 
-        Eco-Tagging supports sustainability initiatives by building awareness of plant conservation and 
+        The Flora Project supports sustainability initiatives by building awareness of plant conservation and 
         biodiversity protection. It enhances campus learning by encouraging cross-disciplinary collaboration 
         among students from environmental science, education, and information technology fields. Overall, the 
         project serves as a valuable resource for research, conservation efforts, and environmental education, 

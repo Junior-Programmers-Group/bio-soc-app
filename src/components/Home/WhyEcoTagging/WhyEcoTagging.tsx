@@ -3,7 +3,7 @@ import styles from "./WhyEcoTagging.module.css";
 const WhyEcoTagging = () => {
   return (
     <section className={styles.whySection}>
-      <h2>Why Does the Eco-Tagging Project Matter?</h2>
+      <h2>Why Does the Flora Project Matter?</h2>
 
       <div className={styles.whyCards}>
         <div className={styles.whyCard}>
