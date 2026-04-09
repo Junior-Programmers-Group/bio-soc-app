@@ -32,7 +32,7 @@ const Navbar = ({ variant = "default" }: Props) => {
       {/* LOGO */}
       <div className={styles.navbarLogo}>
         <img src="/Logo.png" alt="BioSoc Eco-Tagging" />
-        <span>BioSoc Eco-Tagging</span>
+        <span>NDDU Flora</span>
       </div>
 
       {/* DESKTOP LINKS */}
