@@ -8,7 +8,7 @@
   width: 100%;
   height: 72px;
 
-  padding: 0 72px;
+  padding: 0 clamp(20px, 5vw, 72px);
 
   display: flex;
   justify-content: space-between;
@@ -48,13 +48,13 @@
 .navbarLogo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(8px, 2vw, 12px);
   font-weight: 500;
 }
 
 .navbarLogo img {
-  width: 60px;
-  height: 60px;
+  width: clamp(46px, 8vw, 60px);
+  height: clamp(46px, 8vw, 60px);
   object-fit: cover;
   border-radius: 50%;
 }
@@ -65,17 +65,18 @@
 
 .navbarLinks {
   display: flex;
-  gap: 40px;
+  gap: clamp(20px, 4vw, 40px);
 }
 
 .navbarLinks a {
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   color: var(--text-muted);
   text-decoration: none;
   transition: all 0.3s ease;
   position: relative;
   font-weight: 500;
   padding-bottom: 4px;
+  white-space: nowrap;
 }
 
 .navbarLinks a:hover {
@@ -97,6 +98,17 @@
   background: linear-gradient(90deg, #e1d500 0%, #bdba02 100%);
   border-radius: 1px;
   animation: slideIn 0.3s ease;
+}
+
+/* iPad landscape - adjust gaps */
+@media (max-width: 1024px) {
+  .navbarLinks {
+    gap: clamp(16px, 3vw, 28px);
+  }
+
+  .navbarLinks a {
+    font-size: 13px;
+  }
 }
 
 @keyframes slideIn {

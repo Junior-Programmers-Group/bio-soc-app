@@ -1,20 +1,29 @@
 .location {
   background: #102417;
-  padding: 80px;
+  padding: clamp(40px, 8vw, 80px);
   color: #eef6e7;
 }
 
 /* CONTAINER */
 .locationContainer {
   display: flex;
-  gap: 60px;
+  gap: clamp(30px, 8vw, 60px);
   align-items: flex-start;
-  flex-wrap: wrap; /* ensures mobile wraps nicely */
+  flex-wrap: wrap;
+}
+
+/* iPad responsive - stack on smaller tablets */
+@media (max-width: 768px) {
+  .locationContainer {
+    flex-direction: column;
+    gap: 24px;
+  }
 }
 
 /* LEFT SIDE: IMAGE */
 .locationImage {
   flex: 1;
+  min-width: 250px;
   text-align: left;
 }
 
@@ -26,17 +35,18 @@
 
 .locationImage h3 {
   margin-top: 16px;
-  font-size: 1.5rem;
+  font-size: clamp(1.3rem, 3vw, 1.5rem);
   font-weight: 600;
 }
 
 /* RIGHT SIDE: CONTENT */
 .locationContent {
   flex: 1.2;
+  min-width: 250px;
 }
 
 .locationContent h2 {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   margin-bottom: 20px;
 }
 
@@ -45,7 +55,7 @@
   margin-bottom: 16px;
   text-align: justify;
   color: #dce8d3;
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
   letter-spacing: 0.3px;
 }
 

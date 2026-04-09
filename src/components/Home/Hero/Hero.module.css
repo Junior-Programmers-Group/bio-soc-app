@@ -4,6 +4,7 @@
 
 .hero {
   height: 100vh;
+  min-height: 600px;
   position: relative;
 
   /* BASE IMAGE */
@@ -15,6 +16,13 @@
   align-items: center;
 
   overflow: visible;
+}
+
+/* iPad - adjust background attachment for better performance */
+@media (max-width: 1024px) {
+  .hero {
+    background-attachment: scroll;
+  }
 }
 
 /* 🔥 OVERLAY LAYER (DOES THE FADE) */
@@ -45,9 +53,9 @@
   text-align: center;
   max-width: 720px;
 
-  padding-top: 72px;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-top: clamp(40px, 8vw, 72px);
+  padding-left: clamp(16px, 4vw, 20px);
+  padding-right: clamp(16px, 4vw, 20px);
 }
 
 .heroContent h1 {
@@ -78,9 +86,9 @@
   flex: 1;
   max-width: 600px;
   min-width: 0;
-  padding: 14px 26px;
-  padding-left: 56px;
-  height: 48px;
+  padding: clamp(12px, 2vw, 14px) clamp(20px, 3vw, 26px);
+  padding-left: clamp(40px, 5vw, 56px);
+  height: clamp(42px, 8vw, 48px);
   box-sizing: border-box;
 
   border-radius: 999px;
@@ -109,7 +117,7 @@
 }
 
 .searchForm {
-  margin-top: 10px;
+  margin-top: clamp(8px, 2vw, 10px);
   display: flex;
   justify-content: center;
   align-items: center;

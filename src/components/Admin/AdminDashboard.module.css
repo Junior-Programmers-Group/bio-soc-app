@@ -16,6 +16,29 @@
   flex-direction: column;
   padding: 2.5rem 0;
   box-shadow: 8px 0 32px rgba(15, 93, 56, 0.15);
+  transition: all 0.3s ease;
+}
+
+/* iPad and smaller screens */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 240px;
+    padding: 2rem 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 220px;
+    padding: 1.5rem 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    width: 200px;
+    padding: 1rem 0;
+  }
 }
 
 
@@ -28,7 +51,7 @@
 
 .sidebarBrand h2 {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: clamp(1.2rem, 3vw, 1.35rem);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -44,6 +67,13 @@
   gap: 0.6rem;
   padding: 0 1.2rem;
   flex: 1;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    gap: 0.5rem;
+    padding: 0 0.8rem;
+  }
 }
 
 .navItem {

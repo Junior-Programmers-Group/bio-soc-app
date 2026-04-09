@@ -1,24 +1,41 @@
 .filters {
   background: #ffffff;
-  padding: 20px;
+  padding: clamp(16px, 3vw, 20px);
   border-radius: 12px;
   border: 1px solid #d4e8c1;
   height: fit-content;
   top: 100px;
+  max-width: 100%;
+}
+
+/* iPad landscape - make sticky */
+@media (max-width: 1024px) {
+  .filters {
+    position: sticky;
+    top: 80px;
+  }
+}
+
+/* Tablet - make it full width below filter toggle */
+@media (max-width: 768px) {
+  .filters {
+    width: 100%;
+    margin-bottom: 20px;
+  }
 }
 
 .activeFilter {
   background-color: #f0f8e8;
   border: 1px solid #2d5016;
   border-radius: 8px;
-  padding: 12px;
+  padding: clamp(10px, 2vw, 12px);
   margin-bottom: 16px;
   width: 100%;
   box-sizing: border-box;
 }
 
 .activeFilterText {
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   color: #2d5016;
   margin: 8px 0 0 0;
   padding: 0;
@@ -26,13 +43,13 @@
 
 .clearButton {
   width: 100%;
-  padding: 10px;
+  padding: clamp(8px, 2vw, 10px);
   margin-bottom: 12px;
   background-color: #ffebee;
   color: #c62828;
   border: 1px solid #ef5350;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: clamp(12px, 1.5vw, 13px);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
