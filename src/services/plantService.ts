@@ -269,12 +269,19 @@ export const fetchPlants = async (): Promise<Plant[]> => {
         });
       }
 
-      // Build image URL - try field first (primary image field), then image as fallback
+      // Build image URL using PocketBase SDK (handles CORS properly)
       let imageUrl = "";
-      if (record.field) {
-        imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
-      } else if (record.image) {
-        imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
+      try {
+        if (record.field || record.image) {
+          const imageField = record.field || record.image;
+          imageUrl = pb.files.getURL(record, imageField);
+          // Ensure it's a complete URL
+          if (imageUrl && !imageUrl.startsWith("http")) {
+            imageUrl = pb.baseUrl + imageUrl;
+          }
+        }
+      } catch (error) {
+        console.warn("Error getting image URL for plant:", record.id, error);
       }
 
       // Extract taxonomy from nested expand relationships
@@ -326,17 +333,7 @@ export const fetchPlants = async (): Promise<Plant[]> => {
                     domainName = domainRecord?.name || "";
                     console.log("✓ Found domain from expand:", domainName);
                   } else {
-                    console.warn("⚠️ Domain not in expand. Kingdom has domain field?:", kingdomRecord?.domain);
-                    // Fallback: fetch domain if it's just an ID
-                    if (kingdomRecord?.domain && typeof kingdomRecord.domain === 'string') {
-                      try {
-                        const domainRecord = await pb.collection("domain").getOne(kingdomRecord.domain, { requestKey: null });
-                        domainName = domainRecord.name || "";
-                        console.log("✓ Found domain via fallback fetch:", domainName);
-                      } catch (e) {
-                        console.error("⚠️ Failed to fetch domain:", e);
-                      }
-                    }
+                    console.log("ℹ️ Domain not expanded, will use empty value");
                   }
                 }
               }
@@ -431,18 +428,25 @@ export const fetchPlants = async (): Promise<Plant[]> => {
 export const fetchPlantById = async (id: string): Promise<Plant | null> => {
   try {
     const record = await pb.collection("species").getOne<any>(id, {
-      expand: "genus_id",
+      expand: "genus_id,genus_id.family,genus_id.family.order,genus_id.family.order.class,genus_id.family.order.class.phylum,genus_id.family.order.class.phylum.kingdom,genus_id.family.order.class.phylum.kingdom.domain",
       requestKey: null, // Disable auto-cancellation
     });
 
     console.log("📌 Fetching plant:", record.id);
 
-    // Build image URL - try field first (primary image field), then image as fallback
+    // Build image URL using PocketBase SDK (handles CORS properly)
     let imageUrl = "";
-    if (record.field) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
-    } else if (record.image) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
+    try {
+      if (record.field || record.image) {
+        const imageField = record.field || record.image;
+        imageUrl = pb.files.getURL(record, imageField);
+        // Ensure it's a complete URL
+        if (imageUrl && !imageUrl.startsWith("http")) {
+          imageUrl = pb.baseUrl + imageUrl;
+        }
+      }
+    } catch (error) {
+      console.warn("Error getting image URL for plant:", record.id, error);
     }
 
     // Get genus info

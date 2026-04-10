@@ -9,6 +9,7 @@ import type { PlantRecord } from "../../../services/adminService";
 import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../../../services/qrCodeService";
 import { fetchTaxonomyHierarchy } from "../../../services/plantService";
 import { useFetchTaxonomy } from "../../../back-end/hooks/useFetchTaxonomy";
+import pb from "../../../back-end/db";
 import QRModal from "../QRModal";
 import ConfirmationModal from "../ConfirmationModal";
 import styles from "./ManagePlants.module.css";
@@ -16,21 +17,23 @@ import styles from "./ManagePlants.module.css";
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/300x250/2d5016/ffffff?text=Plant";
 
-// Helper function to build image URL
+// Helper function to build image URL using PocketBase SDK
 const buildImageUrl = (plant: PlantRecord): string => {
   if (!plant.id) return PLACEHOLDER_IMAGE;
   
-  // Try field first (primary image field in PocketBase)
-  if (plant.field) {
-    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
-  }
-  // Try image field as fallback
-  if (plant.image) {
-    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
-  }
-  // Try qr_code as another fallback
-  if ((plant as any).qr_code) {
-    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${(plant as any).qr_code}`;
+  try {
+    // Try field first (primary image field in PocketBase)
+    if (plant.field) {
+      const url = pb.files.getURL(plant, plant.field);
+      return url && !url.startsWith("http") ? pb.baseUrl + url : url;
+    }
+    // Try image field as fallback
+    if (plant.image) {
+      const url = pb.files.getURL(plant, plant.image);
+      return url && !url.startsWith("http") ? pb.baseUrl + url : url;
+    }
+  } catch (error) {
+    console.warn("Error getting image URL:", error);
   }
   
   return PLACEHOLDER_IMAGE;

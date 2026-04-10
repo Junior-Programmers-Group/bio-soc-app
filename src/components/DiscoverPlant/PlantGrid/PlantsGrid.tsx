@@ -12,10 +12,10 @@ export default function PlantsGrid({ plants }: Props) {
       {plants.map((plant) => (
         <Link
           key={plant.id}
-          to={`/discover/${plant.id}`} // ✅ navigate to detail
+          to={`/discover/${plant.id}`}
           className={styles.card}
         >
-          <img src={plant.image} alt={plant.commonName} />
+          {plant.image && <img src={plant.image} alt={plant.commonName} />}
           <h3>{plant.commonName}</h3>
           <em>{plant.scientificName}</em>
         </Link>

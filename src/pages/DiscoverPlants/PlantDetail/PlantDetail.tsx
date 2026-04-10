@@ -35,7 +35,7 @@ export default function PlantDetail() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
-  const PLACEHOLDER_IMAGE = "https://via.placeholder.com/400x300/2d5016/ffffff?text=Plant";
+  const PLACEHOLDER_IMAGE = "https://via.placeholder.com/400x300/2d5016/ffffff?text=Plant Image Not Available";
 
   useEffect(() => {
     let isMounted = true;
@@ -158,7 +158,7 @@ export default function PlantDetail() {
     );
   }
 
-  const plantImage = plant.image || PLACEHOLDER_IMAGE;
+  const displayImage = plant.image || PLACEHOLDER_IMAGE;
   const displayName = plant.commonName || plant.name || "Unknown Plant";
   const scientificName = plant.scientificName || "No scientific name";
 
@@ -177,7 +177,7 @@ export default function PlantDetail() {
         <div className={styles.card}>
           {/* LEFT IMAGE */}
           <img
-            src={plantImage}
+            src={displayImage}
             alt={displayName}
             className={styles.image}
           />
