@@ -35,7 +35,7 @@ export default function PlantDetail() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
-  const PLACEHOLDER_IMAGE = "https://via.placeholder.com/400x300/2d5016/ffffff?text=Plant";
+  const PLACEHOLDER_IMAGE = "/River.Tamarind.png";
 
   useEffect(() => {
     let isMounted = true;
