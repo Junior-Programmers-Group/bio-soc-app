@@ -300,9 +300,9 @@ export const fetchPlants = async (): Promise<Plant[]> => {
       // Build image URL - try field first (primary image field), then image as fallback
       let imageUrl = "";
       if (record.field) {
-        imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+        imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
       } else if (record.image) {
-        imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
+        imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
       }
 
       // Extract taxonomy from nested expand relationships
@@ -473,9 +473,9 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
     // Build image URL - try field first (primary image field), then image as fallback
     let imageUrl = "";
     if (record.field) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
     } else if (record.image) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
     }
 
     // Get genus info
@@ -653,9 +653,9 @@ export const updatePlant = async (id: string, plantData: Partial<Plant>): Promis
     // Build image URL
     let imageUrl = "";
     if (record.image) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
     } else if (record.field) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
     }
 
     return {
