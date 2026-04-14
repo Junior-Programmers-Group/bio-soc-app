@@ -9,7 +9,6 @@ import type { PlantRecord } from "../../../services/adminService";
 import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../../../services/qrCodeService";
 import { fetchTaxonomyHierarchy } from "../../../services/plantService";
 import { useFetchTaxonomy } from "../../../back-end/hooks/useFetchTaxonomy";
-import pb from "../../../back-end/db";
 import QRModal from "../QRModal";
 import ConfirmationModal from "../ConfirmationModal";
 import styles from "./ManagePlants.module.css";
@@ -23,15 +22,15 @@ const buildImageUrl = (plant: PlantRecord): string => {
   
   // Try field first (primary image field in PocketBase)
   if (plant.field) {
-    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
+    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
   }
   // Try image field as fallback
   if (plant.image) {
-    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
+    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
   }
   // Try qr_code as another fallback
   if ((plant as any).qr_code) {
-    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${(plant as any).qr_code}`;
+    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${(plant as any).qr_code}`;
   }
   
   return PLACEHOLDER_IMAGE;
@@ -917,7 +916,7 @@ export default function ManagePlants() {
                       Works with: Android Camera, iOS Camera & All QR Scanners
                     </p>
                     <p style={{ fontSize: "11px", color: "#999", wordBreak: "break-all" }}>
-                      <strong>URL:</strong> https://bio-soc.nddu.edu.ph/discover/plants/{editingId}
+                      <strong>URL:</strong> https://flora.nddu.edu.ph/discover/plants/{editingId}
                     </p>
                   </div>
                 )}

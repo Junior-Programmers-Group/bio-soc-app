@@ -8,7 +8,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const getCachedRequest = (key: string): any | null => {
   const cached = requestCache.get(key);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.log("📦 Using cached data for:", key);
+    console.log("Using cached data for:", key);
     return cached.data;
   }
   requestCache.delete(key);
@@ -17,7 +17,7 @@ const getCachedRequest = (key: string): any | null => {
 
 const setCachedRequest = (key: string, data: any) => {
   requestCache.set(key, { data, timestamp: Date.now() });
-  console.log("💾 Cached request:", key);
+  console.log(" Cached request:", key);
 };
 
 interface TaxonomyHierarchy {
@@ -300,9 +300,9 @@ export const fetchPlants = async (): Promise<Plant[]> => {
       // Build image URL using PocketBase SDK (handles CORS properly)
       let imageUrl = "";
       if (record.field) {
-        imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+        imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
       } else if (record.image) {
-        imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
+        imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
       }
 
       // Extract taxonomy from nested expand relationships
@@ -463,9 +463,9 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
     // Build image URL using PocketBase SDK (handles CORS properly)
     let imageUrl = "";
     if (record.field) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
     } else if (record.image) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
     }
 
     // Get genus info
