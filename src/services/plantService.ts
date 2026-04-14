@@ -1,6 +1,25 @@
 import type { Plant } from "../types/plant";
 import pb from "../back-end/db";
 
+// Request cache with TTL (5 minutes) for improving performance
+const requestCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const getCachedRequest = (key: string): any | null => {
+  const cached = requestCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log("📦 Using cached data for:", key);
+    return cached.data;
+  }
+  requestCache.delete(key);
+  return null;
+};
+
+const setCachedRequest = (key: string, data: any) => {
+  requestCache.set(key, { data, timestamp: Date.now() });
+  console.log("💾 Cached request:", key);
+};
+
 interface TaxonomyHierarchy {
   domain?: string;
   kingdom?: string;
@@ -186,6 +205,10 @@ export const fetchTaxonomyHierarchy = async (genusIdOrName: string, optionalFami
 };
 
 export const fetchTaxonomyOptions = async () => {
+  const cacheKey = "taxonomyOptions";
+  const cached = getCachedRequest(cacheKey);
+  if (cached) return cached;
+
   try {
     console.log("📚 Fetching all taxonomy options from database...");
     
@@ -219,6 +242,7 @@ export const fetchTaxonomyOptions = async () => {
       genus: options.genus.length,
     });
 
+    setCachedRequest(cacheKey, options);
     return options;
   } catch (error) {
     console.error("❌ Error fetching taxonomy options:", error);
@@ -235,6 +259,10 @@ export const fetchTaxonomyOptions = async () => {
 };
 
 export const fetchPlants = async (): Promise<Plant[]> => {
+  const cacheKey = "allPlants";
+  const cached = getCachedRequest(cacheKey);
+  if (cached) return cached;
+
   try {
     const records = await pb.collection("species").getFullList<any>({
       expand: "genus,genus.family,genus.family.order,genus.family.order.class,genus.family.order.class.phylum,genus.family.order.class.phylum.kingdom,genus.family.order.class.phylum.kingdom.domain",
@@ -271,17 +299,10 @@ export const fetchPlants = async (): Promise<Plant[]> => {
 
       // Build image URL using PocketBase SDK (handles CORS properly)
       let imageUrl = "";
-      try {
-        if (record.field || record.image) {
-          const imageField = record.field || record.image;
-          imageUrl = pb.files.getURL(record, imageField);
-          // Ensure it's a complete URL
-          if (imageUrl && !imageUrl.startsWith("http")) {
-            imageUrl = pb.baseUrl + imageUrl;
-          }
-        }
-      } catch (error) {
-        console.warn("Error getting image URL for plant:", record.id, error);
+      if (record.field) {
+        imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+      } else if (record.image) {
+        imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
       }
 
       // Extract taxonomy from nested expand relationships
@@ -416,6 +437,7 @@ export const fetchPlants = async (): Promise<Plant[]> => {
         Object.entries(missingByLevel).map(([level, plants]) => [level, plants.length > 0 ? plants : "None"])
       ));
     }
+    setCachedRequest(cacheKey, plants);
     return plants;
   } catch (error) {
     if (error instanceof Error && !error.message.includes("aborted")) {
@@ -426,6 +448,10 @@ export const fetchPlants = async (): Promise<Plant[]> => {
 };
 
 export const fetchPlantById = async (id: string): Promise<Plant | null> => {
+  const cacheKey = `plant_${id}`;
+  const cached = getCachedRequest(cacheKey);
+  if (cached) return cached;
+
   try {
     const record = await pb.collection("species").getOne<any>(id, {
       expand: "genus_id,genus_id.family,genus_id.family.order,genus_id.family.order.class,genus_id.family.order.class.phylum,genus_id.family.order.class.phylum.kingdom,genus_id.family.order.class.phylum.kingdom.domain",
@@ -436,17 +462,10 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
 
     // Build image URL using PocketBase SDK (handles CORS properly)
     let imageUrl = "";
-    try {
-      if (record.field || record.image) {
-        const imageField = record.field || record.image;
-        imageUrl = pb.files.getURL(record, imageField);
-        // Ensure it's a complete URL
-        if (imageUrl && !imageUrl.startsWith("http")) {
-          imageUrl = pb.baseUrl + imageUrl;
-        }
-      }
-    } catch (error) {
-      console.warn("Error getting image URL for plant:", record.id, error);
+    if (record.field) {
+      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+    } else if (record.image) {
+      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
     }
 
     // Get genus info
@@ -520,6 +539,7 @@ export const fetchPlantById = async (id: string): Promise<Plant | null> => {
     };
 
     console.log("✅ Plant loaded:", plant.commonName, "| Taxonomy:", { domain: plant.domain, kingdom: plant.kingdom, family: plant.family });
+    setCachedRequest(cacheKey, plant);
     return plant;
   } catch (error) {
     if (error instanceof Error && !error.message.includes("aborted")) {
@@ -623,9 +643,9 @@ export const updatePlant = async (id: string, plantData: Partial<Plant>): Promis
     // Build image URL
     let imageUrl = "";
     if (record.image) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.image}`;
     } else if (record.field) {
-      imageUrl = `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
+      imageUrl = `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${record.id}/${record.field}`;
     }
 
     return {

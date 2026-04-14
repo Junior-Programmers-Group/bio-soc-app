@@ -21,19 +21,17 @@ const PLACEHOLDER_IMAGE =
 const buildImageUrl = (plant: PlantRecord): string => {
   if (!plant.id) return PLACEHOLDER_IMAGE;
   
-  try {
-    // Try field first (primary image field in PocketBase)
-    if (plant.field) {
-      const url = pb.files.getURL(plant, plant.field);
-      return url && !url.startsWith("http") ? pb.baseUrl + url : url;
-    }
-    // Try image field as fallback
-    if (plant.image) {
-      const url = pb.files.getURL(plant, plant.image);
-      return url && !url.startsWith("http") ? pb.baseUrl + url : url;
-    }
-  } catch (error) {
-    console.warn("Error getting image URL:", error);
+  // Try field first (primary image field in PocketBase)
+  if (plant.field) {
+    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
+  }
+  // Try image field as fallback
+  if (plant.image) {
+    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
+  }
+  // Try qr_code as another fallback
+  if ((plant as any).qr_code) {
+    return `https://bio-soc.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${(plant as any).qr_code}`;
   }
   
   return PLACEHOLDER_IMAGE;
