@@ -16,7 +16,7 @@ import styles from "./ManagePlants.module.css";
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/300x250/2d5016/ffffff?text=Plant";
 
-// Helper function to build image URL
+// Helper function to build image URL using PocketBase SDK
 const buildImageUrl = (plant: PlantRecord): string => {
   if (!plant.id) return PLACEHOLDER_IMAGE;
   
@@ -916,7 +916,7 @@ export default function ManagePlants() {
                       Works with: Android Camera, iOS Camera & All QR Scanners
                     </p>
                     <p style={{ fontSize: "11px", color: "#999", wordBreak: "break-all" }}>
-                      <strong>URL:</strong> https://bio-soc.nddu.edu.ph/discover/plants/{editingId}
+                      <strong>URL:</strong> https://flora.nddu.edu.ph/discover/plants/{editingId}
                     </p>
                   </div>
                 )}

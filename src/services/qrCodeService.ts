@@ -14,7 +14,7 @@ interface QRCodeOptions {
 /**
  * Production URL for QR codes - official domain for bio-soc website
  */
-const QR_CODE_BASE_URL = "https://bio-soc.nddu.edu.ph";
+const QR_CODE_BASE_URL = "https://flora.nddu.edu.ph";
 
 /**
  * Generate absolute URL for plant details page
