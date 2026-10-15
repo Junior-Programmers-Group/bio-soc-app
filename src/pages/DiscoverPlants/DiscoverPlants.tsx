@@ -5,11 +5,15 @@ import SearchBar, { type SearchType } from "../../components/DiscoverPlant/Searc
 import PlantsGrid from "../../components/DiscoverPlant/PlantGrid/PlantsGrid";
 import type { Plant } from "../../types/plant";
 import { fetchPlants, fetchTaxonomyOptions } from "../../services/plantService";
+import { errorMessage } from "../../services/errors";
 import styles from "./DiscoverPlants.module.css";
 import Filters from "../../components/DiscoverPlant/Filters/Filters";
 
 export default function DiscoverPlants() {
   const [plants, setPlants] = useState<Plant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [attempt, setAttempt] = useState(0); // bumped by "Try again"
   const [taxonomyOptions, setTaxonomyOptions] = useState<Record<string, string[]> | undefined>();
   const [search, setSearch] = useState("");
   const [searchType, setSearchType] = useState<SearchType>("all");
@@ -30,24 +34,26 @@ export default function DiscoverPlants() {
     let isMounted = true;
 
     const loadData = async () => {
+      setLoading(true);
+      setLoadError("");
       try {
-        // Fetch plants and taxonomy options in parallel
-        const [plantsData, taxonomyData] = await Promise.all([
-          fetchPlants(),
-          fetchTaxonomyOptions(),
-        ]);
-        
-        if (isMounted) {
-          setPlants(plantsData);
-          setTaxonomyOptions(taxonomyData);
-        }
+        const plantsData = await fetchPlants();
+        if (isMounted) setPlants(plantsData);
       } catch (error) {
-        if (isMounted && error instanceof Error && !error.message.includes("aborted")) {
-          console.error("Error loading data:", error);
-        }
         if (isMounted) {
           setPlants([]);
+          setLoadError(errorMessage(error, "We couldn't load the plants."));
         }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+
+      // The filter lists are a nice-to-have: the page still works without them
+      try {
+        const taxonomyData = await fetchTaxonomyOptions();
+        if (isMounted) setTaxonomyOptions(taxonomyData);
+      } catch {
+        if (isMounted) setTaxonomyOptions(undefined);
       }
     };
 
@@ -56,7 +62,7 @@ export default function DiscoverPlants() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [attempt]);
 
   // Enhanced search across multiple fields with search type filter
   const searchPlants = (plantsToSearch: Plant[]): Plant[] => {
@@ -106,8 +112,6 @@ export default function DiscoverPlants() {
     
     if (activeFilters.length === 0) return plantsToFilter;
 
-    console.log(`🔍 Filtering by ${activeFilters.length} taxonomy level(s)`);
-    
     const filtered = plantsToFilter.filter((plant) => {
       // Plant must match ALL active taxonomy level filters
       return activeFilters.every(([level, value]) => {
@@ -117,7 +121,6 @@ export default function DiscoverPlants() {
       });
     });
 
-    console.log(`✅ Taxonomy filters applied: ${filtered.length} plants match`);
     return filtered;
   };
 
@@ -158,8 +161,11 @@ export default function DiscoverPlants() {
         {/* CONTROL BAR */}
         <div className={styles.controls}>
           <p className={styles.results}>
-            {filteredPlants.length}{" "}
-            {filteredPlants.length === 1 ? "Result" : "Results"}
+            {loading
+              ? "Loading..."
+              : loadError
+                ? "Unavailable"
+                : `${filteredPlants.length} ${filteredPlants.length === 1 ? "Result" : "Results"}`}
           </p>
 
           <div className={styles.actions}>
@@ -187,7 +193,16 @@ export default function DiscoverPlants() {
           }`}
         >
           {showFilters && <Filters plants={plants} taxonomyFilters={taxonomyFilters} setTaxonomyFilters={setTaxonomyFilters} taxonomyOptions={taxonomyOptions} />}
-          <PlantsGrid plants={filteredPlants} />
+          {loadError ? (
+            <div className={styles.errorBox} role="alert">
+              <p>{loadError}</p>
+              <button className={styles.retryBtn} onClick={() => setAttempt((n) => n + 1)}>
+                Try again
+              </button>
+            </div>
+          ) : (
+            <PlantsGrid plants={filteredPlants} />
+          )}
         </div>
       </div>
     </div>

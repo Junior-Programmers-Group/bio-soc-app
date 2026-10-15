@@ -13,6 +13,7 @@ const Hero = () => {
   const [searchType, setSearchType] = useState<SearchType>("all");
   const [filteredResults, setFilteredResults] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -26,22 +27,13 @@ const Hero = () => {
       try {
         const plants = await fetchPlants();
         if (isMounted) {
-          console.log("✅ Hero: Loaded plants:", plants.length);
-          if (plants.length > 0) {
-            console.log("📌 First plant data:", plants[0]);
-          }
           setAllPlants(plants);
           setPlantCount(plants.length);
-          setLoading(false);
         }
-      } catch (error) {
-        if (isMounted && error instanceof Error && !error.message.includes('aborted')) {
-          console.error("Error fetching plants:", error);
-        }
-        if (isMounted) {
-          setPlantCount(0);
-          setLoading(false);
-        }
+      } catch {
+        if (isMounted) setLoadFailed(true);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -173,12 +165,21 @@ const Hero = () => {
       <div className={styles.heroContent}>
         <h1>Explore Campus Plant Species</h1>
         <p>
-          Browse all{" "}
-          <span className={styles.plantCount}>
-            {loading ? "..." : plantCount}
-          </span>{" "}
-          plant species on campus.
+          {loadFailed ? (
+            "Browse the plant species on campus."
+          ) : (
+            <>
+              Browse all{" "}
+              <span className={styles.plantCount}>{loading ? "..." : plantCount}</span>{" "}
+              plant species on campus.
+            </>
+          )}
         </p>
+        {loadFailed && (
+          <p role="alert">
+            We couldn&apos;t load the plant list. Please check your connection and refresh the page.
+          </p>
+        )}
 
         {/* Search Type Filter - Collapsible */}
         {showFilterOptions && (

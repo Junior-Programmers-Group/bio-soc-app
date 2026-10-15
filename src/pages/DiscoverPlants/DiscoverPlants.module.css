@@ -152,3 +152,32 @@
     grid-template-columns: 1fr;
   }
 }
+
+.errorBox {
+  grid-column: 1 / -1;
+  padding: 32px 24px;
+  text-align: center;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--bg-card);
+}
+
+.errorBox p {
+  margin-bottom: 16px;
+  color: var(--text-main);
+}
+
+.retryBtn {
+  padding: 10px 24px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retryBtn:hover {
+  background: var(--accent);
+  color: var(--bg-dark);
+}

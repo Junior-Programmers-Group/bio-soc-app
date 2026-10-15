@@ -8,7 +8,7 @@
   position: relative;
 
   /* BASE IMAGE */
-  background: url("../../assets/nddu-campus.jpg") center / cover no-repeat;
+  background: url("/assets/nddu-campus.jpg") center / cover no-repeat;
   background-attachment: fixed;
 
   display: flex;

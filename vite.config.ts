@@ -11,13 +11,16 @@ export default defineConfig({
         manualChunks: (id) => {
           // Separate vendor libraries
           if (id.includes('node_modules')) {
-            if (id.includes('react')) {
+            // Match whole package folders, not substrings: "react-router" and
+            // "lucide-react" also contain "react" and caused circular chunks.
+            const pkg = id.split('node_modules/').pop()!
+            if (/^(react|react-dom|scheduler)\//.test(pkg)) {
               return 'vendor-react'
             }
-            if (id.includes('react-router')) {
+            if (/^(react-router|react-router-dom|cookie|set-cookie-parser)\//.test(pkg)) {
               return 'vendor-router'
             }
-            if (id.includes('pocketbase')) {
+            if (pkg.startsWith('pocketbase/')) {
               return 'vendor-pocketbase'
             }
             // Other vendors

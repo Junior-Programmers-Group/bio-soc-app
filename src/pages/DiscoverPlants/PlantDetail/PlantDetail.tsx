@@ -2,37 +2,20 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Home/Navbar/Navbar";
 import type { Plant } from "../../../types/plant";
-import { fetchPlantById, fetchTaxonomyHierarchy } from "../../../services/plantService";
-import pb from "../../../back-end/db";
+import { fetchPlantById } from "../../../services/plantService";
+import { errorMessage } from "../../../services/errors";
 import styles from "./PlantDetail.module.css";
 
 type DetailTab = "taxonomy" | "overview" | "morphology" | "ecology" | "distribution" | "uses";
-
-interface PlantDetails {
-  morphology?: string;
-  ecology?: string;
-  distribution?: string;
-  uses?: string;
-}
-
-interface TaxonomyHierarchy {
-  domain?: string;
-  kingdom?: string;
-  phylum?: string;
-  klass?: string;
-  order?: string;
-  family?: string;
-  genus?: string;
-}
 
 export default function PlantDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [plant, setPlant] = useState<Plant | null>(null);
-  const [details, setDetails] = useState<PlantDetails | null>(null);
-  const [taxonomy, setTaxonomy] = useState<TaxonomyHierarchy | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(false);
+  const [attempt, setAttempt] = useState(0); // bumped by "Try again"
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
   const PLACEHOLDER_IMAGE = "https://via.placeholder.com/400x300/2d5016/ffffff?text=Plant";
@@ -41,85 +24,31 @@ export default function PlantDetail() {
     let isMounted = true;
 
     const loadPlant = async () => {
+      setLoading(true);
+      setError("");
+      setNotFound(false);
+
       if (!id) {
-        if (isMounted) {
-          setError("No plant ID provided");
-          setLoading(false);
-        }
+        setNotFound(true);
+        setError("No plant ID provided");
+        setLoading(false);
         return;
       }
 
       try {
-        if (isMounted) {
-          setLoading(true);
-        }
-        
-        // Fetch plant data
-        const plantData = await fetchPlantById(id);
-        if (isMounted && plantData) {
-          setPlant(plantData);
-          setError("");
-          
-          console.log("🌿 Plant data received:", {
-            commonName: plantData.commonName,
-            genus: plantData.genus,
-            genusId: plantData.genusId,
-          });
-          
-          // Fetch taxonomy hierarchy from genus
-          if (plantData.genus || plantData.genusId) {
-            try {
-              // Use genusId if available, otherwise use genus (which may be the ID)
-              const genusIdentifier = (plantData.genusId || plantData.genus) as string;
-              console.log("📚 Fetching taxonomy for genus:", genusIdentifier);
-              const taxonomyData = await fetchTaxonomyHierarchy(genusIdentifier);
-              if (isMounted) {
-                setTaxonomy(taxonomyData);
-                console.log("✓ Taxonomy hierarchy loaded:", taxonomyData);
-              }
-            } catch (taxError) {
-              console.error("❌ Error loading taxonomy hierarchy:", taxError);
-            }
-          } else {
-            console.warn("⚠️ No genus or genusId available for plant:", plantData.commonName);
-          }
-          
-          // Fetch details from details collection
-          try {
-            const detailsRecord = await pb.collection("details").getFirstListItem(
-              `species = "${id}"`,
-              { requestKey: null }
-            );
-            if (isMounted) {
-              setDetails({
-                morphology: detailsRecord.morphology || "",
-                ecology: detailsRecord.ecology || "",
-                distribution: detailsRecord.distribution || "",
-                uses: detailsRecord.uses || "",
-              });
-              console.log("✓ Plant details loaded from details collection");
-            }
-          } catch (detailsError) {
-            if (isMounted && (detailsError as any).message?.includes("Failed to find a record")) {
-              // No details record found, that's okay
-              console.log("No details record found for this plant");
-              setDetails(null);
-            } else {
-              console.warn("Error loading details:", detailsError);
-            }
-          }
-        } else if (isMounted) {
+        const data = await fetchPlantById(id);
+        if (!isMounted) return;
+        setPlant(data);
+        if (!data) {
+          setNotFound(true);
           setError("Plant not found");
         }
       } catch (err) {
-        if (isMounted && err instanceof Error && !err.message.includes('aborted')) {
-          console.error("Error loading plant:", err);
-          setError("Failed to load plant details");
-        }
+        if (!isMounted) return;
+        setPlant(null);
+        setError(errorMessage(err, "Failed to load plant details"));
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -128,7 +57,7 @@ export default function PlantDetail() {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, attempt]);
 
   if (loading) {
     return (
@@ -147,6 +76,11 @@ export default function PlantDetail() {
         <Navbar />
         <div className={styles.container}>
           <p className={styles.error}>{error}</p>
+          {!notFound && (
+            <button onClick={() => setAttempt((n) => n + 1)} className={styles.backBtn}>
+              <span>Try again</span>
+            </button>
+          )}
           <button onClick={() => navigate("/discover")} className={styles.backBtn}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 8 12 15 6"></polyline>
@@ -157,6 +91,22 @@ export default function PlantDetail() {
       </div>
     );
   }
+
+  const taxonomy = {
+    domain: plant.domain,
+    kingdom: plant.kingdom,
+    phylum: plant.phylum,
+    klass: plant.klass,
+    order: plant.order,
+    family: plant.family,
+    genus: plant.genus,
+  };
+  const details = {
+    morphology: plant.morphology,
+    ecology: plant.ecology,
+    distribution: plant.distribution,
+    uses: plant.uses,
+  };
 
   const displayImage = plant.image || PLACEHOLDER_IMAGE;
   const displayName = plant.commonName || plant.name || "Unknown Plant";

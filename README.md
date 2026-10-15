@@ -11,7 +11,7 @@ Welcome to the **Flora** project repository. This initiative bridges the gap bet
 ### Key Features
 * **Discover Plants:** A centralized database to explore the unique flora of the campus.
 * **Scan & Learn:** Utilize QR codes located on physical tags to instantly access plant data.
-* **Campus Biodiversity:** Browse all **9 primary plant species** currently cataloged on campus.
+* **Campus Biodiversity:** Browse every plant species cataloged on campus.
 
 ---
 
@@ -22,6 +22,27 @@ Welcome to the **Flora** project repository. This initiative bridges the gap bet
 | **Accessible** | Quick access to plant information via QR codes found throughout the campus grounds. |
 | **Informative** | Detailed profiles including scientific names, ecological roles, and environmental importance. |
 | **Digitalized** | Modernizes the learning experience through interactive, technology-driven education. |
+
+---
+
+## 🛠 Development
+
+Requires Node.js 20.19 or newer.
+
+```
+npm install
+cp .env.example .env     # optional: defaults point at the production services
+npm run dev              # local development server
+npm run build            # type-check and build to dist/
+npm run lint             # ESLint
+```
+
+| Variable | Purpose |
+| :--- | :--- |
+| `VITE_PB_URL` | PocketBase API address |
+| `VITE_SITE_URL` | Public site address, encoded into every QR code |
+
+More: [PocketBase setup and rules](docs/07-pocketbase-setup.md) · [Deployment guide](docs/08-deployment.md) · [Audit](docs/05-audit.md) · [To-do list](docs/06-todo.md)
 
 ---
 

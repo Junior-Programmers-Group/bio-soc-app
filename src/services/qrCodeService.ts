@@ -1,4 +1,5 @@
 import QRCode from "qrcode";
+import { SITE_URL } from "../config";
 
 interface QRCodeOptions {
   plantId: string;
@@ -14,7 +15,7 @@ interface QRCodeOptions {
 /**
  * Production URL for QR codes - official domain for bio-soc website
  */
-const QR_CODE_BASE_URL = "https://flora.nddu.edu.ph";
+const QR_CODE_BASE_URL = SITE_URL;
 
 /**
  * Generate absolute URL for plant details page
@@ -145,6 +146,14 @@ export const generateQRCodeBlob = async (
   });
 };
 
+const escapeHtml = (text: string): string =>
+  text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 /**
  * Print QR code with plant information
  * Creates a print-friendly page with QR code, plant name, scientific name, and guide text
@@ -170,11 +179,14 @@ export const printPlantQRCode = async (
       throw new Error("Failed to open print window");
     }
 
+    const safeName = escapeHtml(plantName);
+    const safeScientificName = escapeHtml(scientificName);
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>${plantName} - QR Code</title>
+          <title>${safeName} - QR Code</title>
           <style>
             * {
               margin: 0;
@@ -275,8 +287,8 @@ export const printPlantQRCode = async (
         <body>
           <div class="container">
             <div class="header">
-              <div class="plant-name">${plantName}</div>
-              <div class="scientific-name">${scientificName || "N/A"}</div>
+              <div class="plant-name">${safeName}</div>
+              <div class="scientific-name">${safeScientificName || "N/A"}</div>
             </div>
             
             <div class="qr-section">

@@ -1,4 +1,5 @@
 import pb from "../db";
+import { clearPlantCache } from "../../services/plantService";
 import type { ClassTaxonomy, Domain, Family, Genus, Kingdom, OrderTaxonomy, Phylum } from "../types/taxonomyClass";
 
 export interface TaxonomyData {
@@ -56,13 +57,8 @@ export const useFetchTaxonomy = () => {
         category: string,
         fields: Record<string, string>
     ) => {
-        try {
         await pb.collection(category).create(fields);
-        }
-        catch (e: any) {
-        console.error(e.message);
-        throw e;
-        }
+        clearPlantCache(); // filter lists and plant pages must pick up the new entry
     }
 
     return { fetch, create };

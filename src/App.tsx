@@ -1,12 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState, Suspense, lazy } from "react";
-import pb from "./back-end/db";
+import { Suspense, lazy } from "react";
+import { useAdminSession } from "./hooks/useAdminSession";
 
 import Home from "./pages/Home";
 
 // Lazy load heavy route components for code splitting
 const Scan = lazy(() => import("./pages/DiscoverPlants/Scan/Scan"));
-const PlantsCRUD = lazy(() => import("./back-end/components/PlantsCRUD"));
 const DiscoverPlants = lazy(() => import("./pages/DiscoverPlants/DiscoverPlants"));
 const PlantDetail = lazy(() => import("./pages/DiscoverPlants/PlantDetail/PlantDetail"));
 const AdminLogin = lazy(() => import("./components/Admin/AdminLogin"));
@@ -31,22 +30,7 @@ function LoadingFallback() {
 }
 
 export default function App() {
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-
-  useEffect(() => {
-    if (pb.authStore.isValid && pb.authStore.model?.isAdmin) {
-      setIsAdminLoggedIn(true);
-    }
-  }, []);
-
-  const handleLoginSuccess = () => {
-    setIsAdminLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    pb.authStore.clear();
-    setIsAdminLoggedIn(false);
-  };
+  const { isAdmin, ready, logout } = useAdminSession();
 
   return (
     <BrowserRouter>
@@ -54,19 +38,20 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/scan" element={<Scan />} />
-          <Route path="/plants" element={<PlantsCRUD />} />
           <Route path="/discover" element={<DiscoverPlants />} />
           <Route path="/discover/plants/:id" element={<PlantDetail />} />
           <Route path="/discover/:id" element={<PlantDetail />} />
 
-          {/* ✅ Protected Admin Route */}
+          {/* Admin: the dashboard only renders for a verified admin session */}
           <Route
             path="/admin"
             element={
-              isAdminLoggedIn ? (
-                <AdminDashboard onLogout={handleLogout} />
+              !ready ? (
+                <LoadingFallback />
+              ) : isAdmin ? (
+                <AdminDashboard onLogout={logout} />
               ) : (
-                <AdminLogin onLoginSuccess={handleLoginSuccess} />
+                <AdminLogin />
               )
             }
           />

@@ -3,7 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 import Navbar from "../../../components/Home/Navbar/Navbar";
 import pb from "../../../back-end/db";
+import { errorMessage, isNotFound } from "../../../services/errors";
 import styles from "./Scan.module.css";
+
+// Plant tags hold <site>/discover/plants/<id>. PocketBase ids are 15 letters/digits.
+const PLANT_ID = /^[a-z0-9]{15}$/i;
+
+/** The plant id inside a scanned tag, or null if the text is not a Flora tag. */
+const parsePlantId = (scanned: string): string | null => {
+  const text = scanned.trim();
+  const fromUrl = text.match(/\/plants\/([a-z0-9]{15})(?:[/?#]|$)/i);
+  const id = fromUrl ? fromUrl[1] : text;
+  return PLANT_ID.test(id) ? id : null;
+};
 
 type Plant = {
   commonName: string;
@@ -126,13 +138,10 @@ const Scan = () => {
       const fileScanner = new Html5Qrcode("qr-reader");
       const decodedText = await fileScanner.scanFile(file, true);
       
-      console.log("QR Code detected from file:", decodedText);
-      
-      // Navigate immediately without delay
-      await fetchPlantAndNavigate(decodedText);
-    } catch (scanError) {
-      console.error("Scan error:", scanError);
-      setError("❌ No QR code found in the image. Please try another image.");
+      const found = await fetchPlantAndNavigate(decodedText);
+      if (!found) restartCameraScanner();
+    } catch {
+      setError("No QR code found in the image. Please try another image.");
       setPlant(null);
       hasScannedRef.current = false;
       
@@ -173,71 +182,45 @@ const Scan = () => {
     }
   };
 
-  const fetchPlantAndNavigate = async (qrCode: string) => {
-    try {
-      console.log("Fetching plant with QR code:", qrCode);
-      
-      // Extract plant ID from URL if QR code is a URL
-      let plantId = qrCode;
-      
-      // Check if it's a URL containing plant ID
-      const urlMatch = qrCode.match(/plants\/([a-zA-Z0-9]+)/);
-      if (urlMatch) {
-        plantId = urlMatch[1];
-        console.log("Extracted plant ID from URL:", plantId);
-      }
-
-      // Try to fetch plant by ID from species collection
-      let record;
-      try {
-        console.log("Trying to fetch plant by ID from 'species' collection:", plantId);
-        record = await pb.collection("species").getOne(plantId);
-        console.log("Plant found by ID:", record);
-      } catch (idError) {
-        console.log("Plant not found by ID, trying by QR code field:", qrCode);
-        // If not found by ID, try by QR code field in species collection
-        try {
-          record = await pb.collection("species").getFirstListItem(`qr_code="${qrCode}"`);
-          console.log("Plant found by QR code:", record);
-        } catch (qrError) {
-          // QR code validation failed - this means the scanned code doesn't match any plant
-          throw new Error(`❌ Invalid QR code. This code does not correspond to any plant in the database.`);
-        }
-      }
-
-      // Validate that the extracted plant ID matches the QR code
-      if (!record) {
-        throw new Error("Plant record not found");
-      }
-
-      console.log("Validating QR code for plant:", record.id);
-      console.log("Navigating to plant:", record.id);
-      
-      // Stop scanner if it's running (from camera detection, not from file upload)
-      if (isScannerRunningRef.current && scannerRef.current) {
-        try {
-          isScannerRunningRef.current = false;
-          await scannerRef.current.stop().catch(() => {});
-          scannerRef.current = null;
-        } catch (err) {
-          console.error("Error stopping scanner:", err);
-          scannerRef.current = null;
-        }
-      } else {
-        // Already stopped (from file upload), just clear reference
-        scannerRef.current = null;
-        isScannerRunningRef.current = false;
-      }
-      
-      // Navigate immediately
-      navigate(`/discover/plants/${record.id}`);
-    } catch (err) {
-      console.error("Error fetching plant:", err);
-      setPlant(null);
-      const errorMessage = err instanceof Error ? err.message : "❌ Plant not found in database. Make sure the QR code is valid.";
-      setError(errorMessage);
+  // Show a scan problem and pause briefly, so the same bad code is not looked up 10 times a second
+  const rejectScan = (message: string) => {
+    setPlant(null);
+    setError(message);
+    hasScannedRef.current = true;
+    window.setTimeout(() => {
       hasScannedRef.current = false;
+    }, 2000);
+  };
+
+  // Returns true when the scan led to a plant page
+  const fetchPlantAndNavigate = async (scanned: string): Promise<boolean> => {
+    const plantId = parsePlantId(scanned);
+    if (!plantId) {
+      rejectScan("This QR code is not a Flora plant tag.");
+      return false;
     }
+
+    try {
+      await pb.collection("species").getOne(plantId, { fields: "id", requestKey: null });
+    } catch (err) {
+      rejectScan(
+        isNotFound(err)
+          ? "This QR code is not a Flora plant tag, or the plant has been removed."
+          : errorMessage(err)
+      );
+      return false;
+    }
+
+    // Stop the camera before leaving the page
+    if (isScannerRunningRef.current && scannerRef.current) {
+      isScannerRunningRef.current = false;
+      await scannerRef.current.stop().catch(() => {});
+    }
+    scannerRef.current = null;
+    isScannerRunningRef.current = false;
+
+    navigate(`/discover/plants/${plantId}`);
+    return true;
   };
 
   return (

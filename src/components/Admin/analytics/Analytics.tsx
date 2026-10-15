@@ -1,68 +1,40 @@
-import { useEffect, useState } from "react";
-import { getAnalyticsData } from "../../../services/adminService";
+import { useCallback, useEffect, useState } from "react";
+import { getAnalyticsData, type AnalyticsData } from "../../../services/analytics";
+import { errorMessage } from "../../../services/errors";
 import styles from "./Analytics.module.css";
-
-interface AnalyticsData {
-  totalPlants: number;
-  totalUsers: number;
-  verifiedUsers: number;
-}
 
 export default function Analytics() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const handleFetchAnalytics = async () => {
+  const handleFetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getAnalyticsData();
-      setAnalytics(data);
-    } catch (err: any) {
-      if (err.message && !err.message.includes("aborted")) {
-        setError(err.message || "Failed to fetch analytics");
-      }
+      setAnalytics(await getAnalyticsData());
+    } catch (err) {
+      setError(errorMessage(err, "Failed to fetch analytics"));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    const loadAnalytics = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const data = await getAnalyticsData();
-        if (!controller.signal.aborted) {
-          setAnalytics(data);
-        }
-      } catch (err: any) {
-        if (!controller.signal.aborted) {
-          if (err.message && !err.message.includes("aborted")) {
-            setError(err.message || "Failed to fetch analytics");
-          }
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadAnalytics();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
+    handleFetchAnalytics();
+  }, [handleFetchAnalytics]);
 
   if (loading) return <div className={styles.loading}>Loading analytics...</div>;
 
   if (error)
-    return <div className={styles.error}>{error}</div>;
+    return (
+      <div className={styles.error}>
+        <p>{error}</p>
+        <button onClick={handleFetchAnalytics} className={styles.refreshBtn}>
+          Try again
+        </button>
+      </div>
+    );
 
   return (
     <div className={styles.container}>

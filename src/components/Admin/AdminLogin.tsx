@@ -1,12 +1,18 @@
 import { useState } from "react";
+import { ClientResponseError } from "pocketbase";
 import pb from "../../back-end/db";
+import { errorMessage } from "../../services/errors";
 import styles from "./AdminLogin.module.css";
 
-interface AdminLoginProps {
-  onLoginSuccess: () => void;
-}
+const loginErrorMessage = (err: unknown): string => {
+  if (err instanceof ClientResponseError && err.status === 400) {
+    return "Incorrect email or password.";
+  }
+  return errorMessage(err, "Login failed. Please try again.");
+};
 
-export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
+// Logging in stores the session; useAdminSession (see App.tsx) then shows the dashboard.
+export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,21 +28,13 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         .collection("users")
         .authWithPassword(email, password);
 
-      // ✅ Check admin flag from your PocketBase schema
       if (!authData.record.isAdmin) {
-        setError("You do not have admin privileges.");
         pb.authStore.clear();
-        setLoading(false);
-        return;
+        setError("This account does not have admin access.");
       }
-
-      // ✅ Login successful
-      setLoading(false);
-      onLoginSuccess();
-
-    } catch (err: any) {
-      console.error("Login error:", err);
-      setError(err?.message || "Invalid email or password.");
+    } catch (err) {
+      setError(loginErrorMessage(err));
+    } finally {
       setLoading(false);
     }
   };

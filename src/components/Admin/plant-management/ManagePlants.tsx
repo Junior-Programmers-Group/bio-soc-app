@@ -4,10 +4,12 @@ import {
   createPlant,
   updatePlant,
   deletePlant,
-} from "../../../services/adminService";
-import type { PlantRecord } from "../../../services/adminService";
+} from "../../../services/plantAdmin";
+import type { PlantRecord } from "../../../services/plantAdmin";
+import { errorMessage } from "../../../services/errors";
 import { downloadPlantQRCode, generatePlantQRCode, printPlantQRCode } from "../../../services/qrCodeService";
-import { fetchTaxonomyHierarchy } from "../../../services/plantService";
+import { getSpeciesImageUrl } from "../../../services/imageUrl";
+import { SITE_URL } from "../../../config";
 import { useFetchTaxonomy } from "../../../back-end/hooks/useFetchTaxonomy";
 import QRModal from "../QRModal";
 import ConfirmationModal from "../ConfirmationModal";
@@ -16,24 +18,11 @@ import styles from "./ManagePlants.module.css";
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/300x250/2d5016/ffffff?text=Plant";
 
-// Helper function to build image URL using PocketBase SDK
+// Image URL for a plant, or a placeholder when it has none
 const buildImageUrl = (plant: PlantRecord): string => {
   if (!plant.id) return PLACEHOLDER_IMAGE;
-  
-  // Try field first (primary image field in PocketBase)
-  if (plant.field) {
-    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.field}`;
-  }
-  // Try image field as fallback
-  if (plant.image) {
-    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${plant.image}`;
-  }
-  // Try qr_code as another fallback
-  if ((plant as any).qr_code) {
-    return `https://jpg-services.nddu.edu.ph/pb-biosoc/api/files/species/${plant.id}/${(plant as any).qr_code}`;
-  }
-  
-  return PLACEHOLDER_IMAGE;
+
+  return getSpeciesImageUrl(plant) || PLACEHOLDER_IMAGE;
 };
 
 type FormStep = "basic" | "details" | "media";
@@ -55,13 +44,6 @@ interface PlantFormData {
   ecology: string;
   distribution: string;
   uses: string;
-  phylum_id: string;
-  // Auto-populated taxonomy from genus
-  kingdom?: string;
-  phylum?: string;
-  klass?: string;
-  order?: string;
-  family?: string;
 }
 
 // REUSABLE FORM FIELDS - with support for select fields
@@ -180,12 +162,6 @@ export default function ManagePlants() {
     ecology: "",
     distribution: "",
     uses: "",
-    phylum_id: "1",
-    kingdom: "",
-    phylum: "",
-    klass: "",
-    order: "",
-    family: "",
   });
 
   // Load genus options
@@ -298,7 +274,7 @@ export default function ManagePlants() {
             return;
           }
           console.error("Error fetching plants:", err);
-          setError(err.message || "Failed to fetch plants");
+          setError(errorMessage(err, "Failed to fetch plants"));
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -326,7 +302,7 @@ export default function ManagePlants() {
         return;
       }
       console.error("Error fetching plants:", err);
-      setError(err.message || "Failed to fetch plants");
+      setError(errorMessage(err, "Failed to fetch plants"));
     } finally {
       setLoading(false);
     }
@@ -427,51 +403,8 @@ export default function ManagePlants() {
     reader.readAsDataURL(file);
   };
 
-  const handleGenusChange = async (genusId: string) => {
-    // Always update the form data immediately - don't wait for async operations
-    setFormData((prev) => ({
-      ...prev,
-      genus: genusId,  // Store the ID for dropdown matching
-      genusId: genusId,  // Keep ID for reference
-    }));
-
-    // If genusId is empty, clear everything and return
-    if (!genusId) {
-      setFormData((prev) => ({
-        ...prev,
-        kingdom: "",
-        phylum: "",
-        klass: "",
-        order: "",
-        family: "",
-      }));
-      console.log("✓ Genus cleared, taxonomy fields reset");
-      return;
-    }
-
-    // Find the genus name from options for logging
-    const selectedOption = genusOptions.find(opt => opt.value === genusId);
-    const genusName = selectedOption?.label || genusId;
-    console.log("✓ Genus changed to:", { genusId, genusName });
-
-    // Try to auto-populate taxonomy hierarchy (optional - don't block user if it fails)
-    try {
-      const hierarchy = await fetchTaxonomyHierarchy(genusId);
-      
-      setFormData((prev) => ({
-        ...prev,
-        kingdom: hierarchy.kingdom || "",
-        phylum: hierarchy.phylum || "",
-        klass: hierarchy.klass || "",
-        order: hierarchy.order || "",
-        family: hierarchy.family || "",
-      }));
-      
-      console.log("✓ Taxonomy auto-populated from genus:", hierarchy);
-    } catch (err) {
-      console.warn("⚠️  Could not auto-populate taxonomy for genus:", genusId, err);
-      // Continue - user can still edit without auto-populated taxonomy
-    }
+  const handleGenusChange = (genusId: string) => {
+    setFormData((prev) => ({ ...prev, genus: genusId, genusId }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -523,7 +456,6 @@ export default function ManagePlants() {
       const { imageFile, imagePreview, genusId, ...dataWithoutFile } = data;
       const payload = {
         ...dataWithoutFile,
-        phylum_id: Number(data.phylum_id) || 1,
         year: data.year ? Number(data.year) : undefined,
       };
 
@@ -551,7 +483,7 @@ export default function ManagePlants() {
     } catch (err: any) {
       if (!err?.message?.includes("cancelled")) {
         console.error("❌ Error saving plant:", err);
-        setError(err.message || "Failed to save plant");
+        setError(errorMessage(err, "Failed to save plant"));
       }
     } finally {
       setUploading(false);
@@ -587,7 +519,7 @@ export default function ManagePlants() {
       }, 500);
     } catch (err: any) {
       if (!err?.message?.includes("cancelled")) {
-        setError(err.message || "Failed to delete plant");
+        setError(errorMessage(err, "Failed to delete plant"));
       }
     } finally {
       setUploading(false);
@@ -651,12 +583,6 @@ export default function ManagePlants() {
       ecology: plant.ecology || "",
       distribution: plant.distribution || "",
       uses: plant.uses || "",
-      phylum_id: plant.phylum_id?.toString() || "1",
-      kingdom: plant.kingdom || "",
-      phylum: (plant as any).phylum || "",
-      klass: (plant as any).klass || "",
-      order: plant.order || "",
-      family: plant.family || "",
     });
     setEditingId(plant.id);
     setShowForm(true);
@@ -693,12 +619,6 @@ export default function ManagePlants() {
       ecology: "",
       distribution: "",
       uses: "",
-      phylum_id: "1",
-      kingdom: "",
-      phylum: "",
-      klass: "",
-      order: "",
-      family: "",
     });
     setEditingId(null);
     setShowForm(false);
@@ -916,7 +836,7 @@ export default function ManagePlants() {
                       Works with: Android Camera, iOS Camera & All QR Scanners
                     </p>
                     <p style={{ fontSize: "11px", color: "#999", wordBreak: "break-all" }}>
-                      <strong>URL:</strong> https://flora.nddu.edu.ph/discover/plants/{editingId}
+                      <strong>URL:</strong> {SITE_URL}/discover/plants/{editingId}
                     </p>
                   </div>
                 )}
@@ -967,7 +887,6 @@ export default function ManagePlants() {
               <h3 style={{ margin: "0 0 4px 0", lineHeight: "1.2" }}>{plant.commonName}</h3>
               <em style={{ fontSize: "12px", color: "#999", display: "block", fontStyle: "italic" }}>{plant.scientificName || ""}</em>
             </div>
-            <p>{plant.description || ""}</p>
             <div className={styles.cardActions}>
               <button onClick={() => handleEdit(plant)}>Edit</button>
               <button 
