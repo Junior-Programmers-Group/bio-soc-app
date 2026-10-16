@@ -26,31 +26,9 @@ export default defineConfig({
             // Other vendors
             return 'vendor-other'
           }
-
-          // Separate admin functionality
-          if (id.includes('Admin')) {
-            return 'admin'
-          }
-
-          // Separate plant discovery features
-          if (id.includes('DiscoverPlant') || id.includes('DiscoverPlants')) {
-            return 'discover'
-          }
-
-          // Separate scan functionality
-          if (id.includes('Scan')) {
-            return 'scan'
-          }
-
-          // Separate back-end/database code
-          if (id.includes('back-end')) {
-            return 'backend'
-          }
-
-          // Separate services and utilities
-          if (id.includes('services') || id.includes('hooks')) {
-            return 'utilities'
-          }
+          // App code is not chunked by hand: routes are lazy-loaded, and hand-made
+          // chunks that import each other crash the page (circular chunks).
+          return undefined
         }
       }
     },
