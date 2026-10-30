@@ -2,11 +2,20 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { fetchPlants } from "../../../services/plantService";
 import type { Plant } from "../../../types/plant";
 import SearchDropdown from "./SearchDropdown";
+import { searchPlaceholder } from "../../../pages/DiscoverPlants/discoverLogic";
+import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import styles from "./Hero.module.css";
 
 export type SearchType = "all" | "name" | "scientific";
 
+const SEARCH_MODES: Array<{ key: SearchType; label: string }> = [
+  { key: "all", label: "All fields" },
+  { key: "name", label: "Common" },
+  { key: "scientific", label: "Scientific" },
+];
+
 const Hero = () => {
+  const narrow = useMediaQuery("(max-width: 480px)"); // the long placeholder would be cut off
   const [plantCount, setPlantCount] = useState(0);
   const [allPlants, setAllPlants] = useState<Plant[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -138,17 +147,6 @@ const Hero = () => {
     }
   }, [searchQuery, filteredResults]);
 
-  const getSearchPlaceholder = (): string => {
-    switch (searchType) {
-      case "name":
-        return "Search by common name...";
-      case "scientific":
-        return "Search by scientific name...";
-      default:
-        return "Search by name or scientific name...";
-    }
-  };
-
   const toggleFilterOptions = useCallback(() => {
     setShowFilterOptions((prev) => !prev);
   }, []);
@@ -174,42 +172,23 @@ const Hero = () => {
           </p>
         )}
 
-        {/* Search Type Filter - Collapsible */}
+        {/* What to search in: the same switch as Discover. Opened by the options button. */}
         {showFilterOptions && (
-          <div className={styles.searchTypeFilter}>
-            <label className={styles.filterLabel}>Search by:</label>
-            <div className={styles.radioGroup}>
-              <label className={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="searchType"
-                  value="all"
-                  checked={searchType === "all"}
-                  onChange={(e) => setSearchType(e.target.value as SearchType)}
-                />
-                <span>All</span>
-              </label>
-              <label className={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="searchType"
-                  value="name"
-                  checked={searchType === "name"}
-                  onChange={(e) => setSearchType(e.target.value as SearchType)}
-                />
-                <span>Common Name</span>
-              </label>
-              <label className={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="searchType"
-                  value="scientific"
-                  checked={searchType === "scientific"}
-                  onChange={(e) => setSearchType(e.target.value as SearchType)}
-                />
-                <span>Scientific Name</span>
-              </label>
-            </div>
+          <div className={styles.modes} role="group" aria-label="Search in">
+            {SEARCH_MODES.map((mode) => (
+              <button
+                key={mode.key}
+                type="button"
+                className={`${styles.mode} ${searchType === mode.key ? styles.modeActive : ""}`}
+                onClick={() => {
+                  setSearchType(mode.key);
+                  searchInputRef.current?.focus();
+                }}
+                aria-pressed={searchType === mode.key}
+              >
+                {mode.label}
+              </button>
+            ))}
           </div>
         )}
 
@@ -218,7 +197,11 @@ const Hero = () => {
             <input
               ref={searchInputRef}
               type="text"
-              placeholder={getSearchPlaceholder()}
+              placeholder={
+                narrow && searchType === "all"
+                  ? "Search plants"
+                  : searchPlaceholder(searchType === "scientific" ? "sci" : searchType)
+              }
               className={styles.heroInput}
               value={searchQuery}
               onChange={handleInputChange}
@@ -231,27 +214,16 @@ const Hero = () => {
               </svg>
             </button>
             
-            {/* Filter Toggle Button */}
+            {/* Search options: choose what to search in */}
             <button
               type="button"
-              className={styles.filterToggleBtn}
+              className={`${styles.filterToggleBtn} ${showFilterOptions ? styles.filterToggleOn : ""}`}
               onClick={toggleFilterOptions}
-              aria-label="Toggle search filter"
-              title="Toggle search filter options"
+              aria-label="Search options"
+              aria-pressed={showFilterOptions}
+              title="Search options"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="4" y1="6" x2="20" y2="6"></line>
-                <line x1="4" y1="12" x2="20" y2="12"></line>
-                <line x1="4" y1="18" x2="20" y2="18"></line>
-              </svg>
+              <i className="bi bi-sliders"></i>
             </button>
           </form>
           
