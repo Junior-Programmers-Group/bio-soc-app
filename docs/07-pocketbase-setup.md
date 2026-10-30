@@ -1,5 +1,7 @@
 # PocketBase Setup Runbook (Workstream A)
 
+> **Status (2026-10-30):** sections 1 to 6 were carried out on the live server. See "Notes from doing workstream A" in [06-todo.md](06-todo.md). The rules below are what is now live (`docs/schema/pb_schema.json` is the exported copy). Keep this file for rebuilding the server or for checking the rules after a change. Still open: a test restore (section 3), the off-server backup copy, and the image cut-off (section 8).
+
 For the person who holds the PocketBase admin (superuser) login. Open the admin at `https://jpg-services.nddu.edu.ph/pb-biosoc/_/`. Nothing in this file can be done from the code; it all happens in the admin UI. Task IDs refer to [06-todo.md](06-todo.md).
 
 Do the steps in order. Total time: about half a day.
@@ -60,7 +62,9 @@ Only when step 4 works with the new rules is it safe to also run `scripts/check-
 2. Set up S3-compatible storage there if available, or copy the backup files from the server to another machine or drive on a schedule. A backup that lives only on the same server does not protect against losing the server.
 3. **Test a restore once**: download a backup, run PocketBase locally with an empty `pb_data`, restore it from the same Settings page, and open a plant. Write the date of the first successful test in this file.
 
-Last restore test: *not done yet*
+Last restore test: *not done yet*. Automatic backups: daily 02:00 Philippine time (cron `0 18 * * *` in UTC), keeping 7, stored on the server only.
+
+**Downloading a backup through the proxy:** the web server cuts responses at ~32 KB, so a normal download of a 30 MB backup stops early. Range requests work: fetch it in slices of about 28,000 bytes with `Range: bytes=start-end` headers and join them (a script that does this was used on 2026-10-30; the result was a complete file that opens as a valid zip).
 
 ## 4. Export the schema and data (A6)
 
@@ -75,7 +79,7 @@ The code tries to save a QR image into `species.qr_code`, but that field does no
 - **Do not store QR images (recommended, and what the code now assumes).** Nothing to do in PocketBase. The upload code has already been removed (task C4).
 - **Store them.** Add a **File** field named `qr_code` to `species` (single file, PNG only, max 1 MB), then tell the developers: the upload code was removed and would need to be written back.
 
-Write the decision here: *undecided*
+Write the decision here: **do not store QR images** (decided 2026-10-30; no `qr_code` field).
 
 ## 6. Data sanity check (A8)
 

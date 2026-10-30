@@ -2,6 +2,10 @@
 
 Date: 2026-10-14. Codebase: `bio-soc-app` (React 19, TypeScript, Vite 7, PocketBase client), commit `1ba09fa` plus one uncommitted fix (see "Changed during this audit"). This replaces the 2026-10-01 audit.
 
+## Status update (2026-10-30)
+
+H1 (open write access), H2 (admin protection) and the `users` rules are **fixed on the live server and verified** (see [06-todo.md](06-todo.md)). H3 (backups) is partly done: daily backups, one verified off-server copy, no test restore yet. H4 (dependencies), H5 (hidden failures), M1 to M6, M8, M9 and most of the Low items were fixed in code. The placeholder taxonomy (M9) was replaced with real data. Still open: the web server cutting off responses over ~32 KB (new, found during this work), design and accessibility (D1 to D6, being redone as a separate redesign), and the items marked open in the to-do list. The text below is the original audit, kept for reference.
+
 ## What changed since the last audit
 
 - **The backend is back.** The 2026-10-01 audit assumed it was down and data was lost. It now answers (`/api/health` returns 200) and holds **11 species**, 11 `details` rows and 13 genera, plus one record each in kingdom, phylum, class, order and family. Species images load. The "rebuild from scratch" framing no longer applies; **backup and access control** is now the priority.

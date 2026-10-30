@@ -20,14 +20,14 @@ Source: [05-audit.md](05-audit.md) (2026-10-14). Item codes like `H1` or `D3` po
 
 | [ ] | ID | Task | Done when | Effort | Audit |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| [ ] | A1 | **Clean the test data.** Delete the blank `order` record `k3mqfoem0cmzwbz`. The placeholder taxonomy (`awdawd`, `awdwad`, ...) is in use by the real species: **rename it to the real names, do not delete it** (see the runbook). | No blank records remain, and no taxonomy row reads like keyboard mashing. | M | H1, M9 |
-| [ ] | A2 | **Lock the API rules.** For `species`, `details`, `kingdom`, `phylum`, `class`, `order`, `family`, `genus`: list/view public; create/update/delete only for `@request.auth.id != "" && @request.auth.isAdmin = true`. | Anonymous create, update and delete all return 403 (test with the checks in A5). Public pages still load. | M | H1 |
-| [ ] | A3 | **Protect the `users` collection.** Only admins can list other users or change `role` / `isAdmin`. A normal user can see only their own record. Turn off public sign-up if students should not have accounts. | A non-admin account cannot read other users and cannot change its own `role` or `isAdmin`. | M | H2 |
-| [ ] | A4 | **Backups.** Turn on scheduled backups (Settings -> Backups), store copies off the server, and do one test restore on another machine. | A backup exists in a second location and a restore was tried once. | M | H3 |
-| [~] | A5 | **Write a rules test checklist.** A short list of curl commands (or a script in `scripts/`) that proves anonymous users can read but not write. Re-run it after any rule change. | The file is committed and passes against the live server. | S | H1 |
-| [ ] | A6 | **Export the schema.** Settings -> Export collections. Commit it as `docs/schema/pb_schema.json`. Also export species and taxonomy as CSV/JSON into a private place (not the public repo if it has personal data). | The schema file is in the repo and a data export is saved. | S | H3 |
-| [ ] | A7 | **Decide the `qr_code` field.** Either add a file field `qr_code` to `species`, or agree that QR images are never stored. Tell the team which one (affects C4). | Decision written in the pull request or in this file. | S | H5 |
-| [ ] | A8 | **Sanity-check the data.** Every species has a genus, an image and a `details` row. Genus -> family -> order -> class -> phylum -> kingdom links are complete. The live count (11 species) is correct. | A short list of any gaps, each one fixed or logged. | M | M9 |
+| [x] | A1 | **Clean the test data.** Delete the blank `order` record `k3mqfoem0cmzwbz`. The placeholder taxonomy (`awdawd`, `awdwad`, ...) is in use by the real species: **rename it to the real names, do not delete it** (see the runbook). | No blank records remain, and no taxonomy row reads like keyboard mashing. | M | H1, M9 |
+| [x] | A2 | **Lock the API rules.** For `species`, `details`, `kingdom`, `phylum`, `class`, `order`, `family`, `genus`: list/view public; create/update/delete only for `@request.auth.id != "" && @request.auth.isAdmin = true`. | Anonymous create, update and delete all return 403 (test with the checks in A5). Public pages still load. | M | H1 |
+| [x] | A3 | **Protect the `users` collection.** Only admins can list other users or change `role` / `isAdmin`. A normal user can see only their own record. Turn off public sign-up if students should not have accounts. | A non-admin account cannot read other users and cannot change its own `role` or `isAdmin`. | M | H2 |
+| [~] | A4 | **Backups.** Turn on scheduled backups (Settings -> Backups), store copies off the server, and do one test restore on another machine. | A backup exists in a second location and a restore was tried once. | M | H3 |
+| [x] | A5 | **Write a rules test checklist.** A short list of curl commands (or a script in `scripts/`) that proves anonymous users can read but not write. Re-run it after any rule change. | The file is committed and passes against the live server. | S | H1 |
+| [x] | A6 | **Export the schema.** Settings -> Export collections. Commit it as `docs/schema/pb_schema.json`. Also export species and taxonomy as CSV/JSON into a private place (not the public repo if it has personal data). | The schema file is in the repo and a data export is saved. | S | H3 |
+| [x] | A7 | **Decide the `qr_code` field.** Either add a file field `qr_code` to `species`, or agree that QR images are never stored. Tell the team which one (affects C4). | Decision written in the pull request or in this file. | S | H5 |
+| [x] | A8 | **Sanity-check the data.** Every species has a genus, an image and a `details` row. Genus -> family -> order -> class -> phylum -> kingdom links are complete. The live count (11 species) is correct. | A short list of any gaps, each one fixed or logged. | M | M9 |
 
 ---
 
@@ -200,3 +200,20 @@ Read these before reviewing the pull request. They are decisions made while codi
 - G4: `ManagePlants.tsx` went from 854 to 293 lines, split into `plantForm.ts`, `FormFields`, `PlantCreateForm`, `PlantEditForm`, `PlantList` and `usePlantQRModal`. Behaviour was kept the same except for small fixes: each input now has a proper label, the genus is matched by id only (as stored), and the add-form steps reset when it is reopened.
 - G5: an error boundary around all routes shows "Something went wrong" with a reload button.
 - G6: [09-manual-test.md](09-manual-test.md).
+
+---
+
+## Notes from doing workstream A (2026-10-30, on the live server)
+
+Done with the superuser login. Everything below was verified on the live server, not assumed.
+
+- **A1 (data):** the blank `order` record is deleted. The placeholder taxonomy (`awdawd`, `awdwad`, domain "Pogi" and so on) was **renamed, not deleted**, into the real classification of the 11 plants: Eukaryota > Plantae > Tracheophyta > Magnoliopsida / Liliopsida / Pinopsida > 9 orders > 9 families > 12 genera. Two junk domains and one duplicate unused `Carica` genus were removed. All 11 plants now show a real chain (checked through the public API). The taxonomy follows APG IV; **BioSociety should read it over**, and the genus `Ceiba` has no plant yet (kept, filed under Malvaceae).
+- **A2 (rules):** all plant and taxonomy collections: anyone can read; only admins (`isAdmin = true`) can create, update or delete. Before this, `order` was fully open and every other collection accepted writes from *any* logged-in user.
+- **A3 (users):** admins can list and manage everyone, other users see only themselves, nobody can sign up through the API, a user cannot change their own `isAdmin`, and nobody can delete their own account. A `manageRule` lets admins see other users' emails, so the "hidden email" worry in the earlier notes does not apply.
+- **Proved with throwaway users (deleted afterwards):** a non-admin was refused on create, update and delete, could not make themselves admin, could still edit their own name and saw only their own row. An admin could add and delete a plant, promote and demote others, and was refused deleting themselves.
+- **A4 (partly):** the server already made automatic backups (twice a week, keeping 3). I changed it to **daily at 02:00 Philippine time, keeping 7**. A copy of the 2026-10-28 backup was downloaded to `C:\Users\ASUS\Documents\flora-backups\` (outside the repo). **Not done: a test restore**, and an automatic off-server copy (needs S3 storage or a scheduled copy job on the server). The pre-change JSON export of every collection is in the same folder.
+- **A6:** the schema is exported to `docs/schema/pb_schema.json`. Re-export it after any change to fields or rules.
+- **A7:** decided: QR images are **not** stored (the code already works that way; no `qr_code` field).
+- **A8:** all 11 plants have a genus, an image that loads, all text fields and exactly one `details` row. Nothing was changed. Worth a check by BioSociety: some author/year pairs look doubtful, for example Narra (*Pterocarpus indicus*) is listed as "Carl Linnaeus, 1765" and several others carry the year of the older base name. I did not touch them.
+- **Still on the server side:** responses over ~32 KB are cut off by the web server in front of PocketBase (broken images, and even backup downloads; see runbook section 8). I worked around it for the backup by downloading in small ranges. Visitors cannot do that, so this is the top remaining launch issue.
+- **Password:** the superuser password was shared in chat. Change it in the PocketBase admin (Collections > `_superusers`) and keep it in a password manager.
