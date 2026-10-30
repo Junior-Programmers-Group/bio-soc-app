@@ -612,3 +612,59 @@
   }
 }
 
+
+/* ===================================================== */
+/* SEARCH BAR: one size everywhere                       */
+/* The field, the magnifier button and the filter button */
+/* share --search-h so they always line up. Keep this    */
+/* block last so it wins over the breakpoints above.     */
+/* ===================================================== */
+
+.searchForm {
+  --search-h: 48px;
+}
+
+@media (max-width: 1024px) {
+  .searchForm {
+    --search-h: 44px;
+  }
+}
+
+.heroInput {
+  height: var(--search-h);
+  margin-top: 0; /* the breakpoints above nudged it 2px, away from the icon */
+}
+
+/* the magnifier fills the left end of the field and centres its icon */
+.searchBtn {
+  top: 0;
+  bottom: 0;
+  left: 4px;
+  width: var(--search-h);
+  height: var(--search-h);
+  min-width: var(--search-h);
+  min-height: var(--search-h);
+  transform: none;
+}
+
+/* same height as the field, and round like it */
+.filterToggleBtn {
+  width: var(--search-h);
+  height: var(--search-h);
+  min-width: var(--search-h);
+  min-height: var(--search-h);
+  border-radius: 999px;
+}
+
+/* lift the whole bar on focus, so the icon moves with the field */
+.heroInput:focus {
+  transform: none;
+}
+
+.searchForm:focus-within {
+  transform: translateY(-2px);
+}
+
+.searchForm {
+  transition: transform 0.3s ease;
+}
