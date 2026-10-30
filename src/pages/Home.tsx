@@ -16,7 +16,7 @@ const Home = () => {
 
   return (
     <>
-      <Navbar variant="home" />
+      <Navbar />
       <Hero />
       <AboutEcoTagging />
       <WhyEcoTagging />

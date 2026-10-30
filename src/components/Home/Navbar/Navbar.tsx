@@ -1,89 +1,73 @@
-import { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import styles from "./Navbar.module.css";
 
-interface Props {
-  variant?: "default" | "home";
-}
+const SCROLLED_AFTER_PX = 50;
 
-const Navbar = ({ variant = "default" }: Props) => {
+/**
+ * Home page header. Same look as the redesigned header, but transparent over
+ * the hero and solid once the page is scrolled. On phones the links move into
+ * a menu opened by the hamburger button.
+ */
+const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() => window.scrollY > SCROLLED_AFTER_PX);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > SCROLLED_AFTER_PX);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `${styles.navItem} ${isActive ? styles.navActive : ""}`;
+  const menuClass = ({ isActive }: { isActive: boolean }) =>
+    `${styles.menuItem} ${isActive ? styles.menuActive : ""}`;
+
   return (
-    <header
-      className={`${styles.navbar} ${styles[variant]} ${
-        isScrolled && variant === "home" ? styles.scrolled : ""
-      }`}
-    >
-      {/* LOGO */}
-      <div className={styles.navbarLogo}>
-        <img src="/logo-biosoc.png" alt="BioSoc Eco-Tagging" />
-        <span>NDDU Flora</span>
+    <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>
+      <Link to="/" className={styles.brand}>
+        <img src="/logo-biosoc.png" alt="BioSoc" className={styles.logo} />
+        <span className={styles.name}>NDDU Flora</span>
+      </Link>
+
+      <div className={styles.right}>
+        <nav className={styles.nav} aria-label="Main">
+          <NavLink to="/" end className={linkClass}>
+            Home
+          </NavLink>
+          <NavLink to="/discover" className={linkClass}>
+            Discover
+          </NavLink>
+        </nav>
+        <Link to="/scan" className={styles.scanBtn}>
+          <i className="bi bi-qr-code-scan"></i>Scan a tag
+        </Link>
       </div>
 
-      {/* DESKTOP LINKS */}
-      <nav className={styles.navbarLinks}>
-        <NavLink
-          to="/"
-          className={({ isActive }) => (isActive ? styles.active : "")}
-        >
-          Home
-        </NavLink>
-
-        <NavLink
-          to="/discover"
-          className={({ isActive }) => (isActive ? styles.active : "")}
-        >
-          Discover Plants
-        </NavLink>
-
-        <NavLink
-          to="/scan"
-          className={({ isActive }) => (isActive ? styles.active : "")}
-        >
-          Scan Plant
-        </NavLink>
-      </nav>
-
-      {/* MOBILE HAMBURGER */}
       <button
-        className={`${styles.menuButton} ${open ? styles.open : ""}`}
-        onClick={() => setOpen(!open)}
+        type="button"
+        className={`${styles.menuButton} ${open ? styles.menuButtonOpen : ""}`}
+        onClick={() => setOpen((value) => !value)}
         aria-label="Toggle menu"
+        aria-expanded={open}
       >
         <span />
         <span />
         <span />
       </button>
 
-      {/* MOBILE MENU */}
       {open && (
-        <div className={styles.mobileMenu}>
-          <NavLink to="/" onClick={() => setOpen(false)}>
+        <div className={styles.menu}>
+          <NavLink to="/" end className={menuClass} onClick={() => setOpen(false)}>
             Home
           </NavLink>
-
-          <NavLink to="/discover" onClick={() => setOpen(false)}>
-            Discover Plants
+          <NavLink to="/discover" className={menuClass} onClick={() => setOpen(false)}>
+            Discover
           </NavLink>
-
-          <NavLink to="/scan" onClick={() => setOpen(false)}>
-            Scan Plant
-          </NavLink>
+          <Link to="/scan" className={styles.menuScan} onClick={() => setOpen(false)}>
+            <i className="bi bi-qr-code-scan"></i>Scan a tag
+          </Link>
         </div>
       )}
     </header>
