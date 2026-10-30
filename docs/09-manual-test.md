@@ -20,7 +20,7 @@ Test accounts needed: one **admin** and one **non-admin** account. Use a throwaw
 | 1.8 | Open a plant. Visit every tab: Overview, Taxonomy, Morphology, Ecology, Distribution, Uses. | Each tab shows its text (or "No ... information available"). Taxonomy lists domain to genus. | |
 | 1.9 | **Refresh the page** on a plant URL, and paste the URL into a new tab. | The plant still loads (not a 404). | |
 | 1.10 | Open `/discover/abcdefghijklmno` (a made-up id). | "Plant not found" and a back button. | |
-| 1.11 | Open `/plants` and `/anything-else`. | Both go to the home page. | |
+| 1.11 | Open `/plants` and `/anything-else`. | Both show the "We couldn't find that page" screen with the address that was not found and links to Discover, Scan and Home. | |
 
 ## 2. Scanning (phone, mobile data, not campus Wi-Fi)
 

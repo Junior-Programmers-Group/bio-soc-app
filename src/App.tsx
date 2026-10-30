@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { useAdminSession } from "./hooks/useAdminSession";
 
@@ -11,6 +11,7 @@ const DiscoverPlants = lazy(() => import("./pages/DiscoverPlants/DiscoverPlants"
 const PlantDetail = lazy(() => import("./pages/DiscoverPlants/PlantDetail/PlantDetail"));
 const AdminLogin = lazy(() => import("./components/Admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./components/Admin/AdminDashboard"));
+const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 
 import "./styles/global.css";
 
@@ -58,7 +59,7 @@ export default function App() {
             }
           />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
       </ErrorBoundary>

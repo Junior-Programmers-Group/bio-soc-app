@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import styles from "./TabBar.module.css";
 
 interface Props {
-  active: "discover" | "scan" | "about";
+  /** Which tab is highlighted; none on pages that belong to no tab. */
+  active?: "discover" | "scan" | "about";
 }
 
 /** Bottom tab bar of the public mobile screens. */
