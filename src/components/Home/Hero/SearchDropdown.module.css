@@ -1,6 +1,4 @@
-/* ===================================================== */
-/* SEARCH DROPDOWN — NATURE THEMED */
-/* ===================================================== */
+/* Suggestions under the Home search field. Uses the redesign tokens. */
 
 .dropdown {
   position: absolute;
@@ -9,24 +7,25 @@
   transform: translateX(-50%);
   width: 100%;
   max-width: 600px;
-  max-height: 420px;
+  max-height: min(460px, 70vh);
   margin-top: 12px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  animation: slideDown 0.3s ease;
-  pointer-events: auto;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-modal);
+  z-index: 1000;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  animation: dropIn 0.2s ease;
 }
 
-@keyframes slideDown {
+@keyframes dropIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(-50%) translateY(-6px);
   }
   to {
     opacity: 1;
@@ -34,201 +33,231 @@
   }
 }
 
-/* ===================================================== */
-/* RESULTS LIST */
-/* ===================================================== */
+/* ---------- list ---------- */
 
-.resultsList {
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 8px 0;
+.list {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px;
 }
 
-.resultsList::-webkit-scrollbar {
+.list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.list::-webkit-scrollbar {
   width: 6px;
 }
 
-.resultsList::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.resultsList::-webkit-scrollbar-thumb {
-  background: #d0d0d0;
+.list::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
   border-radius: 3px;
 }
 
-.resultsList::-webkit-scrollbar-thumb:hover {
-  background: #999;
-}
-
-.resultItem {
-  width: 100%;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.list::-webkit-scrollbar-track {
   background: transparent;
-  border: none;
-  border-bottom: 1px solid #f0f0f0;
-  cursor: pointer;
-  transition: all 0.2s ease;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--ink);
   text-align: left;
-  min-height: 64px;
-  box-sizing: border-box;
+  text-decoration: none;
+  transition: background 0.15s ease;
 }
 
-.resultItem:last-child {
-  border-bottom: none;
+.row:hover,
+.row:hover .name {
+  color: var(--ink);
+  text-decoration: none;
 }
 
-.resultItem:hover {
-  background: linear-gradient(90deg, rgba(45, 122, 61, 0.08) 0%, rgba(45, 122, 61, 0.02) 100%);
+.rowActive {
+  background: var(--primary-tint);
 }
 
-.resultItem:active {
-  background: rgba(45, 122, 61, 0.12);
+.thumb {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--placeholder);
 }
 
-/* ===================================================== */
-/* THUMBNAIL */
-/* ===================================================== */
-
-.thumbnail {
-  width: 50px;
-  height: 50px;
-  border-radius: 6px;
-  object-fit: cover;
-  background: #f5f5f5;
-  flex-shrink: 0;
-}
-
-/* ===================================================== */
-/* PLANT INFO */
-/* ===================================================== */
-
-.plantInfo {
-  flex: 1;
-  min-width: 0;
+.text {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 2px 0;
-  margin: 0;
-  gap: -2px;
-  row-gap: 0;
+  gap: 2px;
+  min-width: 0;
 }
 
-.commonName {
-  margin: 0 0 -15px 0;
-  font-size: 13px;
+.name {
+  font-family: var(--font-serif);
+  font-size: 17px;
   font-weight: 600;
-  color: #000000;
-  line-height: 1.2;
-  word-break: break-word;
-  display: -webkit-box;
-}
-
-.scientificName {
-  margin: 0;
-  font-size: 11px;
-  color: #777777;
-  font-style: italic;
-  line-height: 1.2;
-  word-break: break-word;
-  display: -webkit-box;
-}
-
-.taxonomy {
-  margin: 2px 0 0 0;
-  font-size: 10px;
-  color: #999999;
-  line-height: 1.2;
-  word-break: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
+  line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* ===================================================== */
-/* LOADING STATE */
-/* ===================================================== */
-
-.loading {
-  padding: 28px 16px;
-  text-align: center;
-}
-
-.loading p {
-  margin: 0;
+.sci {
+  font-family: var(--font-serif);
+  font-style: italic;
   font-size: 14px;
-  color: #666;
+  line-height: 1.3;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* small dot between the pieces of the line */
+.meta > span + span::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-right: 10px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+.alias {
+  color: var(--subtle);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--s-fg);
   font-weight: 500;
 }
 
-/* ===================================================== */
-/* NO RESULTS STATE */
-/* ===================================================== */
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--s-dot);
+}
 
-.noResults {
+.chevron {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* the part of the name that matches what was typed */
+.mark {
+  background: var(--primary-tint);
+  color: var(--primary);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.rowActive .mark {
+  background: var(--surface);
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--placeholder);
+  background: var(--surface-2);
+  font-size: 12px;
+  color: var(--subtle);
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.seeAll:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* ---------- loading / empty ---------- */
+
+.state {
   padding: 28px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.empty {
+  padding: 28px 20px;
   text-align: center;
 }
 
-.noResults p {
-  margin: 0;
+.empty h3 {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.empty p {
+  margin-top: 6px;
   font-size: 14px;
-  color: #999;
+  line-height: 1.5;
+  color: var(--muted);
 }
 
-/* ===================================================== */
-/* SCROLLBAR STYLING */
-/* ===================================================== */
-
-.resultsList::-webkit-scrollbar {
-  width: 6px;
-}
-
-.resultsList::-webkit-scrollbar-track {
-  background: #f9f9f9;
-}
-
-.resultsList::-webkit-scrollbar-thumb {
-  background: #2d5016;
-  border-radius: 3px;
-}
-
-.resultsList::-webkit-scrollbar-thumb:hover {
-  background: #1b5e20;
-}
-
-/* ===================================================== */
-/* 📱 TABLET */
-/* ===================================================== */
+/* ---------- phone ---------- */
 
 @media (max-width: 768px) {
   .dropdown {
     max-width: calc(100vw - 32px);
   }
 
-  .resultItem {
-    padding: 10px 12px;
+  .row {
+    grid-template-columns: 44px minmax(0, 1fr) 14px;
     gap: 10px;
+    min-height: 56px;
   }
 
-  .thumbnail {
-    width: 40px;
-    height: 40px;
+  .thumb {
+    width: 44px;
+    height: 44px;
   }
 
-  .commonName {
+  .name {
+    font-size: 16px;
+  }
+
+  .sci {
     font-size: 13px;
-  }
-
-  .scientificName {
-    font-size: 11px;
   }
 }

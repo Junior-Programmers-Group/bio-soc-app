@@ -12,6 +12,7 @@ const Hero = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState<SearchType>("all");
   const [filteredResults, setFilteredResults] = useState<Plant[]>([]);
+  const [totalMatches, setTotalMatches] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -47,7 +48,7 @@ const Hero = () => {
   // Filter plants based on search query
   useEffect(() => {
     if (searchQuery.trim()) {
-      const searchLower = searchQuery.toLowerCase();
+      const searchLower = searchQuery.trim().toLowerCase();
       
       const results = allPlants.filter((plant) => {
         // Determine which fields to search based on searchType
@@ -74,22 +75,21 @@ const Hero = () => {
           searchFields = [plant.scientificName || ""];
         }
 
-        // First-letter based search
-        const isMatch = searchFields.some((field) => {
+        // The search starts a word of a name: "pine" finds "Fern Pine",
+        // and "fern pi" finds it too
+        return searchFields.some((field) => {
           const fieldLower = field.toLowerCase();
-          // Split by spaces and check if any word starts with search term
-          const words = fieldLower.split(/\s+/);
-          return words.some((word) => word.startsWith(searchLower));
+          return fieldLower.startsWith(searchLower) || fieldLower.includes(" " + searchLower);
         });
-        
-        return isMatch;
       });
       
       
       // Limit results to top 8
+      setTotalMatches(results.length);
       setFilteredResults(results.slice(0, 8));
       setShowDropdown(true);
     } else {
+      setTotalMatches(0);
       setFilteredResults([]);
       setShowDropdown(false);
     }
@@ -214,7 +214,7 @@ const Hero = () => {
         )}
 
         <div className={styles.searchContainer}>
-          <form className={styles.searchForm}>
+          <form className={styles.searchForm} onSubmit={(e) => e.preventDefault()}>
             <input
               ref={searchInputRef}
               type="text"
@@ -258,9 +258,11 @@ const Hero = () => {
           <div ref={dropdownRef}>
             <SearchDropdown
               results={filteredResults}
+              total={totalMatches}
               loading={false}
               query={searchQuery}
               isOpen={showDropdown}
+              onClose={() => setShowDropdown(false)}
             />
           </div>
         </div>
