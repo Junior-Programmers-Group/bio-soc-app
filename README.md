@@ -33,8 +33,9 @@ Requires Node.js 20.19 or newer.
 npm install
 cp .env.example .env     # optional: defaults point at the production services
 npm run dev              # local development server
-npm run build            # type-check and build to dist/
+npm run build            # type-check, lint and build to dist/
 npm run lint             # ESLint
+npm test                 # unit tests (Vitest)
 ```
 
 | Variable | Purpose |
@@ -42,7 +43,7 @@ npm run lint             # ESLint
 | `VITE_PB_URL` | PocketBase API address |
 | `VITE_SITE_URL` | Public site address, encoded into every QR code |
 
-More: [PocketBase setup and rules](docs/07-pocketbase-setup.md) · [Deployment guide](docs/08-deployment.md) · [Audit](docs/05-audit.md) · [To-do list](docs/06-todo.md)
+More: [PocketBase setup and rules](docs/07-pocketbase-setup.md) · [Deployment guide](docs/08-deployment.md) · [Manual test script](docs/09-manual-test.md) · [Audit](docs/05-audit.md) · [To-do list](docs/06-todo.md)
 
 ---
 

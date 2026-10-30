@@ -52,7 +52,7 @@ export default function SearchDropdown({
               onClick={() => handlePlantClick(plant.id)}
             >
               {plant.image && (
-                <img src={plant.image} alt={plant.commonName} className={styles.thumbnail} />
+                <img src={plant.thumbnail || plant.image} alt={plant.commonName} className={styles.thumbnail} loading="lazy" decoding="async" />
               )}
               <div className={styles.plantInfo}>
                 <p className={styles.commonName}>

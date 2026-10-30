@@ -25,7 +25,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       <aside className={`${styles.sidebar} ${menuOpen ? styles.open : ""}`}>
         <div className={styles.sidebarBrand}>
           <h2>
-            <img className={styles.logo} src="/Logo.png" alt="BioSoc Logo" />
+            <img className={styles.logo} src="/logo-biosoc.png" alt="BioSoc Logo" />
             BioSoc Admin
           </h2>
         </div>

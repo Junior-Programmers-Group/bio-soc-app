@@ -24,20 +24,12 @@ Either the PocketBase server is down or moved, or `/pb-biosoc` is not being prox
 
 This is also a risk worth recording: the PocketBase URL is hard-coded in `db.ts` (and a second, `localhost:8090`, in the unused `useAuth.ts`), with no environment config.
 
-## Refine step (design findings to decide on)
+## Refine step: status (2026-10)
 
-These came from reading code in Phase 3, not from running spikes, so they are unconfirmed:
-
-1. Remove or protect the `/plants` route (`PlantsCRUD`).
-2. Move direct PocketBase calls in `Scan`, `PlantDetail`, `AdminLogin` into services.
-3. Remove the dead `qr_code = <text>` fallback lookup in `Scan` (`qr_code` is a file field).
-4. Split `adminService` (plants, users, analytics).
-5. Fix or delete the unused and duplicate code listed in the Phase 3 notes.
-6. Move the PocketBase URL into an environment variable (`import.meta.env.VITE_PB_URL`).
+The backend is reachable again, so spike #3 no longer applies. Of the design findings: the `/plants` route is removed, the `qr_code` fallback is removed, `adminService` is split, dead code is removed, and the PocketBase URL is now `VITE_PB_URL` (see [08-deployment.md](08-deployment.md)). Still open: the PocketBase rules (A2/A3) and the items in [06-todo.md](06-todo.md).
 
 ## To finish validation
 
-1. Confirm the backend URL / status (spike #3).
-2. Re-run spikes 5, 6, 8 (read-only; I can run these).
-3. Run spikes 7 and 9 on a staging or throwaway PocketBase, with a test admin account, so no production data is touched.
-4. Update the Phase 1-3 diagrams with whatever is found (the "living diagrams" step).
+1. Confirm collection rules with the checklist in [07-pocketbase-setup.md](07-pocketbase-setup.md) and `scripts/check-api-rules.sh`.
+2. Run the manual test script (task G6).
+3. Update the draw.io diagrams to match the current code.

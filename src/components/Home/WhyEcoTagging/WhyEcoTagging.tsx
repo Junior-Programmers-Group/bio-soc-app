@@ -8,7 +8,7 @@ const WhyEcoTagging = () => {
       <div className={styles.whyCards}>
         <div className={styles.whyCard}>
           <div className={styles.iconCircle}>
-            <img src="/Mask group.svg" alt="Accessible icon" />
+            <img src="/icon-accessible.svg" alt="Accessible icon" />
           </div>
           <h3>Accessible</h3>
           <p>
@@ -19,7 +19,7 @@ const WhyEcoTagging = () => {
 
         <div className={styles.whyCard}>
           <div className={styles.iconCircle}>
-            <img src="/Mask group (1).svg" alt="Informative icon" />
+            <img src="/icon-informative.svg" alt="Informative icon" />
           </div>
           <h3>Informative</h3>
           <p>
@@ -30,7 +30,7 @@ const WhyEcoTagging = () => {
 
         <div className={styles.whyCard}>
           <div className={styles.iconCircle}>
-            <img src="/Mask group (2).svg" alt="Digitalized icon" />
+            <img src="/icon-digitalized.svg" alt="Digitalized icon" />
           </div>
           <h3>Digitalized</h3>
           <p>

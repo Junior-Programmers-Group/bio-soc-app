@@ -1,0 +1,39 @@
+.box {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  background: var(--bg-dark);
+  color: var(--text-main);
+}
+
+.box p {
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.actions button {
+  padding: 10px 24px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--bg-dark);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions a {
+  color: var(--accent);
+}

@@ -15,7 +15,14 @@ export default function PlantsGrid({ plants }: Props) {
           to={`/discover/${plant.id}`}
           className={styles.card}
         >
-          {plant.image && <img src={plant.image} alt={plant.commonName} />}
+          {plant.image && (
+            <img
+              src={plant.thumbnail || plant.image}
+              alt={plant.commonName}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
           <h3>{plant.commonName}</h3>
           <em>{plant.scientificName}</em>
         </Link>

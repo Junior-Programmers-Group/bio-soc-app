@@ -6,6 +6,7 @@ export interface Plant {
   scientificName: string;  // Binomial name from species.scientificName
   commonNames?: string;
   image?: string;  // Image from species collection
+  thumbnail?: string;  // Smaller copy for lists and cards
   
   // Species Metadata
   genus?: string;  // Reference to genus name or ID

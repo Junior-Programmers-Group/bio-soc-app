@@ -94,3 +94,12 @@ Count at the time of the audit: 11 species, 11 details, 13 genera, 1 each of kin
 ## 7. Do not break printed tags
 
 Every printed QR code contains `<site address>/discover/plants/<plant id>`. Never delete a plant and add it again; edit it. If the website address ever changes, the old address must keep redirecting.
+
+## 8. Images: fix cut-off downloads and enable thumbnails
+
+**Cut-off images (do this before launch).** Several plant images fail to load because the server sends only the first ~32 KB and then stops, while announcing the full length (browser error `ERR_CONTENT_LENGTH_MISMATCH`). Test with `curl -s -o /dev/null -w "%{size_download}\n" -D - "<PocketBase URL>/api/files/species/<id>/<filename>"` and compare the `Content-Length` header with the bytes received. This looks like a problem in the web server that sits in front of PocketBase (`/pb-biosoc` is proxied), not in PocketBase or the app. Things to check with whoever runs it:
+- the proxy's error log at the time of a failed request (look for "permission denied" on a temporary file, or "upstream prematurely closed connection");
+- for nginx: the owner and free space of `proxy_temp_path`, and try `proxy_buffering off;` for that location;
+- whether a firewall, CDN or antivirus gateway is cutting long responses.
+
+**Thumbnails.** The site now asks for 400x300 copies of images in lists (smaller and faster). PocketBase only makes them if the field allows that size: open `species` > field `field` > options > **Thumb sizes**, add `400x300`, save. Until then the full image is sent, as before.

@@ -31,7 +31,7 @@ const Navbar = ({ variant = "default" }: Props) => {
     >
       {/* LOGO */}
       <div className={styles.navbarLogo}>
-        <img src="/Logo.png" alt="BioSoc Eco-Tagging" />
+        <img src="/logo-biosoc.png" alt="BioSoc Eco-Tagging" />
         <span>NDDU Flora</span>
       </div>
 

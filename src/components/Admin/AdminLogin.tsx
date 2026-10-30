@@ -43,7 +43,7 @@ export default function AdminLogin() {
     <div className={styles.loginContainer}>
       <div className={styles.loginBox}>
         <div className={styles.logo}>
-          <img src="/Logo.png" alt="BioSoc Logo" />
+          <img src="/logo-biosoc.png" alt="BioSoc Logo" />
         </div>
 
         <h1 className={styles.title}>BioSoc Eco-Tagging</h1>

@@ -162,6 +162,7 @@ const toPlant = (
     commonName: record.commonName || "Unknown",
     scientificName: record.scientificName || "",
     image: getSpeciesImageUrl(record),
+    thumbnail: getSpeciesImageUrl(record, "400x300"),
     genus: taxonomy.genus || "",
     genusId: record.genus || "",
     author: record.author || "",

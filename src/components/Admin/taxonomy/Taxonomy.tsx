@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "./Taxonomy.module.css";
+import { errorMessage } from "../../../services/errors";
 import { useFetchTaxonomy, type TaxonomyData } from "../../../back-end/hooks/useFetchTaxonomy";
 import type { BaseTaxonomyRecord } from "../../../back-end/types/taxonomyClass";
 
@@ -122,29 +123,26 @@ export default function Taxonomy() {
   const { fetch , create} = useFetchTaxonomy();
 
   useEffect(() => {
-    const controller = new AbortController();
+    let isMounted = true;
 
-    const fetchData = async () => {
+    const loadTaxonomy = async () => {
       try {
-        await fetchAnalytics();
-        const taxonomyData = await fetch();
-        if (!controller.signal.aborted) {
-          setTaxonomyData(taxonomyData);
-        }
-      } catch (err: any) {
-        if (!controller.signal.aborted) {
-          if (!err?.message?.includes("aborted")) {
-            setError(err.message || "Failed to fetch taxonomy data");
-          }
-        }
+        const data = await fetch();
+        if (isMounted) setTaxonomyData(data);
+      } catch (err) {
+        if (isMounted) setError(errorMessage(err, "Failed to fetch taxonomy data"));
+      } finally {
+        if (isMounted) setLoading(false);
       }
-    }
+    };
 
-    fetchData();
+    loadTaxonomy();
 
     return () => {
-      controller.abort();
+      isMounted = false;
     };
+    // fetch comes from a hook that recreates it each render; this must run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (
@@ -220,25 +218,12 @@ export default function Taxonomy() {
         [collection.collectionName]: {}
       }));
 
-    } catch (err: any) {
-      console.error(err.message);
+    } catch {
       addToast('error', collection.name);
     } finally {
       setCreatingCollection(null);
     }
   }
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch taxonomy data");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return <div className={styles.loading}>Loading taxonomy list...</div>;
 

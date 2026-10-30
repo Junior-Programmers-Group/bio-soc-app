@@ -1,21 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 import Navbar from "../../../components/Home/Navbar/Navbar";
 import pb from "../../../back-end/db";
 import { errorMessage, isNotFound } from "../../../services/errors";
+import { parsePlantId } from "../../../services/plantId";
 import styles from "./Scan.module.css";
-
-// Plant tags hold <site>/discover/plants/<id>. PocketBase ids are 15 letters/digits.
-const PLANT_ID = /^[a-z0-9]{15}$/i;
-
-/** The plant id inside a scanned tag, or null if the text is not a Flora tag. */
-const parsePlantId = (scanned: string): string | null => {
-  const text = scanned.trim();
-  const fromUrl = text.match(/\/plants\/([a-z0-9]{15})(?:[/?#]|$)/i);
-  const id = fromUrl ? fromUrl[1] : text;
-  return PLANT_ID.test(id) ? id : null;
-};
 
 type Plant = {
   commonName: string;
@@ -49,6 +39,47 @@ const Scan = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Show a scan problem and pause briefly, so the same bad code is not looked up 10 times a second
+  const rejectScan = useCallback((message: string) => {
+    setPlant(null);
+    setError(message);
+    hasScannedRef.current = true;
+    window.setTimeout(() => {
+      hasScannedRef.current = false;
+    }, 2000);
+  }, []);
+
+  // Returns true when the scan led to a plant page
+  const fetchPlantAndNavigate = useCallback(async (scanned: string): Promise<boolean> => {
+    const plantId = parsePlantId(scanned);
+    if (!plantId) {
+      rejectScan("This QR code is not a Flora plant tag.");
+      return false;
+    }
+
+    try {
+      await pb.collection("species").getOne(plantId, { fields: "id", requestKey: null });
+    } catch (err) {
+      rejectScan(
+        isNotFound(err)
+          ? "This QR code is not a Flora plant tag, or the plant has been removed."
+          : errorMessage(err)
+      );
+      return false;
+    }
+
+    // Stop the camera before leaving the page
+    if (isScannerRunningRef.current && scannerRef.current) {
+      isScannerRunningRef.current = false;
+      await scannerRef.current.stop().catch(() => {});
+    }
+    scannerRef.current = null;
+    isScannerRunningRef.current = false;
+
+    navigate(`/discover/plants/${plantId}`);
+    return true;
+  }, [navigate, rejectScan]);
 
  useEffect(() => {
   let mounted = true;
@@ -110,7 +141,7 @@ const Scan = () => {
     }
     hasScannedRef.current = false;
   };
-}, []);
+}, [fetchPlantAndNavigate]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -128,7 +159,6 @@ const Scan = () => {
         try {
           isScannerRunningRef.current = false;
           await scannerRef.current.stop();
-          console.log("Camera scanner stopped for file upload");
         } catch (stopError) {
           console.error("Error stopping camera scanner:", stopError);
         }
@@ -175,52 +205,10 @@ const Scan = () => {
           }
         );
         isScannerRunningRef.current = true;
-        console.log("Camera scanner restarted");
       }
     } catch (err) {
       console.error("Error restarting camera scanner:", err);
     }
-  };
-
-  // Show a scan problem and pause briefly, so the same bad code is not looked up 10 times a second
-  const rejectScan = (message: string) => {
-    setPlant(null);
-    setError(message);
-    hasScannedRef.current = true;
-    window.setTimeout(() => {
-      hasScannedRef.current = false;
-    }, 2000);
-  };
-
-  // Returns true when the scan led to a plant page
-  const fetchPlantAndNavigate = async (scanned: string): Promise<boolean> => {
-    const plantId = parsePlantId(scanned);
-    if (!plantId) {
-      rejectScan("This QR code is not a Flora plant tag.");
-      return false;
-    }
-
-    try {
-      await pb.collection("species").getOne(plantId, { fields: "id", requestKey: null });
-    } catch (err) {
-      rejectScan(
-        isNotFound(err)
-          ? "This QR code is not a Flora plant tag, or the plant has been removed."
-          : errorMessage(err)
-      );
-      return false;
-    }
-
-    // Stop the camera before leaving the page
-    if (isScannerRunningRef.current && scannerRef.current) {
-      isScannerRunningRef.current = false;
-      await scannerRef.current.stop().catch(() => {});
-    }
-    scannerRef.current = null;
-    isScannerRunningRef.current = false;
-
-    navigate(`/discover/plants/${plantId}`);
-    return true;
   };
 
   return (

@@ -52,7 +52,7 @@ const AboutEcoTagging = () => {
       </div>
 
       <div className={styles.imageWrapper}>
-        <img src="/image 4.png" alt="Eco Tagging" />
+        <img src="/eco-tagging.webp" alt="Eco Tagging" loading="lazy" decoding="async" />
       </div>
     </section>
   );

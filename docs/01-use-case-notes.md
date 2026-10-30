@@ -15,7 +15,7 @@ Diagram: [diagrams/01-use-case.drawio](diagrams/01-use-case.drawio) (open with d
 | Use case | Where it lives |
 | :--- | :--- |
 | View Homepage | `/` (Hero, About, Why Eco-Tagging, Location, Partners) |
-| Scan QR Code | `/scan` (camera; resolves plant by id or `qr_code`, shows an error if invalid) |
+| Scan QR Code | `/scan` (camera; reads the plant id from the tag, shows a clear message for a foreign or unknown code) |
 | Upload QR Image (extends Scan) | `/scan` (image upload fallback) |
 | Browse Plant Directory | `/discover` |
 | Search Plants (extends Browse) | `/discover` search bar (all / name / scientific) and homepage Hero search |
@@ -31,7 +31,7 @@ Diagram: [diagrams/01-use-case.drawio](diagrams/01-use-case.drawio) (open with d
 | Delete Plant Species | Asks for confirmation; also removes the `details` record |
 | Download / Print QR Code | QR modal in Manage Plants |
 | Manage Taxonomy | Create domain, kingdom, phylum, class, order, family, genus records |
-| Manage Users | Change role (user / admin / moderator), delete user |
+| Manage Users | Give or remove admin access, delete user (not yourself, not the last admin) |
 | View Analytics | Total plants, total users, verified users, verified rate |
 | Logout | Clears the PocketBase auth session |
 

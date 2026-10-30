@@ -9,8 +9,10 @@ const Location: React.FC = () => {
         {/* LEFT: IMAGE */}
         <div className={styles.locationImage}>
           <img
-            src="/assets/nddu-campus.jpg" // direct path from public folder
+            src="/assets/nddu-campus.webp" // direct path from public folder
             alt="Notre Dame of Dadiangas University"
+            loading="lazy"
+            decoding="async"
           />
           <h3>Notre Dame of Dadiangas University</h3>
         </div>

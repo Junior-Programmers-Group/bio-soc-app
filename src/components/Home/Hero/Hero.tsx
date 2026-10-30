@@ -48,8 +48,6 @@ const Hero = () => {
   useEffect(() => {
     if (searchQuery.trim()) {
       const searchLower = searchQuery.toLowerCase();
-      console.log("🔍 Searching for:", searchLower);
-      console.log("📊 Total plants:", allPlants.length);
       
       const results = allPlants.filter((plant) => {
         // Determine which fields to search based on searchType
@@ -83,15 +81,9 @@ const Hero = () => {
           return words.some((word) => word.startsWith(searchLower));
         });
         
-        // Log first few for debugging
-        if (allPlants.indexOf(plant) < 2) {
-          console.log("Plant:", plant.commonName, "Fields:", searchFields);
-        }
-        
         return isMatch;
       });
       
-      console.log("✓ Found", results.length, "matching plants");
       
       // Limit results to top 8
       setFilteredResults(results.slice(0, 8));

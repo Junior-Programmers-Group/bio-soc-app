@@ -9,8 +9,9 @@ interface FilterProps {
   taxonomyOptions?: Record<string, string[]>;
 }
 
+const taxonomyLevels = ["domain", "kingdom", "phylum", "klass", "order", "family", "genus"];
+
 export default function Filters({ plants, taxonomyFilters, setTaxonomyFilters, taxonomyOptions }: FilterProps) {
-  const taxonomyLevels = ["domain", "kingdom", "phylum", "klass", "order", "family", "genus"];
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   const toggleGroup = (level: string) => {
@@ -24,15 +25,6 @@ export default function Filters({ plants, taxonomyFilters, setTaxonomyFilters, t
   const uniqueTaxonomyValues = useMemo(() => {
     // If taxonomy options are provided from the database, use those
     if (taxonomyOptions && Object.keys(taxonomyOptions).length > 0) {
-      console.log("✅ Using taxonomy options from database:", {
-        domain: taxonomyOptions.domain?.length || 0,
-        kingdom: taxonomyOptions.kingdom?.length || 0,
-        phylum: taxonomyOptions.phylum?.length || 0,
-        klass: taxonomyOptions.klass?.length || 0,
-        order: taxonomyOptions.order?.length || 0,
-        family: taxonomyOptions.family?.length || 0,
-        genus: taxonomyOptions.genus?.length || 0,
-      });
       return taxonomyOptions;
     }
 
@@ -61,26 +53,15 @@ export default function Filters({ plants, taxonomyFilters, setTaxonomyFilters, t
     });
 
     // Log available filters for debugging
-    console.log("ℹ️ Using taxonomy options extracted from plants:", {
-      domain: result.domain.length,
-      kingdom: result.kingdom.length,
-      phylum: result.phylum.length,
-      klass: result.klass.length,
-      order: result.order.length,
-      family: result.family.length,
-      genus: result.genus.length,
-    });
 
     return result;
-  }, [plants, taxonomyLevels, taxonomyOptions]);
+  }, [plants, taxonomyOptions]);
 
   const handleClearAllFilters = () => {
-    console.log("🗑️ Clearing all taxonomy filters");
     setTaxonomyFilters({});
   };
 
   const handleClearLevelFilter = (level: string) => {
-    console.log(`🗑️ Clearing filter for level: ${level}`);
     const newFilters = { ...taxonomyFilters };
     delete newFilters[level];
     setTaxonomyFilters(newFilters);
@@ -92,11 +73,9 @@ export default function Filters({ plants, taxonomyFilters, setTaxonomyFilters, t
     if (newFilters[level] === value) {
       // Deselect if clicking the same value
       delete newFilters[level];
-      console.log(`✗ Deselected filter: ${level} = ${value}`);
     } else {
       // Select new value (replaces any previous value in this level)
       newFilters[level] = value;
-      console.log(`✓ Selected filter: ${level} = ${value}`);
     }
 
     setTaxonomyFilters(newFilters);
@@ -200,7 +179,6 @@ function FilterGroup({ title, level, options, selectedValue, onSelect, isExpande
         {options.map((option) => {
           // Filter out ID-like strings (10+ alphanumeric characters that look like database IDs)
           if (/^[a-z0-9]{10,}$/.test(option)) {
-            console.log(`⚠️ Skipping ${level} option that looks like an ID: ${option}`);
             return null;
           }
           return (

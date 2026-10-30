@@ -15,9 +15,9 @@ The backend is PocketBase (`https://jpg-services.nddu.edu.ph/pb-biosoc`). Each e
 | ORDER | class | N:1 Class | name, description |
 | FAMILY | order | N:1 Order | name, description, date_discovered |
 | GENUS | family | N:1 Family | name, description |
-| SPECIES | genus | N:1 Genus | commonName, scientificName, description, author, year, conservationStatus, notes, field (image file), qr_code (file) |
+| SPECIES | genus | N:1 Genus | commonName, scientificName, author, year, conservationStatus, notes, field (image file) |
 | DETAILS | species | 1:1 Species | morphology, ecology, distribution, uses |
-| USERS | none | none | email, password, verified, role, isAdmin |
+| USERS | none | none | email, password, verified, isAdmin (the legacy `role` field is no longer used) |
 
 Taxonomy is a strict chain: Domain, Kingdom, Phylum, Class, Order, Family, Genus, Species. Each level has one parent. The app walks this chain with a single nested expand when loading plants (`species.genus.family.order.class.phylum.kingdom.domain`).
 
@@ -26,15 +26,12 @@ Taxonomy is a strict chain: Domain, Kingdom, Phylum, Class, Order, Family, Genus
 - **Added DOMAIN** above Kingdom.
 - **Renamed** the flat `speciesID` / `genusID` style keys to PocketBase relation fields (`genus`, `family`, ...). PocketBase generates the string `id` itself.
 - **Added DETAILS** (morphology, ecology, distribution, uses), a separate 1:1 table shown on the plant profile tabs. It is created and updated together with the species.
-- **Added to SPECIES:** `image` (`field`) and `qr_code` files. The QR code is generated on create and regenerated on edit. It encodes `https://flora.nddu.edu.ph/discover/plants/<speciesId>` (see `qrCodeService.ts`).
+- **Added to SPECIES:** the `field` image file. QR codes are not stored: they are generated on demand from the plant id and encode `https://flora.nddu.edu.ph/discover/plants/<speciesId>` (see `qrCodeService.ts`).
 - **Added USERS** (PocketBase auth collection). It is not related to plant data.
 
-## Please verify (code and old ERD disagree, or are unclear)
+## Verified against the live server (2026-10-14) and the current code
 
-1. **Legacy duplicate fields on SPECIES.** The admin code still writes `kingdom`, `phylum`, `klass`, `order`, `family`, `species`, `morphology`, `ecology`, `distribution`, `uses` and `phylum_id` to `species` on create/update, but the public pages read taxonomy through `genus` and details through `details`. I left these off the diagram as redundant. Confirm whether those columns still exist in PocketBase.
-2. **CLASS parent field.** The TypeScript type names it `Phylum`, but the queries use `phylum`. I drew it as `phylum`.
-3. **`hierarchy` code uses `parent_id`** in one fallback path in `plantService.ts`. The main path uses named parent fields, which is what the diagram shows.
-4. **USERS `role` vs `isAdmin`.** Both exist: login checks `isAdmin`, the Manage Users screen edits `role`. They are not tied together in code.
-5. **Old `PlantsCRUD` screen** (`/plants`) writes `name`, `description`, `phylum_id` to the `class` collection. It looks like leftover prototype code, so I excluded it.
-
-Run a schema export from the PocketBase admin UI if you want me to check the diagram against the real collections.
+- `species` has only: author, commonName, conservationStatus, field, genus, notes, scientificName, year. There is **no** `qr_code` field. The old legacy columns (`kingdom`, `phylum`, `klass`, `order`, `family`, `species`, `phylum_id`, ...) do not exist either, and the code no longer sends them.
+- Taxonomy parent fields are the named relations shown above (`family.order`, `order.class`, `class.phylum`, ...).
+- `users.isAdmin` is the only admin flag the app reads. `role` is unused.
+- The schema export from the PocketBase admin (task A6) is still outstanding, so the live schema is known from API responses, not from an export.

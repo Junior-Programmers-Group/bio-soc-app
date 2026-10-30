@@ -99,10 +99,10 @@ Source: [05-audit.md](05-audit.md) (2026-10-14). Item codes like `H1` or `D3` po
 
 | [ ] | ID | Task | Done when | Effort | Audit |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| [ ] | F1 | **Compress images** in `public/` and `src/assets` (convert to WebP/AVIF, resize). Biggest: `image 4.png` 760 KB, `BIOSOCIETY.png` 600 KB, `LOGO-Final-WHITE.png` 480 KB. | `public/` under 500 KB total; no visible quality loss. | M | L4 |
-| [ ] | F2 | **Rename assets** without spaces/parentheses (e.g. `Logo (1).png`) and update imports. Delete the unused or duplicate ones (`React.svg`, duplicates of `Plant.png`/`River Tamarind.png`, `.jfif`). | No filename contains a space or `(`. | S | L4 |
-| [ ] | F3 | **Width/height and `loading="lazy"`** on images; use PocketBase thumbnails (`?thumb=400x300`) in the grid. | Discover grid loads smaller images; no layout jump. | M | L4 |
-| [ ] | F4 | **Remove debug logging** (206 `console.*` calls). Keep `console.error` only where something is genuinely handled. Optionally add a `logger` that is silent in production. | Browser console is quiet on a normal visit. | M | M5 |
+| [x] | F1 | **Compress images** in `public/` and `src/assets` (convert to WebP/AVIF, resize). Biggest: `image 4.png` 760 KB, `BIOSOCIETY.png` 600 KB, `LOGO-Final-WHITE.png` 480 KB. | `public/` under 500 KB total; no visible quality loss. | M | L4 |
+| [x] | F2 | **Rename assets** without spaces/parentheses (e.g. `Logo (1).png`) and update imports. Delete the unused or duplicate ones (`React.svg`, duplicates of `Plant.png`/`River Tamarind.png`, `.jfif`). | No filename contains a space or `(`. | S | L4 |
+| [x] | F3 | **Width/height and `loading="lazy"`** on images; use PocketBase thumbnails (`?thumb=400x300`) in the grid. | Discover grid loads smaller images; no layout jump. | M | L4 |
+| [x] | F4 | **Remove debug logging** (206 `console.*` calls). Keep `console.error` only where something is genuinely handled. Optionally add a `logger` that is silent in production. | Browser console is quiet on a normal visit. | M | M5 |
 | [ ] | F5 | **Measure before and after:** run Lighthouse on Home, Discover and a plant page; record scores in the pull request. | Scores recorded; performance ≥ 85 on mobile. | S | M5 |
 
 ---
@@ -111,12 +111,12 @@ Source: [05-audit.md](05-audit.md) (2026-10-14). Item codes like `H1` or `D3` po
 
 | [ ] | ID | Task | Done when | Effort | Audit |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| [ ] | G1 | **Fix the 81 lint problems** (mostly `any`, plus hook dependency warnings, unused variables). Do it after C6 so the types exist. | `npm run lint` passes. | L | M8 |
-| [ ] | G2 | **Run lint in the build** (`"build": "tsc -b && eslint . && vite build"`) and in a pull-request check (GitHub Actions). | A pull request with a lint error fails the check. | M | M8 |
-| [ ] | G3 | **Add a test setup** (Vitest + Testing Library). First tests: QR URL -> plant ID extraction, filter building, admin gate. | `npm test` runs and passes in CI. | L | M8 |
-| [ ] | G4 | **Split `ManagePlants.tsx`** (1,035 lines) into a list, a form, an image uploader and a QR panel with custom hooks. *One person only.* | No file over ~300 lines; same behaviour. | L | M8 |
-| [ ] | G5 | **Add a React error boundary** around routes so one crash does not blank the page. | A thrown error shows a friendly message and a reload button. | S | H5 |
-| [ ] | G6 | **Manual test script** in `docs/` covering: browse, search, filter, scan a printed tag, scan an image file, admin login, add/edit/delete a plant, QR download/print, user role change. | Another teammate follows it and signs off. | M | M8 |
+| [x] | G1 | **Fix the 81 lint problems** (mostly `any`, plus hook dependency warnings, unused variables). Do it after C6 so the types exist. | `npm run lint` passes. | L | M8 |
+| [x] | G2 | **Run lint in the build** (`"build": "tsc -b && eslint . && vite build"`) and in a pull-request check (GitHub Actions). | A pull request with a lint error fails the check. | M | M8 |
+| [x] | G3 | **Add a test setup** (Vitest + Testing Library). First tests: QR URL -> plant ID extraction, filter building, admin gate. | `npm test` runs and passes in CI. | L | M8 |
+| [x] | G4 | **Split `ManagePlants.tsx`** (1,035 lines) into a list, a form, an image uploader and a QR panel with custom hooks. *One person only.* | No file over ~300 lines; same behaviour. | L | M8 |
+| [x] | G5 | **Add a React error boundary** around routes so one crash does not blank the page. | A thrown error shows a friendly message and a reload button. | S | H5 |
+| [x] | G6 | **Manual test script** in `docs/` covering: browse, search, filter, scan a printed tag, scan an image file, admin login, add/edit/delete a plant, QR download/print, user role change. | Another teammate follows it and signs off. | M | M8 |
 
 ---
 
@@ -124,11 +124,11 @@ Source: [05-audit.md](05-audit.md) (2026-10-14). Item codes like `H1` or `D3` po
 
 | [ ] | ID | Task | Done when | Effort | Audit |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| [~] | H1 | **Delete dead code:** `hooks/useAuth.ts`, `components/ProtectedRoute.tsx`, `pages/Admin/Admin.tsx`, `services/imageProxy.ts`, `components/DiscoverPlant/pLantCard/`, `back-end/hooks/*`, unused `fetchAnalytics` in `Taxonomy.tsx`. Remove `lucide-react` from `package.json`. | Build passes, no references remain. | S | L1 |
-| [ ] | H2 | **Fix folder names and casing** (`pLantCard` -> `PlantCard`; check for other mixed-case names). | No two paths differ only by case. | S | L2 |
-| [ ] | H3 | **`index.html`:** real favicon (replace `/vite.svg`), meta description, theme colour, Open Graph tags and image for shared links. | Sharing the link in Messenger shows a title, description and image. | S | L5 |
-| [ ] | H4 | **Self-contained homepage copy review:** typos, consistent species count, contact/credits for the club and school. | Content owner signs off. | S | - |
-| [ ] | H5 | **Update the docs** (`01` to `04`, diagrams) to match the final code after the changes above. | The component diagram matches `src/`. | M | - |
+| [x] | H1 | **Delete dead code:** `hooks/useAuth.ts`, `components/ProtectedRoute.tsx`, `pages/Admin/Admin.tsx`, `services/imageProxy.ts`, `components/DiscoverPlant/pLantCard/`, `back-end/hooks/*`, unused `fetchAnalytics` in `Taxonomy.tsx`. Remove `lucide-react` from `package.json`. | Build passes, no references remain. | S | L1 |
+| [x] | H2 | **Fix folder names and casing** (`pLantCard` -> `PlantCard`; check for other mixed-case names). | No two paths differ only by case. | S | L2 |
+| [x] | H3 | **`index.html`:** real favicon (replace `/vite.svg`), meta description, theme colour, Open Graph tags and image for shared links. | Sharing the link in Messenger shows a title, description and image. | S | L5 |
+| [~] | H4 | **Self-contained homepage copy review:** typos, consistent species count, contact/credits for the club and school. | Content owner signs off. | S | - |
+| [x] | H5 | **Update the docs** (`01` to `04`, diagrams) to match the final code after the changes above. | The component diagram matches `src/`. | M | - |
 
 ---
 
@@ -172,3 +172,31 @@ Read these before reviewing the pull request. They are decisions made while codi
 - **Watch for blank emails.** In PocketBase, a user's email is hidden from other users unless they set "emailVisibility" (superusers always see it). With the `users` rules in the runbook, the Users screen may show "hidden" for other people's emails. If that happens, ask each user to make their email visible, or use the PocketBase admin to manage accounts.
 - **H1 partly done.** Removed with this work: `PlantsCRUD`, the six `usePlantClass*` hooks, `ProtectedRoute`, `pages/Admin`, `hooks/useAuth.ts` and `adminService.ts`. Still to remove: `services/imageProxy.ts`, `components/DiscoverPlant/pLantCard/`, `back-end/types/plantClass.ts`, the `fetchAnalytics` stub in `Taxonomy.tsx`, and the `lucide-react` dependency.
 - **Left for later tasks:** 20 lint errors and 4 warnings remain (mostly `any` in `ManagePlants.tsx`, `Taxonomy.tsx`, `imageProxy.ts`, plus hook-dependency warnings). Debug `console.log` calls remain in `Filters.tsx`, `Hero.tsx`, `Taxonomy.tsx`, `ManagePlants.tsx` (task F4).
+
+---
+
+## Notes from implementing F, H and G
+
+**Checked in a real browser (production build):** home, Discover (11 plants), a plant page (all tabs, real taxonomy and details), the not-found state, `/scan`, `/admin` login form, `/plants` redirect. No app errors in the console. **Not checked:** anything behind the admin login (no test account was available), a real camera scan, and a phone. Run [09-manual-test.md](09-manual-test.md) for those. `npm run build` now includes lint; 31 tests pass; `npm audit` is clean.
+
+**F: performance**
+- `public/` went from 2.1 MB to 0.3 MB. Hero image and "eco-tagging" picture are now WebP; unused images (`BIOSOCIETY.png`, `LOGO-Final-WHITE.png`, all of `src/assets`) were deleted; files renamed without spaces (`logo-biosoc.png`, `logo-biosociety.png`, `logo-jpg.png`, `icon-*.svg`).
+- F3 is partly done: below-the-fold images and the plant grid now use `loading="lazy"`, and the grid asks PocketBase for 400x300 thumbnails. **Width/height attributes were not added**, because the logos are sized by CSS and fixed attributes could stretch them. **The thumbnails only help once PocketBase is told the sizes** (see runbook section 8); until then the server returns the full image.
+- F4: all `console.log`/`console.warn` calls were removed (206 before, 11 `console.error` calls left, for genuine failures).
+- **F5 (Lighthouse) was not run.** Run it in Chrome on Home, Discover and a plant page and record the scores here.
+
+**New finding (server, not code): image downloads get cut off.** Some plant images fail with `ERR_CONTENT_LENGTH_MISMATCH`: the server declares the full size but stops sending after about 32 KB. It happens with or without the thumbnail parameter and for the same files each time. Visitors will see broken or half-loaded pictures. This is almost certainly the web server in front of PocketBase (see runbook section 8). It needs fixing before launch.
+
+**H: cleanup**
+- H1 finished: `imageProxy`, `pLantCard`, `plantClass.ts`, the `fetchAnalytics` stub and `lucide-react` are gone.
+- H3: real favicon, description, theme colour and Open Graph tags. The share image address is fixed to `https://flora.nddu.edu.ph/og-image.jpg`; change it in `index.html` if the site address ever changes.
+- H4 is partly done: nothing was rewritten. The content owner still has to read the home page text and sign off. One thing to check: the taxonomy tab on plant pages currently shows the placeholder names (domain "Pogi", then `awdawd`...). That is data (task A1), not code.
+- H5: docs 01 to 04 updated to match the code. The draw.io diagrams were **not** redrawn.
+
+**G: quality**
+- G1: lint is clean (0 errors, 0 warnings).
+- G2: `npm run build` runs `tsc`, `eslint` and `vite build`. GitHub Actions (`.github/workflows/ci.yml`) runs lint, tests, build and `npm audit` on every pull request and push to `main`. Turn on "require status checks" in the GitHub branch settings to make it block merges.
+- G3: Vitest with 31 tests covering QR-tag parsing, error messages, plant create/update/delete rollback, user-admin guards, the login form, the error boundary and the plant form helpers. Run with `npm test`.
+- G4: `ManagePlants.tsx` went from 854 to 293 lines, split into `plantForm.ts`, `FormFields`, `PlantCreateForm`, `PlantEditForm`, `PlantList` and `usePlantQRModal`. Behaviour was kept the same except for small fixes: each input now has a proper label, the genus is matched by id only (as stored), and the add-form steps reset when it is reopened.
+- G5: an error boundary around all routes shows "Something went wrong" with a reload button.
+- G6: [09-manual-test.md](09-manual-test.md).

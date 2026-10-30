@@ -3,6 +3,7 @@ import { Suspense, lazy } from "react";
 import { useAdminSession } from "./hooks/useAdminSession";
 
 import Home from "./pages/Home";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Lazy load heavy route components for code splitting
 const Scan = lazy(() => import("./pages/DiscoverPlants/Scan/Scan"));
@@ -34,6 +35,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ErrorBoundary>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -59,6 +61,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }
