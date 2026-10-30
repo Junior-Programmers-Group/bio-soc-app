@@ -2,9 +2,13 @@
 export interface Plant {
   id: string;
   name?: string;
-  commonName: string;  // Main display name from species.commonName
+  commonName: string;  // Display name: the first of the common names in species.commonName
+  aliases?: string[];  // The other common names ("Also called ...")
+  code?: string;  // Specimen code, e.g. NDDU-0001
+  created?: string;
+  updated?: string;
   scientificName: string;  // Binomial name from species.scientificName
-  commonNames?: string;
+  commonNames?: string;  // Every common name exactly as stored, separated by " / "
   image?: string;  // Image from species collection
   thumbnail?: string;  // Smaller copy for lists and cards
   

@@ -1,0 +1,25 @@
+/* Each class defines the badge colours that components read as var(--s-*). */
+
+.lc {
+  --s-bg: var(--lc-bg);
+  --s-fg: var(--lc-text);
+  --s-dot: var(--lc-dot);
+}
+
+.vu {
+  --s-bg: var(--vu-bg);
+  --s-fg: var(--vu-text);
+  --s-dot: var(--vu-dot);
+}
+
+.en {
+  --s-bg: var(--en-bg);
+  --s-fg: var(--en-text);
+  --s-dot: var(--en-dot);
+}
+
+.other {
+  --s-bg: var(--other-bg);
+  --s-fg: var(--other-text);
+  --s-dot: var(--other-dot);
+}

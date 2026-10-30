@@ -1,198 +1,187 @@
-import { useMemo, useState } from "react";
-import type { Plant } from "../../../types/plant";
+import { useEffect } from "react";
+import {
+  MORE_RANKS,
+  type RankFilter,
+  type RankKey,
+  type StatusFilter,
+  type StatusRow,
+} from "../../../pages/DiscoverPlants/discoverLogic";
+import { statusOf } from "../../../lib/status";
 import styles from "./Filters.module.css";
 
-interface FilterProps {
-  plants: Plant[];
-  taxonomyFilters: Record<string, string>;
-  setTaxonomyFilters: (filters: Record<string, string>) => void;
-  taxonomyOptions?: Record<string, string[]>;
+interface SelectProps {
+  filter: RankFilter;
+  onChange: (key: RankKey, value: string) => void;
+  /** Phone version: taller, bigger text, no option count. */
+  compact?: boolean;
 }
 
-const taxonomyLevels = ["domain", "kingdom", "phylum", "klass", "order", "family", "genus"];
+/** One rank drop-down (Family, Genus, ...). Genus values are italic. */
+function TaxSelect({ filter, onChange, compact = false }: SelectProps) {
+  const on = filter.value !== "";
+  return (
+    <label className={`${styles.field} ${compact ? styles.fieldCompact : ""}`}>
+      <span className={styles.fieldLabel}>
+        {filter.label}
+        {!compact && <span className={styles.fieldCount}>{filter.options.length}</span>}
+      </span>
+      <div className={styles.selectWrap}>
+        <select
+          className={`${styles.select} ${on ? styles.selectOn : ""} ${
+            filter.key === "genus" && on ? styles.italic : ""
+          }`}
+          value={filter.value}
+          onChange={(e) => onChange(filter.key, e.target.value)}
+        >
+          <option value="">{filter.any}</option>
+          {filter.options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <i className={`bi bi-chevron-down ${styles.chevron}`}></i>
+      </div>
+    </label>
+  );
+}
 
-export default function Filters({ plants, taxonomyFilters, setTaxonomyFilters, taxonomyOptions }: FilterProps) {
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+interface CommonProps {
+  rankFilters: RankFilter[];
+  statusRows: StatusRow[];
+  status: StatusFilter;
+  onStatus: (status: StatusFilter) => void;
+  onRank: (key: RankKey, value: string) => void;
+  onClear: () => void;
+  hasFilter: boolean;
+  moreOpen: boolean;
+  onToggleMore: () => void;
+}
 
-  const toggleGroup = (level: string) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [level]: !prev[level]
-    }));
-  };
+const mainRanks = (filters: RankFilter[]) => filters.filter((f) => !MORE_RANKS.includes(f.key));
+const moreRanks = (filters: RankFilter[]) => filters.filter((f) => MORE_RANKS.includes(f.key));
 
-  // Use provided taxonomy options from database, or extract from plants
-  const uniqueTaxonomyValues = useMemo(() => {
-    // If taxonomy options are provided from the database, use those
-    if (taxonomyOptions && Object.keys(taxonomyOptions).length > 0) {
-      return taxonomyOptions;
-    }
-
-    // Fallback: Extract unique taxonomy values from plants
-    const values: Record<string, Set<string>> = {};
-
-    taxonomyLevels.forEach((level) => {
-      values[level] = new Set<string>();
-      plants.forEach((plant) => {
-        const fieldValue = plant[level as keyof Plant];
-        // Only add non-empty string values and filter out ID-like strings
-        if (fieldValue && typeof fieldValue === "string") {
-          const trimmed = fieldValue.trim();
-          // Skip if it looks like a database ID (10+ alphanumeric chars)
-          if (trimmed && !/^[a-z0-9]{10,}$/.test(trimmed)) {
-            values[level].add(trimmed);
-          }
-        }
-      });
-    });
-
-    // Convert Sets to sorted arrays
-    const result: Record<string, string[]> = {};
-    Object.keys(values).forEach((level) => {
-      result[level] = Array.from(values[level]).sort();
-    });
-
-    // Log available filters for debugging
-
-    return result;
-  }, [plants, taxonomyOptions]);
-
-  const handleClearAllFilters = () => {
-    setTaxonomyFilters({});
-  };
-
-  const handleClearLevelFilter = (level: string) => {
-    const newFilters = { ...taxonomyFilters };
-    delete newFilters[level];
-    setTaxonomyFilters(newFilters);
-  };
-
-  const handleFilterSelect = (level: string, value: string) => {
-    const newFilters = { ...taxonomyFilters };
-    
-    if (newFilters[level] === value) {
-      // Deselect if clicking the same value
-      delete newFilters[level];
-    } else {
-      // Select new value (replaces any previous value in this level)
-      newFilters[level] = value;
-    }
-
-    setTaxonomyFilters(newFilters);
-  };
+/** Desktop filter sidebar. */
+export function FilterSidebar(props: CommonProps) {
+  const { rankFilters, statusRows, status, onStatus, onRank, onClear, hasFilter, moreOpen, onToggleMore } = props;
+  const moreCount = moreRanks(rankFilters).filter((f) => f.value).length;
 
   return (
-    <aside className={styles.filters}>
-      {Object.keys(taxonomyFilters).length > 0 && (
-        <div className={styles.activeFilter}>
-          <button className={styles.clearButton} onClick={handleClearAllFilters}>
-            ✕ Clear All Filters
+    <aside className={styles.sidebar} aria-label="Filters">
+      <div className={styles.sidebarHead}>
+        <span className={styles.sidebarTitle}>Filters</span>
+        {hasFilter && (
+          <button type="button" className={styles.clearAll} onClick={onClear}>
+            Clear all
           </button>
-          <div className={styles.activeFiltersTags}>
-            {Object.entries(taxonomyFilters).map(([level, value]) => (
-              <div key={level} className={styles.filterTag}>
-                <span className={styles.filterTagLabel}>
-                  {level === "klass" ? "Class" : level.charAt(0).toUpperCase() + level.slice(1)}:
-                </span>
-                <span className={styles.filterValue}>
-                  {value}
-                  <button
-                    className={styles.removeTagBtn}
-                    onClick={() => handleClearLevelFilter(level)}
-                    aria-label={`Remove ${value} filter`}
-                  >
-                    ✕
-                  </button>
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {taxonomyLevels.map((level) => (
-        <FilterGroup 
-          key={level}
-          title={level === "klass" ? "Class" : level.charAt(0).toUpperCase() + level.slice(1)}
-          level={level}
-          options={uniqueTaxonomyValues[level] || []}
-          selectedValue={taxonomyFilters[level] || null}
-          onSelect={(value) => handleFilterSelect(level, value)}
-          isExpanded={expandedGroups[level] || false}
-          onToggle={() => toggleGroup(level)}
-          onClearLevel={() => handleClearLevelFilter(level)}
-        />
+      {mainRanks(rankFilters).map((filter) => (
+        <TaxSelect key={filter.key} filter={filter} onChange={onRank} />
       ))}
+
+      <div className={styles.statusBlock}>
+        <span className={styles.statusTitle}>Conservation status</span>
+        {statusRows.map((row) => (
+          <button
+            key={row.key}
+            type="button"
+            className={`${styles.statusRow} ${status === row.key ? styles.statusRowOn : ""} ${
+              row.key === "All" ? styles.dotAll : statusOf(row.label).className
+            }`}
+            onClick={() => onStatus(row.key)}
+            aria-pressed={status === row.key}
+          >
+            <span className={styles.statusDot}></span>
+            <span className={styles.statusLabel}>{row.label}</span>
+            <span className={styles.statusCount}>{row.count}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className={styles.moreBlock}>
+        <button type="button" className={styles.moreToggle} onClick={onToggleMore} aria-expanded={moreOpen}>
+          <span>More classification</span>
+          <span className={styles.moreRight}>
+            {moreCount > 0 && <span className={styles.moreCount}>{moreCount}</span>}
+            <i className={`bi ${moreOpen ? "bi-chevron-up" : "bi-chevron-down"}`}></i>
+          </span>
+        </button>
+        {moreOpen &&
+          moreRanks(rankFilters).map((filter) => (
+            <TaxSelect key={filter.key} filter={filter} onChange={onRank} />
+          ))}
+      </div>
     </aside>
   );
 }
 
-interface FilterGroupProps {
-  title: string;
-  level: string;
-  options: string[];
-  selectedValue: string | null;
-  onSelect: (value: string) => void;
-  isExpanded: boolean;
-  onToggle: () => void;
-  onClearLevel: () => void;
+interface SheetProps extends CommonProps {
+  count: number;
+  countWord: string;
+  onClose: () => void;
 }
 
-function FilterGroup({ title, level, options, selectedValue, onSelect, isExpanded, onToggle, onClearLevel }: FilterGroupProps) {
-  if (options.length === 0) {
-    return (
-      <div className={styles.group}>
-        <button className={styles.groupHeader} onClick={onToggle}>
-          <span className={styles.groupTitle}>{title}</span>
-          <span className={styles.expandIcon}>−</span>
-        </button>
-        <div className={`${styles.optionsList} ${isExpanded ? styles.expanded : styles.collapsed}`}>
-          <p className={styles.noOptions}>No options available</p>
-        </div>
-      </div>
-    );
-  }
+/** Phone filter bottom sheet. */
+export function FilterSheet(props: SheetProps) {
+  const { rankFilters, statusRows, status, onStatus, onRank, onClear, moreOpen, onToggleMore, count, countWord, onClose } = props;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   return (
-    <div className={styles.group}>
-      <div className={styles.groupHeaderWrapper}>
-        <button className={styles.groupHeader} onClick={onToggle}>
-          <span className={styles.groupTitle}>
-            {title} ({options.length})
-            {selectedValue && (
-              <span className={styles.selectedCount}> - 1 selected</span>
-            )}
-          </span>
-          <span className={`${styles.expandIcon} ${isExpanded ? styles.rotated : ""}`}>›</span>
-        </button>
-        {selectedValue && (
-          <button
-            className={styles.groupClearBtn}
-            onClick={onClearLevel}
-            title="Clear this category"
-          >
-            ✕
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.sheet} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Filters">
+        <span className={styles.grab}></span>
+        <div className={styles.sheetHead}>
+          <h3>Filters</h3>
+          <button type="button" className={styles.reset} onClick={onClear}>
+            Reset
           </button>
+        </div>
+
+        <div className={styles.sheetGrid}>
+          {mainRanks(rankFilters).map((filter) => (
+            <TaxSelect key={filter.key} filter={filter} onChange={onRank} compact />
+          ))}
+        </div>
+
+        <div className={styles.chipsBlock}>
+          <span className={styles.chipsTitle}>Conservation status</span>
+          <div className={styles.chips}>
+            {statusRows.map((row) => (
+              <button
+                key={row.key}
+                type="button"
+                className={`${styles.chip} ${status === row.key ? styles.chipOn : ""}`}
+                onClick={() => onStatus(row.key)}
+                aria-pressed={status === row.key}
+              >
+                {row.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button type="button" className={styles.sheetMore} onClick={onToggleMore} aria-expanded={moreOpen}>
+          <span>More classification</span>
+          <i className={`bi ${moreOpen ? "bi-chevron-up" : "bi-chevron-down"}`}></i>
+        </button>
+        {moreOpen && (
+          <div className={styles.sheetGrid}>
+            {moreRanks(rankFilters).map((filter) => (
+              <TaxSelect key={filter.key} filter={filter} onChange={onRank} compact />
+            ))}
+          </div>
         )}
-      </div>
-      <div className={`${styles.optionsList} ${isExpanded ? styles.expanded : styles.collapsed}`}>
-        {options.map((option) => {
-          // Filter out ID-like strings (10+ alphanumeric characters that look like database IDs)
-          if (/^[a-z0-9]{10,}$/.test(option)) {
-            return null;
-          }
-          return (
-            <label key={option} className={selectedValue === option ? styles.selectedLabel : ""}>
-              <input
-                type="radio"
-                name={`taxonomy-${level}`}
-                checked={selectedValue === option}
-                onChange={() => onSelect(option)}
-              />
-              <span>{option}</span>
-            </label>
-          );
-        })}
+
+        <button type="button" className={styles.show} onClick={onClose}>
+          Show {count} {countWord}
+        </button>
       </div>
     </div>
   );

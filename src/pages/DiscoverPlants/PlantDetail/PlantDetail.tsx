@@ -1,29 +1,62 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../../../components/Home/Navbar/Navbar";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import SiteHeader from "../../../components/Flora/SiteHeader";
+import PlantPhoto from "../../../components/Flora/PlantPhoto";
 import type { Plant } from "../../../types/plant";
 import { fetchPlantById } from "../../../services/plantService";
 import { errorMessage } from "../../../services/errors";
+import { statusOf } from "../../../lib/status";
+import { useIsMobile } from "../../../hooks/useMediaQuery";
 import styles from "./PlantDetail.module.css";
 
-type DetailTab = "taxonomy" | "overview" | "morphology" | "ecology" | "distribution" | "uses";
+interface Section {
+  title: string;
+  body: string;
+}
+
+/** Share the plant's page: the phone share sheet when there is one, else copy the link. */
+function useShare(plant: Plant | null) {
+  const [copied, setCopied] = useState(false);
+
+  const share = async () => {
+    if (!plant) return;
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: plant.commonName, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // the person closed the share sheet: nothing to do
+    }
+  };
+
+  return { share, copied };
+}
 
 export default function PlantDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
   const [plant, setPlant] = useState<Plant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notFound, setNotFound] = useState(false);
   const [attempt, setAttempt] = useState(0); // bumped by "Try again"
-  const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
-  const PLACEHOLDER_IMAGE = "https://via.placeholder.com/400x300/2d5016/ffffff?text=Plant";
+  const [activeSection, setActiveSection] = useState("Overview"); // desktop "On this page"
+  const [openSection, setOpenSection] = useState<string | null>("Overview"); // phone accordion
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const { share, copied } = useShare(plant);
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadPlant = async () => {
+    const load = async () => {
       setLoading(true);
       setError("");
       setNotFound(false);
@@ -52,210 +85,242 @@ export default function PlantDetail() {
       }
     };
 
-    loadPlant();
-
+    load();
     return () => {
       isMounted = false;
     };
   }, [id, attempt]);
 
-  if (loading) {
-    return (
-      <div className={styles.page}>
-        <Navbar />
-        <div className={styles.container}>
-          <p className={styles.loading}>Loading plant details...</p>
-        </div>
-      </div>
+  // Desktop: highlight the section being read
+  useEffect(() => {
+    if (!plant || isMobile) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length) setActiveSection(visible[0].target.getAttribute("data-section") ?? "Overview");
+      },
+      { rootMargin: "-20% 0px -65% 0px" }
     );
-  }
+    Object.values(sectionRefs.current).forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect();
+  }, [plant, isMobile]);
 
-  if (error || !plant) {
+  const back = () => (window.history.length > 1 ? navigate(-1) : navigate("/discover"));
+
+  if (loading || error || !plant) {
     return (
-      <div className={styles.page}>
-        <Navbar />
-        <div className={styles.container}>
-          <p className={styles.error}>{error}</p>
-          {!notFound && (
-            <button onClick={() => setAttempt((n) => n + 1)} className={styles.backBtn}>
-              <span>Try again</span>
-            </button>
+      <div className="flora">
+        {!isMobile && <SiteHeader active="discover" />}
+        <div className={styles.state}>
+          {loading ? (
+            <p className={styles.stateText}>Loading plant details…</p>
+          ) : (
+            <>
+              <h1 className={styles.stateTitle}>{notFound ? "Plant not found" : "We couldn't load this plant"}</h1>
+              {!notFound && <p className={styles.stateText}>{error}</p>}
+              <div className={styles.stateActions}>
+                {!notFound && (
+                  <button type="button" className={styles.primaryBtn} onClick={() => setAttempt((n) => n + 1)}>
+                    Try again
+                  </button>
+                )}
+                <button type="button" className={styles.secondaryBtn} onClick={() => navigate("/discover")}>
+                  Back to Discover
+                </button>
+              </div>
+            </>
           )}
-          <button onClick={() => navigate("/discover")} className={styles.backBtn}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 8 12 15 6"></polyline>
-            </svg>
-            <span>Back to Plants</span>
-          </button>
         </div>
       </div>
     );
   }
 
-  const taxonomy = {
-    domain: plant.domain,
-    kingdom: plant.kingdom,
-    phylum: plant.phylum,
-    klass: plant.klass,
-    order: plant.order,
-    family: plant.family,
-    genus: plant.genus,
-  };
-  const details = {
-    morphology: plant.morphology,
-    ecology: plant.ecology,
-    distribution: plant.distribution,
-    uses: plant.uses,
-  };
+  const status = statusOf(plant.conservationStatus);
+  const described = [plant.author, plant.year].filter(Boolean).join(", ");
+  const eyebrow = [plant.code, plant.family].filter(Boolean).join(" · ");
+  const alsoCalled = (plant.aliases ?? []).join(", ");
 
-  const displayImage = plant.image || PLACEHOLDER_IMAGE;
-  const displayName = plant.commonName || plant.name || "Unknown Plant";
-  const scientificName = plant.scientificName || "No scientific name";
+  const sections: Section[] = [
+    { title: "Overview", body: plant.notes || "No overview available" },
+    { title: "Morphology", body: plant.morphology || "No morphology information available" },
+    { title: "Ecology", body: plant.ecology || "No ecology information available" },
+    { title: "Distribution", body: plant.distribution || "No distribution information available" },
+    { title: "Uses", body: plant.uses || "No uses information available" },
+  ];
 
+  const facts: Array<{ k: string; v: string; italic?: boolean }> = [
+    { k: "Order", v: plant.order || "-" },
+    { k: "Family", v: plant.family || "-" },
+    { k: "Genus", v: plant.genus || "-", italic: true },
+    { k: "Described", v: described || "-" },
+  ];
+
+  const ladder: Array<{ rank: string; name: string; italic?: boolean }> = [
+    { rank: "Kingdom", name: plant.kingdom || "-" },
+    { rank: "Class", name: plant.klass || "-" },
+    { rank: "Order", name: plant.order || "-" },
+    { rank: "Family", name: plant.family || "-" },
+    { rank: "Genus", name: plant.genus || "-", italic: true },
+    { rank: "Species", name: plant.scientificName || "-", italic: true },
+  ];
+
+  /* ---------------- phone ---------------- */
+  if (isMobile) {
+    return (
+      <div className={`flora ${styles.mobilePage}`}>
+        <div className={styles.mobileHero}>
+          <PlantPhoto src={plant.image} alt={plant.commonName} stripe={10} label />
+          <div className={styles.mobileButtons}>
+            <button type="button" className={styles.circleBtn} onClick={back} aria-label="Back">
+              <i className="bi bi-arrow-left"></i>
+            </button>
+            <button type="button" className={styles.circleBtn} onClick={share} aria-label="Share">
+              <i className={`bi ${copied ? "bi-check2" : "bi-share"}`}></i>
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.mobileBody}>
+          <div className={styles.mobileHead}>
+            <span className={styles.mobileEyebrow}>{eyebrow}</span>
+            <h1 className={styles.mobileTitle}>{plant.commonName}</h1>
+            <span className={styles.mobileSci}>{plant.scientificName}</span>
+            <span className={`${styles.mobileBadge} ${status.className}`}>
+              <span className={styles.dot6}></span>
+              {status.label}
+            </span>
+          </div>
+
+          <div className={styles.mobileFacts}>
+            {facts.map((fact, i) => (
+              <div key={fact.k} className={styles.mobileFact} style={i === 0 ? { borderTopColor: "transparent" } : undefined}>
+                <span className={styles.factKey}>{fact.k}</span>
+                <span className={`${styles.mobileFactValue} ${fact.italic ? styles.italic : ""}`}>{fact.v}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.accordion}>
+            {sections.map((section, i) => {
+              const open = openSection === section.title;
+              return (
+                <div key={section.title} className={styles.accItem} style={i === 0 ? { borderTopColor: "transparent" } : undefined}>
+                  <button
+                    type="button"
+                    className={styles.accHead}
+                    onClick={() => setOpenSection(open ? null : section.title)}
+                    aria-expanded={open}
+                  >
+                    <span>{section.title}</span>
+                    <i className={`bi ${open ? "bi-dash" : "bi-plus"}`}></i>
+                  </button>
+                  {open && <p className={styles.accBody}>{section.body}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------------- desktop ---------------- */
   return (
-    <div className={styles.page}>
-      <Navbar />
+    <div className="flora">
+      <SiteHeader active="discover" />
 
-      <div className={styles.container}>
-        <button onClick={() => navigate("/discover")} className={styles.backBtn}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 8 12 15 6"></polyline>
-          </svg>
-          <span>Back</span>
-        </button>
+      <div className={styles.crumbs}>
+        <Link to="/discover" className={styles.crumbLink}>
+          Discover
+        </Link>
+        <i className="bi bi-chevron-right"></i>
+        <span>{plant.family}</span>
+        <i className="bi bi-chevron-right"></i>
+        <span className={styles.crumbHere}>{plant.commonName}</span>
+      </div>
 
-        <div className={styles.card}>
-          {/* LEFT IMAGE */}
-          <img
-            src={displayImage}
-            alt={displayName}
-            className={styles.image}
-          />
+      <div className={styles.top}>
+        <div className={styles.photo}>
+          <PlantPhoto src={plant.image} alt={plant.commonName} stripe={12} label labelSize={12} />
+        </div>
+        <div className={styles.info}>
+          <div className={styles.titleBlock}>
+            <span className={styles.eyebrow}>{eyebrow}</span>
+            <h1 className={styles.title}>{plant.commonName}</h1>
+            <p className={styles.sciLine}>
+              <i>{plant.scientificName}</i> <span className={styles.author}>{plant.author}</span>
+            </p>
+            {alsoCalled && <p className={styles.aka}>Also called {alsoCalled}</p>}
+          </div>
 
-          {/* RIGHT CONTENT */}
-          <div className={styles.content}>
-            <h1 className={styles.title}>{displayName}</h1>
-            <div className={styles.scientific}>
-              <em>{scientificName}</em>
+          <div className={styles.facts}>
+            {facts.map((fact) => (
+              <div key={fact.k} className={styles.fact}>
+                <span className={styles.factKey}>{fact.k}</span>
+                <span className={`${styles.factValue} ${fact.italic ? styles.italic : ""}`}>{fact.v}</span>
+              </div>
+            ))}
+            <div className={styles.fact}>
+              <span className={styles.factKey}>Conservation</span>
+              <span className={`${styles.badge} ${status.className}`}>
+                <span className={styles.dot7}></span>
+                {status.label}
+              </span>
             </div>
+          </div>
 
-            {/* TABS */}
-            <div className={styles.tabs}>
-              <button
-                className={`${styles.tab} ${activeTab === "overview" ? styles.active : ""}`}
-                onClick={() => setActiveTab("overview")}
-              >
-                Overview
-              </button>
-              <button
-                className={`${styles.tab} ${activeTab === "taxonomy" ? styles.active : ""}`}
-                onClick={() => setActiveTab("taxonomy")}
-              >
-                Taxonomy
-              </button>
-              <button
-                className={`${styles.tab} ${activeTab === "morphology" ? styles.active : ""}`}
-                onClick={() => setActiveTab("morphology")}
-              >
-                Morphology
-              </button>
-              <button
-                className={`${styles.tab} ${activeTab === "ecology" ? styles.active : ""}`}
-                onClick={() => setActiveTab("ecology")}
-              >
-                Ecology
-              </button>
-              <button
-                className={`${styles.tab} ${activeTab === "distribution" ? styles.active : ""}`}
-                onClick={() => setActiveTab("distribution")}
-              >
-                Distribution
-              </button>
-              <button
-                className={`${styles.tab} ${activeTab === "uses" ? styles.active : ""}`}
-                onClick={() => setActiveTab("uses")}
-              >
-                Uses
-              </button>
+          <div className={styles.actions}>
+            <button type="button" className={styles.shareBtn} onClick={share}>
+              <i className={`bi ${copied ? "bi-check2" : "bi-share"}`}></i>
+              {copied ? "Link copied" : "Share"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.lower}>
+        <nav className={styles.onPage} aria-label="On this page">
+          <span className={styles.onPageLabel}>On this page</span>
+          {sections.map((section) => (
+            <button
+              key={section.title}
+              type="button"
+              className={`${styles.onPageItem} ${activeSection === section.title ? styles.onPageActive : ""}`}
+              onClick={() => {
+                setActiveSection(section.title);
+                sectionRefs.current[section.title]?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              {section.title}
+            </button>
+          ))}
+        </nav>
+
+        <div className={styles.content}>
+          {sections.map((section) => (
+            <div
+              key={section.title}
+              className={styles.section}
+              data-section={section.title}
+              ref={(el) => {
+                sectionRefs.current[section.title] = el;
+              }}
+            >
+              <h2>{section.title}</h2>
+              <p>{section.body}</p>
             </div>
+          ))}
 
-            {/* TAB CONTENT */}
-            {activeTab === "overview" && (
-              <div className={styles.tabContent}>
-                <div className={styles.metadata}>
-                  {plant.author && <div><strong>Author:</strong> {plant.author}</div>}
-                  {plant.year && <div><strong>Year:</strong> {plant.year}</div>}
-                  {plant.notes && <div><strong>Notes:</strong> {plant.notes}</div>}
-                  {plant.conservationStatus && <div><strong>Conservation Status:</strong> {plant.conservationStatus}</div>}
+          <div className={styles.classification}>
+            <h2>Classification</h2>
+            <div className={styles.ladder}>
+              {ladder.map((rung) => (
+                <div key={rung.rank} className={styles.rung}>
+                  <span className={styles.rungRank}>{rung.rank}</span>
+                  <span className={`${styles.rungName} ${rung.italic ? styles.italic : ""}`}>{rung.name}</span>
                 </div>
-              </div>
-            )}
-
-            {activeTab === "taxonomy" && (
-              <div className={styles.tabContent}>
-                <div className={styles.taxonomyList}>
-                  {taxonomy?.domain && <div className={styles.taxonomyItem}><strong>Domain:</strong> <span>{taxonomy.domain}</span></div>}
-                  {taxonomy?.kingdom && <div className={styles.taxonomyItem}><strong>Kingdom:</strong> <span>{taxonomy.kingdom}</span></div>}
-                  {taxonomy?.phylum && <div className={styles.taxonomyItem}><strong>Division (Phylum):</strong> <span>{taxonomy.phylum}</span></div>}
-                  {taxonomy?.klass && <div className={styles.taxonomyItem}><strong>Class:</strong> <span>{taxonomy.klass}</span></div>}
-                  {taxonomy?.order && <div className={styles.taxonomyItem}><strong>Order:</strong> <span>{taxonomy.order}</span></div>}
-                  {taxonomy?.family && <div className={styles.taxonomyItem}><strong>Family:</strong> <span>{taxonomy.family}</span></div>}
-                  {taxonomy?.genus && <div className={styles.taxonomyItem}><strong>Genus:</strong> <span>{taxonomy.genus}</span></div>}
-                  {plant.scientificName && <div className={styles.taxonomyItem}><strong>Species:</strong> <span>{plant.scientificName}</span></div>}
-                  {!taxonomy || (
-                    !taxonomy.domain && 
-                    !taxonomy.kingdom && 
-                    !taxonomy.phylum && 
-                    !taxonomy.klass && 
-                    !taxonomy.order && 
-                    !taxonomy.family && 
-                    !taxonomy.genus
-                  ) && (
-                    <p className={styles.description}>No taxonomy information available</p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "morphology" && (
-              <div className={styles.tabContent}>
-                <p className={styles.description}>
-                  {details?.morphology || "No morphology information available"}
-                </p>
-              </div>
-            )}
-
-            {activeTab === "ecology" && (
-              <div className={styles.tabContent}>
-                <p className={styles.description}>
-                  {details?.ecology || "No ecology information available"}
-                </p>
-              </div>
-            )}
-
-            {activeTab === "distribution" && (
-              <div className={styles.tabContent}>
-                <p className={styles.description}>
-                  {details?.distribution || "No distribution information available"}
-                </p>
-              </div>
-            )}
-
-            {activeTab === "uses" && (
-              <div className={styles.tabContent}>
-                <p className={styles.description}>
-                  {details?.uses || "No uses information available"}
-                </p>
-              </div>
-            )}
-
-            {/* Common names */}
-            {plant.commonNames && (
-              <div className={styles.commonNamesSection}>
-                <h4>Common Names</h4>
-                <p>{plant.commonNames}</p>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </div>
       </div>

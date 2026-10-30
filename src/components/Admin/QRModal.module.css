@@ -1,220 +1,52 @@
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.header h2 {
-  margin: 0;
-  font-size: 20px;
-  color: #2d5016;
-}
-
-.closeBtn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #666;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.closeBtn:hover {
-  background-color: #f0f0f0;
-}
-
-.content {
-  padding: 20px;
-  display: flex;
-  gap: 20px;
-}
-
-.qrPreview {
-  flex-shrink: 0;
+.body {
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 4px;
+  background: var(--surface-2);
 }
 
-.qrPreview img {
-  width: 200px;
-  height: 200px;
-  border: 2px solid #e0e0e0;
+.qr {
+  width: 168px;
+  height: 168px;
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.previewLabel {
-  font-weight: bold;
-  color: #2d5016;
-  margin: 8px 0 0 0;
-  text-align: center;
-  font-size: 14px;
-}
-
-.previewScientific {
-  font-style: italic;
-  color: #666;
-  margin: 4px 0 0 0;
-  text-align: center;
-  font-size: 12px;
-}
-
-.info {
-  flex: 1;
-}
-
-.infoText {
-  margin: 10px 0;
-  font-size: 14px;
-  color: #333;
-  line-height: 1.5;
-  word-break: break-word;
-}
-
-.infoText strong {
-  color: #2d5016;
-  font-weight: 600;
-}
-
-.guideText {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-left: 4px solid #2d5016;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 0;
-}
-
-.actions {
   display: flex;
-  gap: 10px;
-  padding: 20px;
-  border-top: 1px solid #e0e0e0;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--subtle);
+  margin-bottom: 14px;
+  overflow: hidden;
 }
 
-.actions button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
+.qr img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.sci {
+  font-family: var(--font-serif);
+  font-style: italic;
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  color: var(--muted);
+  text-align: center;
 }
 
-.cancelBtn {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.cancelBtn:hover:not(:disabled) {
-  background-color: #e0e0e0;
-}
-
-.downloadBtn {
-  background-color: #2d5016;
-  color: white;
-}
-
-.downloadBtn:hover:not(:disabled) {
-  background-color: #1f3610;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3);
-}
-
-.printBtn {
-  background-color: #0066cc;
-  color: white;
-}
-
-.printBtn:hover:not(:disabled) {
-  background-color: #0052a3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
-}
-
-.actions button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-@media (max-width: 600px) {
-  .modal {
-    width: 95%;
-  }
-
-  .content {
-    flex-direction: column;
-  }
-
-  .qrPreview img {
-    width: 150px;
-    height: 150px;
-  }
-
-  .actions {
-    flex-direction: column;
-  }
-
-  .actions button {
-    width: 100%;
-  }
+.code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--subtle);
+  margin-top: 6px;
 }

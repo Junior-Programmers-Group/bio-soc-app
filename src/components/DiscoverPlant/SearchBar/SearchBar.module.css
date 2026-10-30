@@ -1,210 +1,67 @@
-.searchBarContainer {
+.row {
   display: flex;
-  gap: 8px;
-  align-items: stretch;
-  margin-bottom: 12px;
+  gap: 10px;
 }
 
-.searchWrapper {
-  background: #ffffff;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1.5px solid #d4e8c1;
+.field {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 0 16px;
+  height: 52px;
+}
+
+.field:focus-within {
+  border-color: var(--primary);
+}
+
+.icon {
+  font-size: 16px;
+  color: var(--subtle);
+}
+
+.input {
   flex: 1;
-  height: 44px;
-}
-
-.searchWrapper:focus-within {
-  border-color: #2d5016;
-  box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.1);
-}
-
-.searchIconBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
   border: none;
-  padding: 6px;
-  cursor: pointer;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  color: rgba(78, 92, 78, 0.6);
-}
-
-.searchIconBtn:hover {
-  background: rgba(45, 80, 22, 0.08);
-  color: #2d5016;
-}
-
-.searchIconBtn:active {
-  background: rgba(45, 80, 22, 0.15);
-}
-
-.searchIcon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-.searchInput {
-  flex: 1;
-  width: 100%;
-  border: none;
-  background: transparent;
   outline: none;
-  font-size: 14px;
-  color: #1f2f1f;
-  font-family: inherit;
+  font-size: 15px;
+  background: transparent;
   min-width: 0;
 }
 
-.searchInput::placeholder {
-  color: #9aab9a;
-}
-
-/* Filter Toggle Button */
-.filterToggleBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #ffffff;
-  border: 1.5px solid #d4e8c1;
-  padding: 8px;
-  border-radius: 12px;
+.clear {
   cursor: pointer;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  transition: all 0.3s ease;
-  color: #2d5016;
+  border: none;
+  background: none;
+  color: var(--subtle);
+  font-size: 16px;
 }
 
-.filterToggleBtn:hover {
-  background: #f5f8f4;
-  border-color: #2d5016;
-  color: #1b5e20;
+.modes {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 2px;
 }
 
-.filterToggleBtn:active {
-  background: #e8f5e9;
-}
-
-.filterToggleBtn svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Search Type Filter Styles */
-.searchTypeFilter {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #f5f8f4;
-  border-radius: 8px;
-  border: 1px solid #d4e8c1;
-  animation: slideDown 0.3s ease;
-}
-
-.filterLabel {
-  display: block;
+.mode {
+  cursor: pointer;
+  border: none;
+  padding: 0 14px;
+  border-radius: 7px;
   font-size: 13px;
-  font-weight: 600;
-  color: #2d5016;
-  margin-bottom: 10px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--muted);
 }
 
-.radioGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.radioLabel {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  user-select: none;
-  font-size: 13px;
-  color: #4e5c4e;
-  transition: color 0.2s ease;
-}
-
-.radioLabel input[type="radio"] {
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-  accent-color: #2d5016;
-}
-
-.radioLabel:hover {
-  color: #2d5016;
-}
-
-.radioLabel span {
-  white-space: nowrap;
-}
-
-/* Animation for filter expansion */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 700px) {
-  .searchBarContainer {
-    gap: 6px;
-  }
-
-  .searchWrapper {
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-  }
-
-  .searchWrapper input {
-    font-size: 13px;
-  }
-
-  .filterToggleBtn {
-    width: 40px;
-    height: 44px;
-  }
-
-  .filterToggleBtn svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .searchTypeFilter {
-    padding: 10px;
-    margin-bottom: 12px;
-  }
-
-  .radioGroup {
-    gap: 10px;
-    font-size: 12px;
-  }
-
-  .radioLabel {
-    font-size: 12px;
-  }
-
-  .radioLabel input[type="radio"] {
-    width: 14px;
-    height: 14px;
-  }
+.modeActive {
+  background: var(--primary);
+  color: var(--surface);
 }

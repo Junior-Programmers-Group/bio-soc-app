@@ -17,6 +17,10 @@ export interface SpeciesRecord {
   collectionName?: string;
   commonName?: string;
   scientificName?: string;
+  /** Specimen code, e.g. NDDU-0001. */
+  code?: string;
+  created?: string;
+  updated?: string;
   /** Id of the genus row. */
   genus?: string;
   author?: string;

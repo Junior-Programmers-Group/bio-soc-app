@@ -5,7 +5,7 @@ const AboutEcoTagging = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <section className={styles.about}>
+    <section id="about" className={styles.about}>
       <div className={styles.aboutText}>
         <h2>What Is the Campus Flora Project?</h2>
 

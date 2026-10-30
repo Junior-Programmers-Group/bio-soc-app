@@ -56,6 +56,7 @@ const Hero = () => {
         if (searchType === "all") {
           searchFields = [
             plant.commonName || "",
+            ...(plant.aliases ?? []),
             plant.name || "",
             plant.scientificName || "",
             plant.domain || "",
@@ -68,7 +69,7 @@ const Hero = () => {
             plant.species || "",
           ];
         } else if (searchType === "name") {
-          searchFields = [plant.commonName || "", plant.name || ""];
+          searchFields = [plant.commonName || "", ...(plant.aliases ?? []), plant.name || ""];
         } else if (searchType === "scientific") {
           searchFields = [plant.scientificName || ""];
         }

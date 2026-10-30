@@ -10,6 +10,8 @@ export interface PlantRecord extends SpeciesRecord, Partial<PlantDetailsInput> {
 export interface PlantInput extends Partial<PlantDetailsInput> {
   commonName: string;
   scientificName?: string;
+  /** Specimen code, e.g. NDDU-0001. Set once when the plant is created. */
+  code?: string;
   /** Id of the genus row. */
   genus?: string;
   author?: string;
@@ -36,11 +38,13 @@ const speciesBody = (data: PlantInput, imageFile?: File): FormData | Record<stri
     notes: (data.notes ?? "").trim(),
   };
   const year = data.year ? Number(data.year) : null;
+  // The code is sent only when given (new plants), so editing never renumbers a tagged plant
+  const withCode = data.code ? { ...fields, code: data.code } : fields;
 
-  if (!imageFile) return { ...fields, year };
+  if (!imageFile) return { ...withCode, year };
 
   const form = new FormData();
-  Object.entries(fields).forEach(([key, value]) => form.append(key, value));
+  Object.entries(withCode).forEach(([key, value]) => form.append(key, value));
   if (year) form.append("year", String(year));
   form.append("field", imageFile, imageFile.name);
   return form;
@@ -58,26 +62,6 @@ async function saveDetails(plantId: string, details: PlantDetailsInput): Promise
   } else {
     await pb.collection("details").create({ species: plantId, ...details });
   }
-}
-
-/** All plants with their details. Two requests, however many plants there are. */
-export async function getPlants(): Promise<PlantRecord[]> {
-  const [species, details] = await Promise.all([
-    pb.collection("species").getFullList<SpeciesRecord>({ requestKey: null }),
-    pb.collection("details").getFullList<DetailsRecord>({ requestKey: null }),
-  ]);
-  const detailsBySpecies = new Map(details.map((row) => [row.species, row]));
-
-  return species.map((plant) => {
-    const row = detailsBySpecies.get(plant.id);
-    return {
-      ...plant,
-      morphology: row?.morphology ?? "",
-      ecology: row?.ecology ?? "",
-      distribution: row?.distribution ?? "",
-      uses: row?.uses ?? "",
-    };
-  });
 }
 
 /**

@@ -217,3 +217,33 @@ Done with the superuser login. Everything below was verified on the live server,
 - **A8:** all 11 plants have a genus, an image that loads, all text fields and exactly one `details` row. Nothing was changed. Worth a check by BioSociety: some author/year pairs look doubtful, for example Narra (*Pterocarpus indicus*) is listed as "Carl Linnaeus, 1765" and several others carry the year of the older base name. I did not touch them.
 - **Still on the server side:** responses over ~32 KB are cut off by the web server in front of PocketBase (broken images, and even backup downloads; see runbook section 8). I worked around it for the backup by downloading in small ranges. Visitors cannot do that, so this is the top remaining launch issue.
 - **Password:** the superuser password was shared in chat. Change it in the PocketBase admin (Collections > `_superusers`) and keep it in a password manager.
+
+---
+
+## Redesign v3 "Sage mist" (branch `redesign`)
+
+Built from `docs/handoffs/design_handoff_flora_redesign/` (the HTML was treated as the source of truth). Not merged: review the branch first.
+
+**Checked in a browser** (dev server, real plant data, mocked admin login so nothing on the live database was written): Discover (grid, list, filters open and closed, filter sheet), Plant Detail, Scan, and all four Admin tabs, on desktop (1280) and phone (390), compared side by side with the design screenshots. Also checked: saving a plant sends only the right fields, and the taxonomy create payloads are unchanged (unit test). **Not checked:** a real camera scan, a real phone, an admin login against the real server, Invite user, QR download/print in the new modal.
+
+Decisions you made: specimen codes via a new `code` field (added on the live server, plants numbered NDDU-0001 to NDDU-0011 in creation order, unique index, new plants get the next number); statuses other than LC/VU/EN get a neutral grey badge; Home page left as it is; Invite user creates an account (admins may now create users on the server).
+
+Choices the design didn't cover, made by me:
+- **"Also called"**: the first of the names in the common-name field (split on " / ") is the display name, the rest are the aliases. The edit form shows the full text so nothing is lost.
+- **Phone status bar**: the "9:41" bar in the mockups is device chrome, so the app does not draw it and top controls sit 16px from the top (plus the safe area).
+- **Admin "Updated" column and "Recent activity"** come from each record's own created/updated dates. "6 QR tags were printed" and "was verified" are not tracked anywhere, so they don't appear.
+- **Admin Overview, empty state**: "Every profile has a photo." (the design always had missing photos).
+- **Edit/New plant on a phone** has no mockup: it reuses the desktop modal as a bottom sheet with one column.
+- **Delete** keeps a confirmation dialog (plants and users); the old "confirm before saving an edit" step was dropped because the design has none. The user "..." menu holds Delete.
+- **Role dropdown** is a real select (User/Admin, the `isAdmin` flag) with a confirmation.
+- **Scan, tablet widths (769 to 1100px)**: the two columns stack, because the design is only drawn at 1280.
+- **A failed photo** shows the striped placeholder instead of a broken-image icon.
+- Fonts come from Google Fonts as the handoff says.
+
+Known gaps:
+- **No log-out on the phone admin** (the mockup has none). Use a desktop browser, or tell me where it should go.
+- **No delete on phone admin cards** (the mockup has only QR and edit).
+- The Home page and the admin login screen keep their old dark-green look.
+- Plant data: Narra's author/year (Carl Linnaeus, 1765) looks wrong, and the design's own sample says Willd., 1802. BioSociety should confirm the author/year entries.
+
+Also fixed in the data while testing: the Agave genus still had the placeholder description "awdawd".

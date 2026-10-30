@@ -44,3 +44,14 @@ export async function deleteUser(userId: string): Promise<void> {
   }
   await pb.collection("users").delete(userId);
 }
+
+/** Create an account. Allowed for admins by the `users` create rule on the server. */
+export async function createUser(input: { email: string; name?: string; password: string }): Promise<UserRecord> {
+  return pb.collection("users").create<UserRecord>({
+    email: input.email.trim(),
+    name: (input.name ?? "").trim(),
+    password: input.password,
+    passwordConfirm: input.password,
+    emailVisibility: true,
+  });
+}

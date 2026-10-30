@@ -1,0 +1,163 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.overlayLarge {
+  padding: 32px;
+}
+
+.dialog {
+  max-width: 100%;
+  max-height: 100%;
+  background: var(--surface);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-modal);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--placeholder);
+}
+
+.head h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.headLarge {
+  padding: 18px 24px;
+}
+
+.headLarge h3 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.close {
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--subtle);
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+}
+
+/* ---------- parts the modals share ---------- */
+
+.body {
+  overflow: auto;
+}
+
+.footBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--placeholder);
+  background: var(--surface-2);
+  border-radius: 0 0 14px 14px;
+}
+
+.footNote {
+  font-size: 12px;
+  color: var(--subtle);
+}
+
+.footButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.footSplit {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--placeholder);
+}
+
+.secondary,
+.primary,
+.danger {
+  cursor: pointer;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.secondary {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+}
+
+.primary {
+  padding: 0 16px;
+  background: var(--primary);
+  border: none;
+  color: var(--surface);
+}
+
+.danger {
+  padding: 0 16px;
+  background: var(--danger);
+  border: none;
+  color: var(--surface);
+}
+
+.primary:disabled,
+.danger:disabled,
+.secondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.tall {
+  flex: 1;
+  height: 40px;
+}
+
+@media (max-width: 768px) {
+  .overlayLarge {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .overlayLarge .dialog {
+    width: 100% !important;
+    border-radius: 22px 22px 0 0;
+    max-height: 94dvh;
+  }
+
+  .footBar {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    border-radius: 0;
+  }
+
+  .footButtons .secondary,
+  .footButtons .primary {
+    flex: 1;
+    height: 46px;
+  }
+}

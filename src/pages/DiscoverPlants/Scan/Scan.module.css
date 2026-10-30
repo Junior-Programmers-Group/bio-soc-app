@@ -1,374 +1,511 @@
-/* Desktop Layout */
-.scanContainer {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 5rem 1rem;
-  text-align: center;
-  position: relative;
+/* ---------- camera + frame (shared) ---------- */
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* html5-qrcode fills this element with a <video>; make it cover it */
+.camera {
+  position: absolute;
+  inset: 0;
+  border: none !important;
+  overflow: hidden;
+}
+
+.camera > div,
+.camera video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+}
+
+.corner {
+  position: absolute;
+  border: 0 solid #fff;
+}
+
+.tl {
+  top: 0;
+  left: 0;
+  border-top-width: 3px;
+  border-left-width: 3px;
+  border-top-left-radius: var(--r);
+}
+
+.tr {
+  top: 0;
+  right: 0;
+  border-top-width: 3px;
+  border-right-width: 3px;
+  border-top-right-radius: var(--r);
+}
+
+.bl {
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 3px;
+  border-left-width: 3px;
+  border-bottom-left-radius: var(--r);
+}
+
+.br {
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 3px;
+  border-right-width: 3px;
+  border-bottom-right-radius: var(--r);
+}
+
+.scanLine {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  height: 2px;
+  background: #fff;
+  box-shadow: 0 0 14px 2px rgba(255, 255, 255, 0.55);
+  border-radius: 2px;
+  animation: scanmove 2.6s ease-in-out infinite;
+}
+
+.foundText {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------- desktop ---------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 560px;
+  gap: 64px;
+  padding: 64px 64px 80px;
   align-items: center;
 }
 
-/* Back button */
-.backButton {
-  align-self: flex-start;
-  display: inline-flex;
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--clay);
+}
+
+.intro h1 {
+  font-family: var(--font-serif);
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+}
+
+.intro p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 460px;
+  text-wrap: pretty;
+}
+
+.steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+  max-width: 460px;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.stepNum {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--clay);
+  padding-top: 2px;
+}
+
+.stepText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepTitle {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.stepBody {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-panel);
+}
+
+.viewport {
+  position: relative;
+  height: 400px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--camera-bg);
+}
+
+.stripes,
+.mobileStripes {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(135deg, var(--camera-stripe) 0 14px, var(--camera-bg) 14px 28px);
+}
+
+.cameraLabel {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 20px;
-  background-color: transparent;
-  color: #2e7d32;
-  border: 2px solid #2e7d32;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 2rem;
-  margin-top: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.backButton:hover {
-  background-color: #2e7d32;
-  color: #ffffff;
-  transform: translateX(-4px);
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--camera-dot);
+  animation: pulse 1.4s infinite;
 }
 
-/* QR Camera box */
-.qrBox {
-  width: 100%;
-  max-width: 400px;
-  height: 400px;
-  margin: 1rem auto;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #000;
-  border: 2px solid #2e7d32;
+.frame {
+  position: absolute;
+  top: 70px;
+  left: 135px;
+  width: 260px;
+  height: 260px;
+}
+
+.foundMark {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1 / 1;
 }
 
-.qrBox video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.foundMark span {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.qrBox img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 10px;
+.foundMark i {
+  font-size: 32px;
+  color: var(--primary);
 }
 
-/* File input - hidden */
-.fileInput {
-  display: none;
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 6px;
 }
 
-/* Upload button */
-.uploadButton {
-  width: 100%;
-  max-width: 400px;
-  padding: 14px;
-  margin-top: 1.5rem;
-  background-color: #2e7d32;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+.hint {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.uploadBtn {
   cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.uploadButton:hover {
-  background-color: #1b5e20;
-}
-
-/* Error message */
-.error {
-  margin-top: 1rem;
-  padding: 12px;
-  color: #c62828;
-  background-color: #ffebee;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
-/* Plant result card */
-.plantCard {
-  margin-top: 2rem;
-  background: #f1f8f6;
-  padding: 1.5rem;
-  border-radius: 12px;
-  text-align: left;
-  border-left: 4px solid #2e7d32;
+.foundRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 6px;
 }
 
-.plantCard img {
-  width: 100%;
-  height: auto;
+.thumb {
+  position: relative;
+  width: 56px;
+  height: 56px;
   border-radius: 8px;
-  margin-bottom: 1rem;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.plantCard h2 {
-  margin: 0.5rem 0 0.25rem 0;
-  color: #1b5e20;
-  font-size: 1.5rem;
+.foundName {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
 }
 
-.plantCard i {
-  display: block;
-  color: #558b2f;
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
+.foundSci {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--muted);
 }
 
-.plantCard p {
-  color: #333;
-  line-height: 1.6;
-  margin: 0.5rem 0 0 0;
+.again {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--muted);
+  padding: 10px;
 }
 
-/* Mobile Layout */
-@media (max-width: 700px) {
-  .scanContainer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #000;
-    overflow: hidden;
+.openBtn {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: var(--surface);
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.errorBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--danger-bg);
+}
+
+.errorBar i {
+  color: var(--danger);
+}
+
+.errorBar span {
+  flex: 1;
+  font-size: 14px;
+  color: var(--danger-text);
+}
+
+.errorBar button {
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--danger-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--danger-text);
+}
+
+/* Not in the design (made for 1280px): below this width the two columns
+   would squeeze the text, so they stack. */
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 48px 40px 64px;
   }
 
-  .scanContainer h1 {
-    position: absolute;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-    margin: 0;
-    font-size: 1.2rem;
-    z-index: 10;
-    width: 90%;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .backButton {
-    position: fixed;
-    top: 50px;
-    left: 10px;
-    z-index: 100;
-    padding: 10px 30px;
-    background-color: #2e7d32;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    margin: 0;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    transition: background-color 0.3s ease;
-  }
-
-  .backButton:hover {
-    background-color: #1b5e20;
-  }
-
-  .qrBox {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    margin: 0;
-    border-radius: 0;
-    z-index: 1;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .qrBox video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* QR Scanning frame overlay */
-  .scanContainer::before {
-    content: '';
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 280px;
-    height: 280px;
-    border: 4px solid #4caf50;
-    border-radius: 12px;
-    z-index: 15;
-    pointer-events: none;
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
-  }
-
-  .uploadButton {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: none;
-    padding: 16px 20px;
-    margin: 0;
-    background-color: #2e7d32;
-    color: #ffffff;
-    border: none;
-    border-radius: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    z-index: 31;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .uploadButton:hover {
-    background-color: #1b5e20;
-  }
-
-  .error {
-    position: fixed;
-    bottom: 70px;
-    left: 15px;
-    right: 15px;
-    width: calc(100% - 30px);
-    margin: 0;
-    padding: 12px 16px;
-    color: #ffffff;
-    background-color: rgba(198, 40, 40, 0.95);
-    border-radius: 8px;
-    font-weight: 500;
-    text-align: center;
-    z-index: 29;
-    font-size: 0.9rem;
-  }
-
-  .plantCard {
-    position: fixed;
-    bottom: 55px;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-height: calc(100% - 120px);
-    min-height: 140px;
-    overflow-y: auto;
-    background: #f1f8f6;
-    padding: 16px 16px 16px 16px;
-    border-radius: 16px 16px 0 0;
-    text-align: left;
-    z-index: 30;
-    margin: 0;
-    border-left: none;
-    border-top: 4px solid #2e7d32;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
-  }
-
-  .plantCard img {
-    width: 100%;
-    height: auto;
-    max-height: 180px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    object-fit: cover;
-  }
-
-  .plantCard h2 {
-    font-size: 1.2rem;
-    margin: 8px 0 6px 0;
-  }
-
-  .plantCard i {
-    font-size: 0.95rem;
-    margin-bottom: 8px;
-  }
-
-  .plantCard p {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin: 8px 0 0 0;
+  .panel {
+    max-width: 560px;
   }
 }
 
-/* Extra small devices (320px - 480px) */
-@media (max-width: 480px) {
-  .scanContainer h1 {
-    top: 55px;
-    font-size: 1.1rem;
-  }
+/* ---------- phone ---------- */
 
-  .backButton {
-    padding: 8px 14px;
-    font-size: 0.85rem;
-  }
-
-  .scanContainer::before {
-    width: 250px;
-    height: 250px;
-  }
-
-  .uploadButton {
-    padding: 14px 16px;
-    font-size: 0.95rem;
-  }
-
-  .error {
-    font-size: 0.85rem;
-    padding: 10px 14px;
-  }
-
-  .plantCard {
-    padding: 12px 12px 12px 12px;
-  }
-
-  .plantCard img {
-    max-height: 150px;
-    margin-bottom: 10px;
-  }
-
-  .plantCard h2 {
-    font-size: 1.1rem;
-    margin: 6px 0 4px 0;
-  }
-
-  .plantCard p {
-    font-size: 0.85rem;
-  }
+.mobile {
+  position: fixed;
+  inset: 0;
+  min-height: 0;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--camera-bg);
+  color: #fff;
 }
 
-/* Small screen optimization (480px - 600px) */
-@media (max-width: 600px) and (min-width: 481px) {
-  .scanContainer::before {
-    width: 260px;
-    height: 260px;
-  }
+.mobileTop {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top));
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  .plantCard {
-    max-height: calc(100% - 110px);
-  }
+.glassBtn {
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 17px;
+}
+
+.glassBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.glassOn {
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.mobileTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.mobileFrame {
+  position: absolute;
+  top: 210px;
+  left: 50%;
+  width: 270px;
+  height: 270px;
+  margin-left: -135px;
+}
+
+.mobileHint {
+  position: absolute;
+  top: 506px;
+  left: 40px;
+  right: 40px;
+  text-align: center;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+}
+
+.mobileCard {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(28px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobileSecondary,
+.mobilePrimary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 50px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.mobileSecondary {
+  background: var(--hover);
+}
+
+.mobilePrimary {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+.mobileFound {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobileThumb {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mobileName {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mobileSci {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.mobileError {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 14px;
+  color: var(--danger-text);
+}
+
+.mobileError i {
+  color: var(--danger);
 }

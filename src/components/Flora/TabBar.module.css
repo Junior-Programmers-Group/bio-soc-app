@@ -1,0 +1,38 @@
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  height: 84px;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 8px 12px 24px;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--subtle);
+}
+
+.tab:hover {
+  color: var(--subtle);
+  text-decoration: none;
+}
+
+.tab i {
+  font-size: 20px;
+}
+
+.active,
+.active:hover {
+  color: var(--primary);
+}

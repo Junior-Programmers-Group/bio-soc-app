@@ -1,0 +1,147 @@
+/* NDDU Flora v3 · Sage mist. Design tokens from the redesign handoff.
+   Every colour used by the redesigned screens comes from here. */
+
+:root {
+  /* text */
+  --ink: #16201b;
+  --ink-2: #36433c;
+  --muted: #4d5a53;
+  --subtle: #7c8781;
+  --faint: #b5b9b2;
+
+  /* surfaces */
+  --bg: #eef2ef;
+  --surface: #ffffff;
+  --surface-2: #f5f8f6;
+  --hover: #e8eee9;
+  --placeholder: #e1e8e3;
+  --stripe-1: #dbe3dd;
+  --stripe-2: #e6ece8;
+
+  /* lines */
+  --line: #d8e0da;
+  --line-strong: #c6d1c9;
+  --row-line: #e8eee9;
+  --dash: #b9c6bd;
+
+  /* primary (spruce) */
+  --primary: #1d4a3c;
+  --primary-hover: #163a2f;
+  --primary-tint: #e8efeb;
+  --primary-tint-2: #f1f6f3;
+  --primary-tint-line: #c9d8cf;
+
+  /* accent (clay) */
+  --clay: #b8572f;
+
+  /* danger */
+  --danger: #a2361f;
+  --danger-text: #7d2716;
+  --danger-bg: #fbe4df;
+  --danger-border: #efc4b9;
+
+  /* camera */
+  --camera-bg: #1a2420;
+  --camera-stripe: #1d2924;
+  --camera-dot: #e0705a;
+
+  /* conservation status: background / text / dot */
+  --lc-bg: #e6f0ea;
+  --lc-text: #1f5b45;
+  --lc-dot: #2f8a63;
+  --vu-bg: #fbefd9;
+  --vu-text: #8a5a00;
+  --vu-dot: #d79a1f;
+  --en-bg: #fbe4df;
+  --en-text: #a2361f;
+  --en-dot: #d4553a;
+  /* any other status (Data Deficient, Not Evaluated, ...) */
+  --other-bg: var(--hover);
+  --other-text: var(--muted);
+  --other-dot: var(--faint);
+
+  /* fonts */
+  --font-serif: "Source Serif 4", serif;
+  --font-sans: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
+
+  /* shadows */
+  --shadow-card: 0 1px 2px rgba(22, 32, 27, 0.04);
+  --shadow-card-hover: 0 12px 28px rgba(22, 32, 27, 0.1);
+  --shadow-panel: 0 12px 32px rgba(22, 32, 27, 0.08);
+  --shadow-toast: 0 12px 30px rgba(22, 32, 27, 0.14);
+  --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.25);
+  --shadow-segment: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --overlay: rgba(22, 32, 27, 0.45);
+  --overlay-sheet: rgba(22, 32, 27, 0.4);
+}
+
+/* Wrapper used by every redesigned screen. */
+.flora {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  line-height: normal;
+}
+
+/* :where keeps these defaults weaker than any component class */
+:where(.flora) a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+:where(.flora) a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+:where(.flora) input,
+:where(.flora) select,
+:where(.flora) button,
+:where(.flora) textarea {
+  font-family: var(--font-sans);
+  color: inherit;
+}
+
+:where(.flora) button {
+  white-space: nowrap;
+}
+
+:where(.flora) * {
+  scrollbar-width: none;
+}
+
+:where(.flora) *::-webkit-scrollbar {
+  display: none;
+}
+
+:where(.flora) h1,
+:where(.flora) h2,
+:where(.flora) h3 {
+  font-family: inherit;
+  letter-spacing: normal;
+}
+
+@keyframes scanmove {
+  0% {
+    top: 8%;
+  }
+  50% {
+    top: 90%;
+  }
+  100% {
+    top: 8%;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}

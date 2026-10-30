@@ -1,0 +1,84 @@
+.header {
+  height: 64px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  line-height: 1.15;
+}
+
+.brand:hover {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav {
+  display: flex;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.navItem {
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.navItem:hover {
+  color: var(--muted);
+  background: var(--hover);
+  text-decoration: none;
+}
+
+.navActive,
+.navActive:hover {
+  background: var(--primary-tint);
+  color: var(--primary);
+}
+
+.scanBtn {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: var(--surface);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.scanActive {
+  background: var(--primary-hover);
+}

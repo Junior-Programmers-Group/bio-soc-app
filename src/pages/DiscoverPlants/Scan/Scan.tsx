@@ -1,264 +1,206 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Html5Qrcode } from "html5-qrcode";
-import Navbar from "../../../components/Home/Navbar/Navbar";
-import pb from "../../../back-end/db";
-import { errorMessage, isNotFound } from "../../../services/errors";
-import { parsePlantId } from "../../../services/plantId";
+import SiteHeader from "../../../components/Flora/SiteHeader";
+import PlantPhoto from "../../../components/Flora/PlantPhoto";
+import { useIsMobile } from "../../../hooks/useMediaQuery";
+import { useQrScanner } from "./useQrScanner";
 import styles from "./Scan.module.css";
 
-type Plant = {
-  commonName: string;
-  scientificName: string;
-  description?: string;
-  image?: string;
-  id: string;
-  genus?: string;
-  author?: string;
-  year?: number;
-  conservationStatus?: string;
-  notes?: string;
-};
+const CAMERA_ID = "qr-reader";
 
-const Scan = () => {
+const STEPS = [
+  { n: "01", t: "Find the label", b: "Tags are fixed to the trunk or a stake beside the plant." },
+  { n: "02", t: "Allow camera access", b: "Your browser will ask the first time." },
+  { n: "03", t: "Hold the code in the frame", b: "The profile opens as soon as it’s recognised." },
+];
+
+export default function Scan() {
   const navigate = useNavigate();
-  const scannerRef = useRef<Html5Qrcode | null>(null);
-  const hasScannedRef = useRef(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const isScannerRunningRef = useRef(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 700);
+  const isMobile = useIsMobile();
+  const fileInput = useRef<HTMLInputElement>(null);
+  const { phase, plant, message, retry, scanFile, torchSupported, torchOn, toggleTorch } = useQrScanner(
+    CAMERA_ID,
+    isMobile
+  );
 
-  const [plant, setPlant] = useState<Plant | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 700);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Show a scan problem and pause briefly, so the same bad code is not looked up 10 times a second
-  const rejectScan = useCallback((message: string) => {
-    setPlant(null);
-    setError(message);
-    hasScannedRef.current = true;
-    window.setTimeout(() => {
-      hasScannedRef.current = false;
-    }, 2000);
-  }, []);
-
-  // Returns true when the scan led to a plant page
-  const fetchPlantAndNavigate = useCallback(async (scanned: string): Promise<boolean> => {
-    const plantId = parsePlantId(scanned);
-    if (!plantId) {
-      rejectScan("This QR code is not a Flora plant tag.");
-      return false;
-    }
-
-    try {
-      await pb.collection("species").getOne(plantId, { fields: "id", requestKey: null });
-    } catch (err) {
-      rejectScan(
-        isNotFound(err)
-          ? "This QR code is not a Flora plant tag, or the plant has been removed."
-          : errorMessage(err)
-      );
-      return false;
-    }
-
-    // Stop the camera before leaving the page
-    if (isScannerRunningRef.current && scannerRef.current) {
-      isScannerRunningRef.current = false;
-      await scannerRef.current.stop().catch(() => {});
-    }
-    scannerRef.current = null;
-    isScannerRunningRef.current = false;
-
-    navigate(`/discover/plants/${plantId}`);
-    return true;
-  }, [navigate, rejectScan]);
-
- useEffect(() => {
-  let mounted = true;
-
-  const startScanner = async () => {
-    // Wait a bit to ensure the DOM is ready
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    if (!mounted) return;
-
-    try {
-      const qrReaderElement = document.getElementById("qr-reader");
-      if (!qrReaderElement) {
-        setError("Camera container not found");
-        return;
-      }
-
-      const scanner = new Html5Qrcode("qr-reader");
-      scannerRef.current = scanner;
-
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        async (decodedText) => {
-          if (hasScannedRef.current) return;
-
-          hasScannedRef.current = true;
-          isScannerRunningRef.current = true;
-          await fetchPlantAndNavigate(decodedText);
-        },
-        () => {
-          // Suppress verbose error logging
-        }
-      );
-      isScannerRunningRef.current = true;
-    } catch (err) {
-      if (mounted) {
-        setError("Camera permission denied or unavailable. Please allow camera access.");
-        console.error("Scanner error:", err);
-      }
-      isScannerRunningRef.current = false;
-    }
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // so the same photo can be chosen again
+    if (file) void scanFile(file);
   };
+  const chooseImage = () => fileInput.current?.click();
+  const openProfile = () => plant && navigate(`/discover/plants/${plant.id}`);
 
-  startScanner();
+  const input = (
+    <input ref={fileInput} type="file" accept="image/*" className={styles.fileInput} onChange={onFile} tabIndex={-1} />
+  );
 
-  return () => {
-    mounted = false;
-    isScannerRunningRef.current = false;
-    if (scannerRef.current) {
-      try {
-        scannerRef.current.stop().catch(() => {
-          // Ignore stop errors
-        });
-      } catch (err) {
-        console.error("Error in cleanup:", err);
-      }
-      scannerRef.current = null;
-    }
-    hasScannedRef.current = false;
-  };
-}, [fetchPlantAndNavigate]);
+  const scanLine = phase === "scanning" && <div className={styles.scanLine}></div>;
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  /* ---------------- phone ---------------- */
+  if (isMobile) {
+    return (
+      <div className={`flora ${styles.mobile}`}>
+        <div className={styles.mobileStripes}></div>
+        <div id={CAMERA_ID} className={styles.camera}></div>
 
-    // Prevent multiple uploads
-    if (hasScannedRef.current) return;
-    hasScannedRef.current = true;
+        <div className={styles.mobileTop}>
+          <button type="button" className={styles.glassBtn} onClick={() => navigate("/discover")} aria-label="Close">
+            <i className="bi bi-x-lg"></i>
+          </button>
+          <span className={styles.mobileTitle}>Scan a tag</span>
+          <button
+            type="button"
+            className={`${styles.glassBtn} ${torchOn ? styles.glassOn : ""}`}
+            onClick={toggleTorch}
+            disabled={!torchSupported}
+            aria-label="Flash"
+            aria-pressed={torchOn}
+          >
+            <i className="bi bi-lightning-charge"></i>
+          </button>
+        </div>
 
-    try {
-      setError("");
-      
-      // Stop and cleanup the camera scanner before file scanning
-      if (isScannerRunningRef.current && scannerRef.current) {
-        try {
-          isScannerRunningRef.current = false;
-          await scannerRef.current.stop();
-        } catch (stopError) {
-          console.error("Error stopping camera scanner:", stopError);
-        }
-      }
+        <div className={styles.mobileFrame}>
+          <Corners size={40} radius={12} />
+          {scanLine}
+        </div>
+        <p className={styles.mobileHint}>Center the QR code on the plant label</p>
 
-      // Create a new scanner instance for file scanning
-      const fileScanner = new Html5Qrcode("qr-reader");
-      const decodedText = await fileScanner.scanFile(file, true);
-      
-      const found = await fetchPlantAndNavigate(decodedText);
-      if (!found) restartCameraScanner();
-    } catch {
-      setError("No QR code found in the image. Please try another image.");
-      setPlant(null);
-      hasScannedRef.current = false;
-      
-      // Restart camera scanner on error
-      restartCameraScanner();
-    }
+        <div className={styles.mobileCard}>
+          {phase === "scanning" && (
+            <button type="button" className={styles.mobileSecondary} onClick={chooseImage}>
+              <i className="bi bi-image"></i>Choose from photos
+            </button>
+          )}
+          {phase === "found" && plant && (
+            <>
+              <div className={styles.mobileFound}>
+                <div className={styles.mobileThumb}>
+                  <PlantPhoto src={plant.thumbnail || plant.image} alt="" stripe={6} />
+                </div>
+                <div className={styles.foundText}>
+                  <span className={styles.mobileName}>{plant.commonName}</span>
+                  <span className={styles.mobileSci}>{plant.scientificName}</span>
+                </div>
+              </div>
+              <button type="button" className={styles.mobilePrimary} onClick={openProfile}>
+                Open profile
+              </button>
+            </>
+          )}
+          {phase === "error" && (
+            <>
+              <div className={styles.mobileError} role="alert">
+                <i className="bi bi-exclamation-triangle"></i>
+                {message}
+              </div>
+              <button type="button" className={styles.mobileSecondary} onClick={retry}>
+                Try again
+              </button>
+            </>
+          )}
+        </div>
+        {input}
+      </div>
+    );
+  }
 
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  /* ---------------- desktop ---------------- */
+  return (
+    <div className="flora">
+      <SiteHeader active="scan" />
 
-  const restartCameraScanner = async () => {
-    try {
-      if (scannerRef.current && !isScannerRunningRef.current) {
-        hasScannedRef.current = false;
-        
-        await scannerRef.current.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          async (decodedText) => {
-            if (hasScannedRef.current) return;
+      <div className={styles.layout}>
+        <div className={styles.left}>
+          <div className={styles.intro}>
+            <span className={styles.eyebrow}>Scan</span>
+            <h1>Identify a plant from its tag</h1>
+            <p>Every tagged plant on campus has a QR code on its label. Scan it to open the plant&apos;s profile.</p>
+          </div>
+          <ol className={styles.steps}>
+            {STEPS.map((step) => (
+              <li key={step.n}>
+                <span className={styles.stepNum}>{step.n}</span>
+                <div className={styles.stepText}>
+                  <span className={styles.stepTitle}>{step.t}</span>
+                  <span className={styles.stepBody}>{step.b}</span>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
 
-            hasScannedRef.current = true;
-            isScannerRunningRef.current = true;
-            await fetchPlantAndNavigate(decodedText);
-          },
-          () => {
-            // Suppress verbose error logging
-          }
-        );
-        isScannerRunningRef.current = true;
-      }
-    } catch (err) {
-      console.error("Error restarting camera scanner:", err);
-    }
-  };
+        <div className={styles.panel}>
+          <div className={styles.viewport}>
+            <div className={styles.stripes}></div>
+            <div id={CAMERA_ID} className={styles.camera}></div>
+            <span className={styles.cameraLabel}>
+              <span className={styles.liveDot}></span>Camera
+            </span>
+            <div className={styles.frame}>
+              <Corners size={36} radius={10} />
+              {scanLine}
+              {phase === "found" && (
+                <div className={styles.foundMark}>
+                  <span>
+                    <i className="bi bi-check-lg"></i>
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
 
+          {phase === "scanning" && (
+            <div className={styles.statusRow}>
+              <span className={styles.hint}>Hold steady — looking for a QR code</span>
+              <button type="button" className={styles.uploadBtn} onClick={chooseImage}>
+                <i className="bi bi-upload"></i>Upload an image
+              </button>
+            </div>
+          )}
+          {phase === "found" && plant && (
+            <div className={styles.foundRow}>
+              <div className={styles.thumb}>
+                <PlantPhoto src={plant.thumbnail || plant.image} alt="" stripe={6} />
+              </div>
+              <div className={styles.foundText}>
+                <span className={styles.foundName}>{plant.commonName}</span>
+                <span className={styles.foundSci}>{plant.scientificName}</span>
+              </div>
+              <button type="button" className={styles.again} onClick={retry}>
+                Scan again
+              </button>
+              <button type="button" className={styles.openBtn} onClick={openProfile}>
+                Open profile<i className="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          )}
+          {phase === "error" && (
+            <div className={styles.errorBar} role="alert">
+              <i className="bi bi-exclamation-triangle"></i>
+              <span>{message}</span>
+              <button type="button" onClick={retry}>
+                Try again
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+      {input}
+    </div>
+  );
+}
+
+/** The four white corner brackets of the scan frame. */
+function Corners({ size, radius }: { size: number; radius: number }) {
+  const style = { width: size, height: size, ["--r" as string]: `${radius}px` };
   return (
     <>
-      {!isMobile && <Navbar />}
-
-      <div className={styles.scanContainer}>
-        {isMobile && (
-          <button
-            className={styles.backButton}
-            onClick={() => navigate("/")}
-            aria-label="Go back to home"
-          >
-            ← Back
-          </button>
-        )}
-
-        {/* Camera MUST be rendered before scanner starts */}
-        <div id="qr-reader" className={styles.qrBox} />
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className={styles.fileInput}
-          onChange={handleFileUpload}
-        />
-
-        <button
-          className={styles.uploadButton}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          Upload QR Code
-        </button>
-
-        {error && <p className={styles.error}>{error}</p>}
-
-        {plant && (
-          <div className={styles.plantCard}>
-            {plant.image && (
-              <img src={plant.image} alt={plant.commonName} />
-            )}
-            <h2>{plant.commonName}</h2>
-            <i>{plant.scientificName}</i>
-            <p>{plant.description}</p>
-          </div>
-        )}
-      </div>
+      <span className={`${styles.corner} ${styles.tl}`} style={style}></span>
+      <span className={`${styles.corner} ${styles.tr}`} style={style}></span>
+      <span className={`${styles.corner} ${styles.bl}`} style={style}></span>
+      <span className={`${styles.corner} ${styles.br}`} style={style}></span>
     </>
   );
-};
-
-export default Scan;
+}

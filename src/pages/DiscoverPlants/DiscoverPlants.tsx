@@ -1,44 +1,61 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import Navbar from "../../components/Home/Navbar/Navbar";
-import SearchBar, { type SearchType } from "../../components/DiscoverPlant/SearchBar/SearchBar";
-import PlantsGrid from "../../components/DiscoverPlant/PlantGrid/PlantsGrid";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import SiteHeader from "../../components/Flora/SiteHeader";
+import TabBar from "../../components/Flora/TabBar";
+import SearchBar from "../../components/DiscoverPlant/SearchBar/SearchBar";
+import { FilterSheet, FilterSidebar } from "../../components/DiscoverPlant/Filters/Filters";
+import {
+  EmptyState,
+  PlantCards,
+  PlantCardsMobile,
+  PlantRows,
+} from "../../components/DiscoverPlant/PlantGrid/PlantGrid";
 import type { Plant } from "../../types/plant";
-import { fetchPlants, fetchTaxonomyOptions } from "../../services/plantService";
+import { fetchPlants } from "../../services/plantService";
 import { errorMessage } from "../../services/errors";
+import { STATUS_OPTIONS } from "../../lib/status";
+import { useIsMobile } from "../../hooks/useMediaQuery";
+import {
+  buildRankFilters,
+  buildStatusRows,
+  chooseRank,
+  matchesQuery,
+  visiblePlants,
+  type RankKey,
+  type SearchMode,
+  type StatusFilter,
+  type Taxonomy,
+} from "./discoverLogic";
 import styles from "./DiscoverPlants.module.css";
-import Filters from "../../components/DiscoverPlant/Filters/Filters";
 
 export default function DiscoverPlants() {
+  const isMobile = useIsMobile();
+  const [searchParams] = useSearchParams();
+
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [attempt, setAttempt] = useState(0); // bumped by "Try again"
-  const [taxonomyOptions, setTaxonomyOptions] = useState<Record<string, string[]> | undefined>();
-  const [search, setSearch] = useState("");
-  const [searchType, setSearchType] = useState<SearchType>("all");
-  const [showFilters, setShowFilters] = useState(false);
-  const [sortOrder, setSortOrder] = useState("az");
-  const [taxonomyFilters, setTaxonomyFilters] = useState<Record<string, string>>({});
-  const [searchParams] = useSearchParams();
 
-  // Initialize search from URL parameters
-  useEffect(() => {
-    const urlSearch = searchParams.get("search");
-    if (urlSearch) {
-      setSearch(urlSearch);
-    }
-  }, [searchParams]);
+  const [query, setQuery] = useState(searchParams.get("search") ?? "");
+  const [mode, setMode] = useState<SearchMode>("all");
+  const [taxonomy, setTaxonomy] = useState<Taxonomy>({});
+  const [status, setStatus] = useState<StatusFilter>("All");
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [sort, setSort] = useState<"az" | "za">("az");
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [filtersOpen, setFiltersOpen] = useState(false); // desktop sidebar, hidden by default
+  const [sheetOpen, setSheetOpen] = useState(false); // phone bottom sheet
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadData = async () => {
+    const load = async () => {
       setLoading(true);
       setLoadError("");
       try {
-        const plantsData = await fetchPlants();
-        if (isMounted) setPlants(plantsData);
+        const data = await fetchPlants();
+        if (isMounted) setPlants(data);
       } catch (error) {
         if (isMounted) {
           setPlants([]);
@@ -47,162 +64,225 @@ export default function DiscoverPlants() {
       } finally {
         if (isMounted) setLoading(false);
       }
-
-      // The filter lists are a nice-to-have: the page still works without them
-      try {
-        const taxonomyData = await fetchTaxonomyOptions();
-        if (isMounted) setTaxonomyOptions(taxonomyData);
-      } catch {
-        if (isMounted) setTaxonomyOptions(undefined);
-      }
     };
 
-    loadData();
-
+    load();
     return () => {
       isMounted = false;
     };
   }, [attempt]);
 
-  // Enhanced search across multiple fields with search type filter
-  const searchPlants = (plantsToSearch: Plant[]): Plant[] => {
-    if (!search.trim()) return plantsToSearch;
+  const searched = useMemo(() => plants.filter((p) => matchesQuery(p, query, mode)), [plants, query, mode]);
+  const rankFilters = useMemo(() => buildRankFilters(searched, taxonomy), [searched, taxonomy]);
+  const statusRows = useMemo(() => buildStatusRows(searched, taxonomy), [searched, taxonomy]);
+  const items = useMemo(
+    () => visiblePlants(plants, query, mode, taxonomy, status, sort),
+    [plants, query, mode, taxonomy, status, sort]
+  );
 
-    const searchLower = search.toLowerCase();
-
-    return plantsToSearch.filter((plant) => {
-      // Determine which fields to search based on searchType
-      let searchFields: string[] = [];
-
-      if (searchType === "all") {
-        searchFields = [
-          plant.commonName || "",
-          plant.scientificName || "",
-          plant.ecology || "",
-          plant.uses || "",
-          plant.domain || "",
-          plant.kingdom || "",
-          plant.phylum || "",
-          plant.klass || "",
-          plant.order || "",
-          plant.family || "",
-          plant.genus || "",
-          plant.species || "",
-          plant.description || "",
-        ];
-      } else if (searchType === "name") {
-        searchFields = [plant.commonName || "", plant.name || ""];
-      } else if (searchType === "scientific") {
-        searchFields = [plant.scientificName || ""];
-      }
-
-      // Use first-letter based search
-      return searchFields.some((field) => {
-        const fieldLower = field.toLowerCase();
-        // Split by spaces and check if any word starts with search term
-        const words = fieldLower.split(/\s+/);
-        return words.some((word) => word.startsWith(searchLower));
-      });
-    });
+  const onRank = (key: RankKey, value: string) => {
+    setTaxonomy((current) => chooseRank(current, plants, key, value));
   };
 
-  // Filter by taxonomy if any filters are selected
-  const filterByTaxonomy = (plantsToFilter: Plant[]): Plant[] => {
-    const activeFilters = Object.entries(taxonomyFilters).filter(([, value]) => value);
-    
-    if (activeFilters.length === 0) return plantsToFilter;
+  const chips = [
+    ...rankFilters
+      .filter((f) => f.value)
+      .map((f) => ({ rank: f.label, value: f.value, remove: () => onRank(f.key, "") })),
+    ...(status !== "All"
+      ? [
+          {
+            rank: "Status",
+            value: STATUS_OPTIONS.find((s) => s.key === status)?.label ?? status,
+            remove: () => setStatus("All"),
+          },
+        ]
+      : []),
+  ];
+  const hasFilter = chips.length > 0;
+  const countWord = items.length === 1 ? "plant" : "plants";
 
-    const filtered = plantsToFilter.filter((plant) => {
-      // Plant must match ALL active taxonomy level filters
-      return activeFilters.every(([level, value]) => {
-        const fieldValue = plant[level as keyof Plant];
-        const matches = fieldValue === value || (typeof fieldValue === "string" && fieldValue.toLowerCase() === value.toLowerCase());
-        return matches;
-      });
-    });
+  const clearFilters = () => {
+    setTaxonomy({});
+    setStatus("All");
+  };
+  const clearAll = () => {
+    setQuery("");
+    setTaxonomy({});
+    setStatus("All");
+    setMode("all");
+  };
+  const toggleSort = () => setSort((s) => (s === "az" ? "za" : "az"));
+  const sortLabel = sort === "az" ? "A–Z" : "Z–A";
 
-    return filtered;
+  const filterProps = {
+    rankFilters,
+    statusRows,
+    status,
+    onStatus: setStatus,
+    onRank,
+    onClear: clearFilters,
+    hasFilter,
+    moreOpen,
+    onToggleMore: () => setMoreOpen((open) => !open),
   };
 
-  // Sorting logic
-  const sortPlants = (plantsToSort: Plant[]): Plant[] => {
-    const sorted = [...plantsToSort];
+  const results = loadError ? (
+    <EmptyState
+      title="We couldn't load the plants"
+      message={loadError}
+      action="Try again"
+      onAction={() => setAttempt((n) => n + 1)}
+    />
+  ) : loading ? (
+    <p className={styles.loading}>Loading plants…</p>
+  ) : items.length === 0 ? (
+    <EmptyState
+      title="No plants found"
+      message="Check the spelling, or clear your filters."
+      action="Clear all"
+      onAction={clearAll}
+    />
+  ) : isMobile ? (
+    <PlantCardsMobile plants={items} />
+  ) : view === "grid" ? (
+    <PlantCards plants={items} columns={filtersOpen ? 3 : 4} />
+  ) : (
+    <PlantRows plants={items} />
+  );
 
-    sorted.sort((a, b) => {
-      const nameA = a.commonName || "";
-      const nameB = b.commonName || "";
-
-      if (sortOrder === "az") {
-        return nameA.localeCompare(nameB);
-      } else {
-        return nameB.localeCompare(nameA);
-      }
-    });
-
-    return sorted;
-  };
-
-  const filteredPlants = sortPlants(filterByTaxonomy(searchPlants(plants)));
-
-  return (
-    <div className={styles.discoverPage}>
-      <Navbar />
-
-      <div className={styles.container}>
-        <h1>Discover Plants</h1>
-        <p>
-          Explore our comprehensive collection of plants and learn about their
-          ecological roles
-        </p>
-
-        {/* SEARCH */}
-        <SearchBar search={search} setSearch={setSearch} searchType={searchType} setSearchType={setSearchType} />
-
-        {/* CONTROL BAR */}
-        <div className={styles.controls}>
-          <p className={styles.results}>
-            {loading
-              ? "Loading..."
-              : loadError
-                ? "Unavailable"
-                : `${filteredPlants.length} ${filteredPlants.length === 1 ? "Result" : "Results"}`}
-          </p>
-
-          <div className={styles.actions}>
+  /* ---------------- phone ---------------- */
+  if (isMobile) {
+    return (
+      <div className={`flora ${styles.mobilePage}`}>
+        <div className={styles.mobileTop}>
+          <Link to="/" className={styles.mobileBrand}>
+            <img src="/logo-biosoc.png" alt="" />
+            <span>NDDU Flora</span>
+          </Link>
+          <h1 className={styles.mobileTitle}>Discover plants</h1>
+          <div className={styles.mobileSearchRow}>
+            <div className={styles.mobileSearch}>
+              <i className="bi bi-search"></i>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search plants"
+                aria-label="Search plants"
+              />
+            </div>
             <button
-              className={styles.filterBtn}
-              onClick={() => setShowFilters(!showFilters)}
+              type="button"
+              className={styles.mobileFilterBtn}
+              onClick={() => setSheetOpen(true)}
+              title="Filters"
+              aria-label="Filters"
             >
-              {showFilters ? "✕ Hide Filters" : "⚙ Show Filters"}
+              <i className="bi bi-sliders2"></i>
+              {hasFilter && <span className={styles.filterDot}></span>}
             </button>
-
-            <select
-              className={styles.sortSelect}
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-            >
-              <option value="az">Name (A–Z)</option>
-              <option value="za">Name (Z–A)</option>
-            </select>
           </div>
         </div>
 
-        <div
-          className={`${styles.content} ${
-            showFilters ? styles.withFilters : styles.noFilters
-          }`}
-        >
-          {showFilters && <Filters plants={plants} taxonomyFilters={taxonomyFilters} setTaxonomyFilters={setTaxonomyFilters} taxonomyOptions={taxonomyOptions} />}
-          {loadError ? (
-            <div className={styles.errorBox} role="alert">
-              <p>{loadError}</p>
-              <button className={styles.retryBtn} onClick={() => setAttempt((n) => n + 1)}>
-                Try again
+        <div className={styles.mobileCountRow}>
+          <span>
+            <b>{loading ? "…" : items.length}</b> {countWord}
+          </span>
+          <button type="button" className={styles.mobileSort} onClick={toggleSort}>
+            <i className="bi bi-arrow-down-up"></i>
+            {sortLabel}
+          </button>
+        </div>
+
+        <div className={styles.mobileResults}>{results}</div>
+
+        <TabBar active="discover" />
+
+        {sheetOpen && (
+          <FilterSheet
+            {...filterProps}
+            count={items.length}
+            countWord={countWord}
+            onClose={() => setSheetOpen(false)}
+          />
+        )}
+      </div>
+    );
+  }
+
+  /* ---------------- desktop ---------------- */
+  return (
+    <div className="flora">
+      <SiteHeader active="discover" />
+
+      <div className={styles.hero}>
+        <div className={styles.heroTitle}>
+          <span className={styles.eyebrow}>Campus collection</span>
+          <h1>Discover plants</h1>
+        </div>
+        <SearchBar query={query} onQuery={setQuery} mode={mode} onMode={setMode} />
+      </div>
+
+      <div className={`${styles.body} ${filtersOpen ? styles.bodyWithFilters : ""}`}>
+        {filtersOpen && <FilterSidebar {...filterProps} />}
+
+        <div className={styles.results}>
+          <div className={styles.toolbar}>
+            <span className={styles.count}>
+              <b>{loading ? "…" : items.length}</b> {countWord}
+            </span>
+            <div className={styles.tools}>
+              <button
+                type="button"
+                className={`${styles.toolBtn} ${filtersOpen ? styles.filterBtnOpen : ""}`}
+                onClick={() => setFiltersOpen((open) => !open)}
+                aria-expanded={filtersOpen}
+              >
+                <i className="bi bi-sliders"></i>
+                {filtersOpen ? "Hide filters" : "Filters"}
+                {chips.length > 0 && <span className={styles.filterCount}>{chips.length}</span>}
               </button>
+              <button type="button" className={styles.toolBtn} onClick={toggleSort}>
+                <i className="bi bi-arrow-down-up"></i>
+                {sortLabel}
+              </button>
+              <div className={styles.viewSwitch} role="group" aria-label="View">
+                <button
+                  type="button"
+                  className={`${styles.viewBtn} ${view === "grid" ? styles.viewOn : ""}`}
+                  onClick={() => setView("grid")}
+                  title="Grid"
+                  aria-label="Grid view"
+                  aria-pressed={view === "grid"}
+                >
+                  <i className="bi bi-grid"></i>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.viewBtn} ${view === "list" ? styles.viewOn : ""}`}
+                  onClick={() => setView("list")}
+                  title="List"
+                  aria-label="List view"
+                  aria-pressed={view === "list"}
+                >
+                  <i className="bi bi-list-ul"></i>
+                </button>
+              </div>
             </div>
-          ) : (
-            <PlantsGrid plants={filteredPlants} />
+          </div>
+
+          {hasFilter && (
+            <div className={styles.chips}>
+              {chips.map((chip) => (
+                <button key={chip.rank} type="button" className={styles.chip} onClick={chip.remove}>
+                  <span className={styles.chipRank}>{chip.rank}:</span>
+                  <span className={styles.chipValue}>{chip.value}</span>
+                  <i className="bi bi-x"></i>
+                </button>
+              ))}
+            </div>
           )}
+
+          {results}
         </div>
       </div>
     </div>

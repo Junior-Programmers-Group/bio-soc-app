@@ -3,6 +3,7 @@ import type { DetailsRecord, SpeciesRecord, TaxonRecord } from "../types/records
 import pb from "../back-end/db";
 import { getSpeciesImageUrl } from "./imageUrl";
 import { isNotFound } from "./errors";
+import { splitCommonNames } from "../lib/format";
 
 // ---------------------------------------------------------------------------
 // Cache (5 minutes). Admin changes call clearPlantCache() so edits show at once.
@@ -110,43 +111,6 @@ const fetchDomainNames = async (): Promise<Map<string, string>> => {
   }
 };
 
-const listNames = async (collection: string, optional = false): Promise<string[]> => {
-  try {
-    const rows = await pb
-      .collection(collection)
-      .getFullList<TaxonRecord>({ fields: "name", requestKey: null });
-    return rows.map((row) => row.name).filter((name): name is string => !!name).sort();
-  } catch (error) {
-    if (optional && isNotFound(error)) return [];
-    throw error;
-  }
-};
-
-export type TaxonomyOptions = Record<
-  "domain" | "kingdom" | "phylum" | "klass" | "order" | "family" | "genus",
-  string[]
->;
-
-/** Every name at each taxonomy level, for the filter drop-downs. Throws on failure. */
-export const fetchTaxonomyOptions = async (): Promise<TaxonomyOptions> => {
-  const cached = getCached<TaxonomyOptions>("taxonomyOptions");
-  if (cached) return cached;
-
-  const [domain, kingdom, phylum, klass, order, family, genus] = await Promise.all([
-    listNames("domain", true),
-    listNames("kingdom"),
-    listNames("phylum"),
-    listNames("class"),
-    listNames("order"),
-    listNames("family"),
-    listNames("genus"),
-  ]);
-
-  const options = { domain, kingdom, phylum, klass, order, family, genus };
-  setCached("taxonomyOptions", options);
-  return options;
-};
-
 // ---------------------------------------------------------------------------
 // Plants
 // ---------------------------------------------------------------------------
@@ -157,9 +121,15 @@ const toPlant = (
   domainNames: Map<string, string>
 ): Plant => {
   const taxonomy = hierarchyFromGenus(first(record.expand?.genus), domainNames);
+  const { name, aliases } = splitCommonNames(record.commonName);
   return {
     id: record.id,
-    commonName: record.commonName || "Unknown",
+    commonName: name || "Unknown",
+    aliases,
+    commonNames: record.commonName || "",
+    code: record.code || "",
+    created: record.created,
+    updated: record.updated,
     scientificName: record.scientificName || "",
     image: getSpeciesImageUrl(record),
     thumbnail: getSpeciesImageUrl(record, "400x300"),

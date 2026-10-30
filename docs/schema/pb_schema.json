@@ -3,7 +3,7 @@
     "id": "_pb_users_auth_",
     "listRule": "@request.auth.isAdmin = true || id = @request.auth.id",
     "viewRule": "@request.auth.isAdmin = true || id = @request.auth.id",
-    "createRule": null,
+    "createRule": "@request.auth.isAdmin = true",
     "updateRule": "@request.auth.isAdmin = true || (id = @request.auth.id && @request.body.isAdmin:isset = false)",
     "deleteRule": "@request.auth.isAdmin = true && id != @request.auth.id",
     "name": "users",
@@ -148,7 +148,7 @@
       "CREATE UNIQUE INDEX `idx_email__pb_users_auth_` ON `users` (`email`) WHERE `email` != ''"
     ],
     "created": "2025-08-05 12:48:38.008Z",
-    "updated": "2026-10-30 06:39:00.130Z",
+    "updated": "2026-10-30 07:02:23.040Z",
     "system": false,
     "authRule": "",
     "manageRule": "@request.auth.isAdmin = true",
@@ -462,11 +462,27 @@
         "presentable": false,
         "system": false,
         "type": "autodate"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text1997877400",
+        "max": 20,
+        "min": 0,
+        "name": "code",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
       }
     ],
-    "indexes": [],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_species_code` ON `species` (`code`) WHERE `code` != ''"
+    ],
     "created": "2026-01-19 12:37:30.050Z",
-    "updated": "2026-10-30 06:38:45.667Z",
+    "updated": "2026-10-30 07:02:22.836Z",
     "system": false
   },
   {

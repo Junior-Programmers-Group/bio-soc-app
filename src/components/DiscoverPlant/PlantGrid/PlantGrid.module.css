@@ -1,0 +1,274 @@
+/* ---------- desktop grid ---------- */
+
+.grid {
+  display: grid;
+  gap: 28px 24px;
+}
+
+.fourCols {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.threeCols {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.card {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  color: var(--ink);
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.photo {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--placeholder);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px 18px;
+}
+
+.cardName {
+  font-family: var(--font-serif);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.sci {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.cardFoot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--placeholder);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--s-fg);
+  font-weight: 500;
+}
+
+.dot7 {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--s-dot);
+}
+
+.dot6 {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--s-dot);
+}
+
+/* ---------- desktop list ---------- */
+
+.list {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.row {
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1.4fr) minmax(0, 1fr) 150px 20px;
+  gap: 20px;
+  align-items: center;
+  padding: 12px 18px;
+  border-top: 1px solid var(--placeholder);
+  color: var(--ink);
+}
+
+.row:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.thumb {
+  position: relative;
+  width: 64px;
+  height: 48px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rowName {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.rowSci {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.rowFamily {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.rowStatus {
+  font-size: 13px;
+}
+
+.rowChevron {
+  color: var(--subtle);
+}
+
+/* ---------- empty state ---------- */
+
+.empty {
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  padding: 56px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.empty h3 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.empty p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.empty button {
+  cursor: pointer;
+  margin-top: 6px;
+  background: var(--primary);
+  color: var(--surface);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---------- phone cards ---------- */
+
+.mobileList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobileCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+  color: var(--ink);
+}
+
+.mobileCard:hover {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.mobileThumb {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mobileText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobileName {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mobileSci {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.mobileStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--s-fg);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.mobileChevron {
+  color: var(--faint);
+  padding-right: 4px;
+}

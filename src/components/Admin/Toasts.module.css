@@ -1,0 +1,81 @@
+.stack {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  z-index: 70;
+}
+
+.toast {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow-toast);
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success {
+  background: var(--lc-bg);
+  color: var(--lc-text);
+}
+
+.error {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.message {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.close {
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--subtle);
+}
+
+.close i {
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .stack {
+    top: 12px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
+  }
+}
